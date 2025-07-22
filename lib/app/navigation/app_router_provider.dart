@@ -1,6 +1,4 @@
-// Import your route definitions and the new local auth provider
 import 'package:aegis_docs/app/navigation/app_router.dart';
-// IMPORTANT: You will need to create this provider. See "Next Steps" below.
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +9,7 @@ part 'app_router_provider.g.dart';
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final bool isLoggedIn = ref.watch(localAuthProvider);
+  final bool isLoggedIn = ref.watch(localAuthProvider) == AuthState.success;
 
   return GoRouter(
     initialLocation: '/login',
