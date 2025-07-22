@@ -6,7 +6,24 @@ part of 'local_auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$localAuthHash() => r'b13f565d942b4f39d2a9542924afe025f5c22971';
+String _$authServiceHash() => r'82398d9f38c720e4ddf6b218248f15089fd4f178';
+
+/// See also [authService].
+@ProviderFor(authService)
+final authServiceProvider = AutoDisposeProvider<AuthService>.internal(
+  authService,
+  name: r'authServiceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$authServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AuthServiceRef = AutoDisposeProviderRef<AuthService>;
+String _$localAuthHash() => r'785e0fafb804ad66de8c4b41b5aee4c430877060';
 
 /// See also [LocalAuth].
 @ProviderFor(LocalAuth)
