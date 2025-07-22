@@ -6,7 +6,7 @@ part of 'local_auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$localAuthHash() => r'52b7415f05ea555d70bcd336a62fa95ba28d340f';
+String _$localAuthHash() => r'b13f565d942b4f39d2a9542924afe025f5c22971';
 
 /// See also [LocalAuth].
 @ProviderFor(LocalAuth)

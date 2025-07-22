@@ -69,8 +69,6 @@ class AegisDocsApp extends ConsumerWidget {
           labelStyle: const TextStyle(color: Colors.black87),
         ),
 
-        //
-
         // SnackBars
         snackBarTheme: const SnackBarThemeData(
           backgroundColor: Colors.black87,
