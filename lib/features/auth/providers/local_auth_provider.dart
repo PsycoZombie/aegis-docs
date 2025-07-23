@@ -36,4 +36,8 @@ class LocalAuth extends _$LocalAuth {
     final result = await _authService.authenticate();
     state = result ? AuthState.success : AuthState.error;
   }
+
+  void logout() {
+    state = AuthState.initial;
+  }
 }

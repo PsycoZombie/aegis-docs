@@ -20,6 +20,11 @@ class MockLocalAuthProvider extends AutoDisposeNotifier<AuthState>
   void setState(AuthState newState) {
     state = newState;
   }
+
+  @override
+  void logout() {
+    // No implementation needed for tests.
+  }
 }
 
 void main() {
@@ -75,6 +80,28 @@ void main() {
       // Assert
       final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
       expect(button.onPressed, isNull);
+    });
+
+    testWidgets('shows SnackBar when state is error', (
+      WidgetTester tester,
+    ) async {
+      // Arrange
+      final mockProvider = MockLocalAuthProvider();
+      await tester.pumpWidget(createWidgetUnderTest(mockProvider));
+
+      // Act: Change the provider's state to error.
+      mockProvider.setState(AuthState.error);
+      // pump() is needed to process the state change and rebuild the listener.
+      await tester.pump();
+      // pump() again to allow the SnackBar animation to start.
+      await tester.pump();
+
+      // Assert
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(
+        find.text('Authentication Failed. Please try again.'),
+        findsOneWidget,
+      );
     });
   });
 }
