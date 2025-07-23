@@ -58,7 +58,7 @@ void main() {
       child: MaterialApp(
         home: InheritedGoRouter(
           goRouter: mockGoRouter,
-          child: const HomeScreen(),
+          child: FeatureTestHubScreen(), //const HomeScreen(),
         ),
       ),
     );

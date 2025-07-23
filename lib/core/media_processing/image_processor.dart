@@ -1,0 +1,107 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:path_provider/path_provider.dart';
+
+class _ResizePayload {
+  final Uint8List imageBytes;
+  final int width;
+  final int height;
+
+  _ResizePayload(this.imageBytes, this.width, this.height);
+}
+
+class _CompressPayload {
+  final Uint8List imageBytes;
+  final int quality;
+
+  _CompressPayload(this.imageBytes, this.quality);
+}
+
+Uint8List _resizeIsolate(_ResizePayload payload) {
+  final image = img.decodeImage(payload.imageBytes);
+  if (image == null) {
+    throw Exception("Failed to decode image for resizing.");
+  }
+  final resized = img.copyResize(
+    image,
+    width: payload.width,
+    height: payload.height,
+  );
+  return Uint8List.fromList(img.encodeJpg(resized, quality: 85));
+}
+
+Uint8List _compressIsolate(_CompressPayload payload) {
+  final image = img.decodeImage(payload.imageBytes);
+  if (image == null) {
+    throw Exception("Failed to decode image for compression.");
+  }
+  return Uint8List.fromList(img.encodeJpg(image, quality: payload.quality));
+}
+
+class ImageProcessor {
+  Future<Uint8List> resize({
+    required Uint8List imageBytes,
+    required int width,
+    required int height,
+  }) async {
+    return await compute(
+      _resizeIsolate,
+      _ResizePayload(imageBytes, width, height),
+    );
+  }
+
+  Future<Uint8List> compressImage({
+    required Uint8List imageBytes,
+    int quality = 85,
+  }) async {
+    // Clamp the quality value to be safe
+    final clampedQuality = quality.clamp(0, 100);
+    return await compute(
+      _compressIsolate,
+      _CompressPayload(imageBytes, clampedQuality),
+    );
+  }
+
+  Future<Uint8List> changeFormat({
+    required Uint8List imageBytes,
+    required String format,
+  }) async {
+    return await compute((List<dynamic> args) {
+      final bytes = args[0] as Uint8List;
+      final fmt = args[1] as String;
+      final image = img.decodeImage(bytes);
+      if (image == null) {
+        throw Exception("Failed to decode image for format conversion.");
+      }
+
+      if (fmt.toLowerCase() == 'png') {
+        return Uint8List.fromList(img.encodePng(image));
+      }
+      return Uint8List.fromList(img.encodeJpg(image, quality: 90));
+    }, [imageBytes, format]);
+  }
+
+  Future<Uint8List?> crop({required Uint8List imageBytes}) async {
+    final tempDir = await getTemporaryDirectory();
+    final tempPath = '${tempDir.path}/temp_crop_image.jpg';
+    final file = await File(tempPath).writeAsBytes(imageBytes);
+
+    final CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: file.path,
+      uiSettings: [
+        AndroidUiSettings(toolbarTitle: 'Crop Image', lockAspectRatio: false),
+      ],
+    );
+
+    await file.delete();
+
+    if (croppedFile != null) {
+      return await croppedFile.readAsBytes();
+    }
+
+    return null;
+  }
+}

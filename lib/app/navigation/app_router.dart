@@ -5,7 +5,11 @@ import 'package:go_router/go_router.dart';
 
 final List<GoRoute> appRoutes = [
   GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-  GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+  GoRoute(
+    path: '/home',
+    builder: (context, state) =>
+        const FeatureTestHubScreen(), // for testing. should be HomeScreen()
+  ),
   GoRoute(
     path: '/prep',
     builder: (context, state) {
