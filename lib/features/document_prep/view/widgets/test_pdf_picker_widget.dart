@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../../../data/models/picked_file_model.dart';
 import '../../providers/document_providers.dart';
@@ -17,7 +18,10 @@ class _TestPdfPickerWidgetState extends ConsumerState<TestPdfPickerWidget> {
   bool _isLoading = false;
 
   Future<void> _pickPdf() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _pickedPdf = null;
+    });
     try {
       final pdf = await ref.read(documentRepositoryProvider).pickPdf();
       setState(() {
@@ -41,7 +45,7 @@ class _TestPdfPickerWidgetState extends ConsumerState<TestPdfPickerWidget> {
           const CircularProgressIndicator()
         else if (_pickedPdf != null) ...[
           const Text(
-            'Success!',
+            'Success! PDF Loaded.',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -49,7 +53,16 @@ class _TestPdfPickerWidgetState extends ConsumerState<TestPdfPickerWidget> {
             ),
           ),
           const SizedBox(height: 16),
-          const Icon(Icons.picture_as_pdf, color: Colors.red, size: 100),
+          // --- PDF Viewer Added Here ---
+          SizedBox(
+            height: 400, // Constrain the viewer's height
+            width: double.infinity,
+            child: SfPdfViewer.memory(
+              _pickedPdf!.bytes,
+              canShowScrollHead: false,
+            ),
+          ),
+          // --- End of Viewer ---
           const SizedBox(height: 16),
           Text('Name: ${_pickedPdf!.name}'),
           Text('Path: ${_pickedPdf!.path ?? 'N/A'}'),
