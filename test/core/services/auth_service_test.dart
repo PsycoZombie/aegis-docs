@@ -6,7 +6,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 // Import the generated mock file.
-import 'services/auth_service_test.mocks.dart';
+import 'auth_service_test.mocks.dart';
 
 // This annotation tells mockito to generate a mock class for LocalAuthentication.
 @GenerateMocks([LocalAuthentication])

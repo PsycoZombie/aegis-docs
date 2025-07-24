@@ -93,7 +93,10 @@ class _TestImageCropWidgetState extends ConsumerState<TestImageCropWidget> {
             onPressed: () async {
               await ref
                   .read(documentRepositoryProvider)
-                  .saveDocument(_imageBytes!, fileName: 'cropped_image.jpg');
+                  .saveEncryptedDocument(
+                    data: _imageBytes!,
+                    fileName: 'cropped_image.jpg',
+                  );
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Cropped image saved!')),
               );

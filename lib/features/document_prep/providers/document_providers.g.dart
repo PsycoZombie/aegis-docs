@@ -23,24 +23,6 @@ final filePickerServiceProvider = Provider<FilePickerService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FilePickerServiceRef = ProviderRef<FilePickerService>;
-String _$documentRepositoryHash() =>
-    r'983fe8c14ce41d8af068171cb9a4bdf444a580d6';
-
-/// See also [documentRepository].
-@ProviderFor(documentRepository)
-final documentRepositoryProvider = Provider<DocumentRepository>.internal(
-  documentRepository,
-  name: r'documentRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$documentRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DocumentRepositoryRef = ProviderRef<DocumentRepository>;
 String _$fileStorageServiceHash() =>
     r'83f564e7d4f115c3d6755bec522f9c0a1701f9aa';
 
@@ -112,5 +94,40 @@ final nativeCompressionServiceProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef NativeCompressionServiceRef = ProviderRef<NativeCompressionService>;
+String _$encryptionServiceHash() => r'16ebd8f99f2835c4af92b17317cb3c77e2c1096c';
+
+/// See also [encryptionService].
+@ProviderFor(encryptionService)
+final encryptionServiceProvider = FutureProvider<EncryptionService>.internal(
+  encryptionService,
+  name: r'encryptionServiceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$encryptionServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef EncryptionServiceRef = FutureProviderRef<EncryptionService>;
+String _$documentRepositoryHash() =>
+    r'd807b0f47d2bb8f80d2e9ea8accdb4f557fb16ec';
+
+/// See also [documentRepository].
+@ProviderFor(documentRepository)
+final documentRepositoryProvider = Provider<DocumentRepository>.internal(
+  documentRepository,
+  name: r'documentRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$documentRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DocumentRepositoryRef = ProviderRef<DocumentRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

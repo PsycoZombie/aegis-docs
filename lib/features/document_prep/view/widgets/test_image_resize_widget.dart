@@ -98,8 +98,8 @@ class _TestImageResizeWidgetState extends ConsumerState<TestImageResizeWidget> {
               onPressed: () async {
                 await ref
                     .read(documentRepositoryProvider)
-                    .saveDocument(
-                      _resizedImage!,
+                    .saveEncryptedDocument(
+                      data: _resizedImage!,
                       fileName: 'resized_image.jpg',
                     );
                 ScaffoldMessenger.of(context).showSnackBar(

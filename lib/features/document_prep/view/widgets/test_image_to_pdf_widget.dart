@@ -98,8 +98,8 @@ class _TestImageToPdfWidgetState extends ConsumerState<TestImageToPdfWidget> {
               onPressed: () async {
                 await ref
                     .read(documentRepositoryProvider)
-                    .saveDocument(
-                      _generatedPdf!,
+                    .saveEncryptedDocument(
+                      data: _generatedPdf!,
                       fileName: 'converted_from_image.pdf',
                     );
                 ScaffoldMessenger.of(

@@ -100,8 +100,8 @@ class _TestImageCompressWidgetState
               onPressed: () async {
                 await ref
                     .read(documentRepositoryProvider)
-                    .saveDocument(
-                      _compressedImage!,
+                    .saveEncryptedDocument(
+                      data: _compressedImage!,
                       fileName: 'compressed_image.jpg',
                     );
                 ScaffoldMessenger.of(context).showSnackBar(

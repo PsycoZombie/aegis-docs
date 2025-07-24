@@ -1,3 +1,4 @@
+import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:aegis_docs/core/services/file_storage_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -13,23 +14,6 @@ part 'document_providers.g.dart';
 @Riverpod(keepAlive: true)
 FilePickerService filePickerService(Ref ref) {
   return FilePickerService();
-}
-
-@Riverpod(keepAlive: true)
-DocumentRepository documentRepository(Ref ref) {
-  final filePicker = ref.watch(filePickerServiceProvider);
-  final fileStorage = ref.watch(fileStorageServiceProvider);
-  final imageProcessor = ref.watch(imageProcessorProvider);
-  final nativeCompression = ref.watch(nativeCompressionServiceProvider);
-  final pdfProcessor = ref.watch(pdfProcessorProvider);
-
-  return DocumentRepository(
-    fileStorageService: fileStorage,
-    filePickerService: filePicker,
-    imageProcessor: imageProcessor,
-    pdfProcessor: pdfProcessor,
-    nativeCompressionService: nativeCompression,
-  );
 }
 
 @Riverpod(keepAlive: true)
@@ -50,4 +34,31 @@ PdfProcessor pdfProcessor(Ref ref) {
 @Riverpod(keepAlive: true)
 NativeCompressionService nativeCompressionService(Ref ref) {
   return NativeCompressionService();
+}
+
+@Riverpod(keepAlive: true)
+Future<EncryptionService> encryptionService(Ref ref) async {
+  final service = EncryptionService();
+  await service.init();
+  return service;
+}
+
+@Riverpod(keepAlive: true)
+DocumentRepository documentRepository(Ref ref) {
+  final filePicker = ref.watch(filePickerServiceProvider);
+  final imageProcessor = ref.watch(imageProcessorProvider);
+  final pdfProcessor = ref.watch(pdfProcessorProvider);
+  final nativeCompression = ref.watch(nativeCompressionServiceProvider);
+  final fileStorage = ref.watch(fileStorageServiceProvider);
+
+  final encryption = ref.watch(encryptionServiceProvider).value!;
+
+  return DocumentRepository(
+    filePickerService: filePicker,
+    imageProcessor: imageProcessor,
+    pdfProcessor: pdfProcessor,
+    nativeCompressionService: nativeCompression,
+    fileStorageService: fileStorage,
+    encryptionService: encryption,
+  );
 }

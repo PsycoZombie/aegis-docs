@@ -99,8 +99,8 @@ class _TestImageFormatWidgetState extends ConsumerState<TestImageFormatWidget> {
               onPressed: () async {
                 await ref
                     .read(documentRepositoryProvider)
-                    .saveDocument(
-                      _convertedImage!,
+                    .saveEncryptedDocument(
+                      data: _convertedImage!,
                       fileName: 'formatted_image.$_selectedFormat',
                     );
                 ScaffoldMessenger.of(context).showSnackBar(

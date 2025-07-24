@@ -86,8 +86,8 @@ class _TestPdfToImagesWidgetState extends ConsumerState<TestPdfToImagesWidget> {
                 for (int i = 0; i < _generatedImages.length; i++) {
                   await ref
                       .read(documentRepositoryProvider)
-                      .saveDocument(
-                        _generatedImages[i],
+                      .saveEncryptedDocument(
+                        data: _generatedImages[i],
                         fileName: 'pdf_page_${i + 1}.png',
                       );
                 }
