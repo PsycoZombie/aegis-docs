@@ -94,29 +94,12 @@ final nativeCompressionServiceProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef NativeCompressionServiceRef = ProviderRef<NativeCompressionService>;
-String _$encryptionServiceHash() => r'16ebd8f99f2835c4af92b17317cb3c77e2c1096c';
-
-/// See also [encryptionService].
-@ProviderFor(encryptionService)
-final encryptionServiceProvider = FutureProvider<EncryptionService>.internal(
-  encryptionService,
-  name: r'encryptionServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$encryptionServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef EncryptionServiceRef = FutureProviderRef<EncryptionService>;
 String _$documentRepositoryHash() =>
-    r'd807b0f47d2bb8f80d2e9ea8accdb4f557fb16ec';
+    r'48b12b0bb3488fe14de45c2029d941106f0421a2';
 
 /// See also [documentRepository].
 @ProviderFor(documentRepository)
-final documentRepositoryProvider = Provider<DocumentRepository>.internal(
+final documentRepositoryProvider = FutureProvider<DocumentRepository>.internal(
   documentRepository,
   name: r'documentRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -128,6 +111,26 @@ final documentRepositoryProvider = Provider<DocumentRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef DocumentRepositoryRef = ProviderRef<DocumentRepository>;
+typedef DocumentRepositoryRef = FutureProviderRef<DocumentRepository>;
+String _$encryptionServiceControllerHash() =>
+    r'f3b83982ef9eb164679ce0f4951a778914ae9052';
+
+/// See also [EncryptionServiceController].
+@ProviderFor(EncryptionServiceController)
+final encryptionServiceControllerProvider =
+    AsyncNotifierProvider<
+      EncryptionServiceController,
+      EncryptionService
+    >.internal(
+      EncryptionServiceController.new,
+      name: r'encryptionServiceControllerProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$encryptionServiceControllerHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$EncryptionServiceController = AsyncNotifier<EncryptionService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -38,7 +38,8 @@ class HomeScreen extends ConsumerWidget {
               onRefresh: () => ref.read(walletProvider.notifier).refresh(),
               child: walletState.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('Error: $error')),
+                error: (error, stack) =>
+                    Center(child: Text('Error: $error $walletState')),
                 data: (files) {
                   if (files.isEmpty) {
                     return Container(

@@ -12,7 +12,6 @@ class EncryptionService {
 
   Future<void> init() async {
     if (_encrypter != null) return;
-
     final key = await _getOrCreateKey();
     _encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.ctr));
   }

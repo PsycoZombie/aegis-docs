@@ -6,7 +6,7 @@ part of 'wallet_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$documentDetailHash() => r'29fc485cc486c2b67dce368b128e59ff957398b7';
+String _$documentDetailHash() => r'dbd2c46b3a3d85ba00cc38378d19c9d88958a514';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -147,7 +147,7 @@ class _DocumentDetailProviderElement
   String get fileName => (origin as DocumentDetailProvider).fileName;
 }
 
-String _$walletHash() => r'619ccab0e54d6d8314dc0485c2ef773957eabf06';
+String _$walletHash() => r'56cff6cf8206e60b2ca84d279748588d14b82a2b';
 
 /// See also [Wallet].
 @ProviderFor(Wallet)

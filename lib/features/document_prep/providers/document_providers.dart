@@ -37,21 +37,25 @@ NativeCompressionService nativeCompressionService(Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-Future<EncryptionService> encryptionService(Ref ref) async {
-  final service = EncryptionService();
-  await service.init();
-  return service;
+class EncryptionServiceController extends _$EncryptionServiceController {
+  @override
+  Future<EncryptionService> build() async {
+    final service = EncryptionService();
+    await service.init();
+    return service;
+  }
 }
 
 @Riverpod(keepAlive: true)
-DocumentRepository documentRepository(Ref ref) {
+Future<DocumentRepository> documentRepository(Ref ref) async {
   final filePicker = ref.watch(filePickerServiceProvider);
   final imageProcessor = ref.watch(imageProcessorProvider);
   final pdfProcessor = ref.watch(pdfProcessorProvider);
   final nativeCompression = ref.watch(nativeCompressionServiceProvider);
   final fileStorage = ref.watch(fileStorageServiceProvider);
-
-  final encryption = ref.watch(encryptionServiceProvider).value!;
+  final encryption = await ref.watch(
+    encryptionServiceControllerProvider.future,
+  );
 
   return DocumentRepository(
     filePickerService: filePicker,

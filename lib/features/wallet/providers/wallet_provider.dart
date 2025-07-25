@@ -12,12 +12,12 @@ part 'wallet_provider.g.dart';
 class Wallet extends _$Wallet {
   @override
   Future<List<File>> build() async {
-    final repository = ref.read(documentRepositoryProvider);
+    final repository = await ref.read(documentRepositoryProvider.future);
     return repository.listEncryptedFiles();
   }
 
   Future<void> deleteDocument(String fileName) async {
-    final repository = ref.read(documentRepositoryProvider);
+    final repository = await ref.read(documentRepositoryProvider.future);
 
     state = const AsyncValue.loading();
 
@@ -27,7 +27,7 @@ class Wallet extends _$Wallet {
   }
 
   Future<void> refresh() async {
-    final repository = ref.read(documentRepositoryProvider);
+    final repository = await ref.read(documentRepositoryProvider.future);
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => repository.listEncryptedFiles());
   }
@@ -35,6 +35,6 @@ class Wallet extends _$Wallet {
 
 @riverpod
 Future<Uint8List?> documentDetail(Ref ref, {required String fileName}) async {
-  final repository = ref.read(documentRepositoryProvider);
+  final repository = await ref.read(documentRepositoryProvider.future);
   return repository.loadDecryptedDocument(fileName);
 }
