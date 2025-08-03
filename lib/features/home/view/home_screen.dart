@@ -1,56 +1,82 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../shared_widgets/app_scaffold.dart';
 import '../../wallet/providers/wallet_provider.dart';
-import '../../wallet/view/document_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
     final walletState = ref.watch(walletProvider);
 
     return AppScaffold(
       title: 'Aegis Docs',
-      actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () {})],
+      actions: [
+        // 1. Neumorphic Logout Button
+        NeumorphicButton(
+          style: NeumorphicStyle(
+            boxShape: NeumorphicBoxShape.circle(),
+            shape: NeumorphicShape.flat,
+          ),
+          padding: const EdgeInsets.all(12),
+          tooltip: 'Logout',
+          onPressed: () {
+            ref.read(localAuthProvider.notifier).logout();
+          },
+          child: Icon(
+            Icons.logout,
+            color: NeumorphicTheme.defaultTextColor(context),
+          ),
+        ),
+      ],
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              Icon(Icons.wallet_outlined, color: colorScheme.primary),
+              Icon(
+                Icons.wallet_outlined,
+                color: NeumorphicTheme.accentColor(context),
+              ),
               const SizedBox(width: 8),
-              Text('My Wallet', style: textTheme.headlineSmall),
+              NeumorphicText(
+                'My Wallet',
+                style: NeumorphicStyle(
+                  disableDepth: true,
+                  color: NeumorphicTheme.defaultTextColor(context),
+                ),
+                textStyle: NeumorphicTextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => ref.read(walletProvider.notifier).refresh(),
               child: walletState.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) =>
-                    Center(child: Text('Error: $error $walletState')),
+                // 2. Neumorphic Loading Indicator
+                loading: () =>
+                    const Center(child: NeumorphicProgressIndeterminate()),
+                error: (error, stack) => Center(child: Text('Error: $error')),
                 data: (files) {
                   if (files.isEmpty) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest.withAlpha(
-                          128,
+                    // 3. Neumorphic "Empty State" Container
+                    return Neumorphic(
+                      style: NeumorphicStyle(
+                        depth: -4, // Inset appearance
+                        boxShape: NeumorphicBoxShape.roundRect(
+                          BorderRadius.circular(16),
                         ),
-                        border: Border.all(
-                          color: colorScheme.outline.withAlpha(128),
-                        ),
-                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Center(
                         child: Text('Your saved documents will appear here.'),
@@ -69,7 +95,11 @@ class HomeScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final file = files[index];
                       final fileName = p.basename(file.path);
-                      return _DocumentCard(file: file, fileName: fileName);
+                      // 4. Use the new Neumorphic Document Card
+                      return _NeumorphicDocumentCard(
+                        file: file,
+                        fileName: fileName,
+                      );
                     },
                   );
                 },
@@ -78,21 +108,40 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      // 5. Neumorphic Floating Action Button
+      floatingActionButton: NeumorphicButton(
+        style: NeumorphicStyle(
+          boxShape: NeumorphicBoxShape.stadium(),
+          depth: 4,
+          color: NeumorphicTheme.defaultTextColor(context),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         onPressed: () {
-          context.push('/prep').then((_) {
+          context.push('/hub').then((_) {
             ref.read(walletProvider.notifier).refresh();
           });
         },
-        label: const Text('Start New Prep'),
-        icon: const Icon(Icons.add),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add, color: NeumorphicTheme.baseColor(context)),
+            const SizedBox(width: 8),
+            Text(
+              'Start New Prep',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: NeumorphicTheme.baseColor(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _DocumentCard extends ConsumerWidget {
-  const _DocumentCard({required this.file, required this.fileName});
+class _NeumorphicDocumentCard extends ConsumerWidget {
+  const _NeumorphicDocumentCard({required this.file, required this.fileName});
 
   final File file;
   final String fileName;
@@ -100,25 +149,89 @@ class _DocumentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPdf = fileName.toLowerCase().endsWith('.pdf');
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => DocumentDetailScreen(fileName: fileName),
+
+    // 1. The root is now a NeumorphicButton to make the whole card tappable.
+    return NeumorphicButton(
+      style: NeumorphicStyle(
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(12)),
+        depth: 4,
+      ),
+      padding: EdgeInsets.zero, // Remove padding to allow Stack to fill
+      onPressed: () {
+        context.push('/document/$fileName');
+      },
+      child: Stack(
+        children: [
+          // Main content
+          Center(
+            child: Icon(
+              isPdf ? Icons.picture_as_pdf : Icons.image,
+              size: 60,
+              // 2. Replaced withOpacity() with Color.fromARGB()
+              color: isPdf
+                  ? const Color.fromARGB(
+                      178,
+                      239,
+                      83,
+                      80,
+                    ) // Colors.red.shade300
+                  : const Color.fromARGB(
+                      178,
+                      100,
+                      181,
+                      246,
+                    ), // Colors.blue.shade300
             ),
-          );
-        },
-        child: GridTile(
-          header: Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+          ),
+          // Footer
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            // 3. Wrapped in ClipRRect to get rounded bottom corners
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+              child: Neumorphic(
+                style: NeumorphicStyle(
+                  depth: 0,
+                  color: Colors.black.withAlpha(
+                    (0.4 * 255).toInt(),
+                  ), // withOpacity is fine here
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
+                child: Text(
+                  fileName,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ),
+          ),
+          // Delete Button
+          Positioned(
+            top: 4,
+            right: 4,
+            child: NeumorphicButton(
+              style: const NeumorphicStyle(
+                boxShape: NeumorphicBoxShape.circle(),
+                shape: NeumorphicShape.flat,
+                depth: 2,
+              ),
+              padding: const EdgeInsets.all(8),
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     title: const Text('Delete Document?'),
                     content: Text(
                       'Are you sure you want to delete "$fileName"?',
@@ -126,7 +239,7 @@ class _DocumentCard extends ConsumerWidget {
                     actions: [
                       TextButton(
                         child: const Text('Cancel'),
-                        onPressed: () => Navigator.of(ctx).pop(),
+                        onPressed: () => context.pop(),
                       ),
                       TextButton(
                         child: const Text(
@@ -137,25 +250,21 @@ class _DocumentCard extends ConsumerWidget {
                           ref
                               .read(walletProvider.notifier)
                               .deleteDocument(fileName);
-                          Navigator.of(ctx).pop();
+                          context.pop();
                         },
                       ),
                     ],
                   ),
                 );
               },
+              child: const Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+                size: 20,
+              ),
             ),
           ),
-          footer: GridTileBar(
-            backgroundColor: Colors.black45,
-            title: Text(fileName, overflow: TextOverflow.ellipsis),
-          ),
-          child: Icon(
-            isPdf ? Icons.picture_as_pdf : Icons.image,
-            size: 60,
-            color: isPdf ? Colors.red.shade300 : Colors.blue.shade300,
-          ),
-        ),
+        ],
       ),
     );
   }

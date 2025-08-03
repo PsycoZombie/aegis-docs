@@ -1,17 +1,21 @@
-import 'package:aegis_docs/features/document_prep/view/widgets/resize_panel.dart';
-import 'package:flutter/material.dart';
+// file: features/document_prep/view/feature_test_hub_screen.dart
+
+import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:go_router/go_router.dart';
 
 class FeatureTestHubScreen extends StatelessWidget {
   const FeatureTestHubScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Aegis Docs Feature Tests')),
+    return AppScaffold(
+      title: 'Select a Workflow',
       body: ListView(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          _FeatureButton(title: '3. Resize Image', child: const ResizePanel()),
+        children: const [
+          _FeatureButton(title: 'Resize Image', path: '/hub/resize'),
+          // You can add more buttons for other features here
         ],
       ),
     );
@@ -20,35 +24,27 @@ class FeatureTestHubScreen extends StatelessWidget {
 
 class _FeatureButton extends StatelessWidget {
   final String title;
-  final Widget child;
+  final String path;
 
-  const _FeatureButton({required this.title, required this.child});
+  const _FeatureButton({required this.title, required this.path});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(16),
-          textStyle: const TextStyle(fontSize: 16),
-        ),
-        child: Text(title),
+      // Use NeumorphicButton for a consistent look
+      child: NeumorphicButton(
+        padding: const EdgeInsets.all(16),
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => Scaffold(
-                appBar: AppBar(title: Text(title)),
-                body: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: child,
-                  ),
-                ),
-              ),
-            ),
-          );
+          context.push(path);
         },
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            color: NeumorphicTheme.defaultTextColor(context),
+          ),
+        ),
       ),
     );
   }

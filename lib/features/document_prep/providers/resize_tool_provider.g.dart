@@ -7,7 +7,7 @@ part of 'resize_tool_provider.dart';
 // **************************************************************************
 
 String _$resizeToolViewModelHash() =>
-    r'c72bca0831dafe99a6280cf05e2bcd2f10a4524e';
+    r'6c94f1a42ccc6c37633a9e3db4efd07735f97594';
 
 /// ViewModel for the Resize Tool.
 ///

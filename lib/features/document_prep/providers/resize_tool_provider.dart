@@ -17,27 +17,31 @@ class ResizeState {
   final Uint8List? resizedImage;
   final String? originalFileName;
   final Size? originalDimensions;
+  final bool isAspectRatioLocked;
 
   const ResizeState({
     this.originalImage,
     this.resizedImage,
     this.originalFileName,
     this.originalDimensions,
+    this.isAspectRatioLocked = true,
   });
 
   // Helper method to create a copy of the state with new values.
   ResizeState copyWith({
     Uint8List? originalImage,
-    Uint8List? resizedImage,
+    ValueGetter<Uint8List?>? resizedImage,
     String? originalFileName,
     Size? originalDimensions,
+    bool? isAspectRatioLocked,
     // Use ValueGetter to allow explicitly setting a property to null
   }) {
     return ResizeState(
       originalImage: originalImage ?? this.originalImage,
-      resizedImage: resizedImage ?? this.resizedImage,
+      resizedImage: resizedImage != null ? resizedImage() : this.resizedImage,
       originalFileName: originalFileName ?? this.originalFileName,
       originalDimensions: originalDimensions ?? this.originalDimensions,
+      isAspectRatioLocked: isAspectRatioLocked ?? this.isAspectRatioLocked,
     );
   }
 }
@@ -93,7 +97,8 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
         height: height,
       );
       // Return a new state with the resized image included
-      return state.value!.copyWith(resizedImage: resizedBytes);
+      // CORRECT
+      return state.value!.copyWith(resizedImage: () => resizedBytes);
     });
   }
 
@@ -118,5 +123,31 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
       await repo.saveEncryptedDocument(fileName: fileName, data: resizedBytes);
       return currentState;
     });
+  }
+
+  /// Toggles the aspect ratio lock on or off.
+  void toggleAspectRatioLock() {
+    state = AsyncValue.data(
+      state.value!.copyWith(
+        isAspectRatioLocked: !state.value!.isAspectRatioLocked,
+      ),
+    );
+  }
+
+  /// Applies a preset scaling factor to the original image dimensions.
+  void applyPreset({required double scale}) {
+    final originalDims = state.value?.originalDimensions;
+    if (originalDims == null) return;
+
+    final newWidth = (originalDims.width * scale).round();
+    final newHeight = (originalDims.height * scale).round();
+
+    // Call the existing resize method with the new dimensions
+    resizeImage(width: newWidth, height: newHeight);
+  }
+
+  /// Clears the resized image preview.
+  void clearResizedImage() {
+    state = AsyncValue.data(state.value!.copyWith(resizedImage: () => null));
   }
 }

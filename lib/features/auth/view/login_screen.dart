@@ -1,6 +1,8 @@
+// file: features/auth/view/login_screen.dart
+
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthStateListener extends ConsumerWidget {
@@ -9,14 +11,27 @@ class AuthStateListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     ref.listen<AuthState>(localAuthProvider, (previous, next) {
       if (next == AuthState.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Authentication Failed. Please try again.'),
-            backgroundColor: colorScheme.error,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Neumorphic(
+              style: NeumorphicStyle(
+                color: Colors.red[400],
+                depth: 5,
+                boxShape: NeumorphicBoxShape.roundRect(
+                  BorderRadius.circular(12),
+                ),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: const Text(
+                'Authentication Failed. Please try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ),
         );
       }
@@ -32,10 +47,10 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(localAuthProvider);
     final isLoading = authState == AuthState.loading;
+    // The theme is now correctly inherited from the router's NeumorphicTheme.
+    final currentNeumorphicTheme = NeumorphicTheme.currentTheme(context);
 
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
+    // The local NeumorphicTheme and Builder wrappers are no longer needed.
     return AuthStateListener(
       child: AppScaffold(
         title: '',
@@ -43,29 +58,56 @@ class LoginScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
-              Icons.lock_person_rounded,
-              size: 80,
-              color: colorScheme.primary,
+            Neumorphic(
+              style: const NeumorphicStyle(
+                shape: NeumorphicShape.concave,
+                boxShape: NeumorphicBoxShape.circle(),
+                depth: 8,
+                intensity: 0.7,
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Icon(
+                Icons.lock_person_rounded,
+                size: 80,
+                color: currentNeumorphicTheme.accentColor,
+              ),
             ),
             const SizedBox(height: 24),
-            Text(
+            // Flat, crisp text for the title
+            NeumorphicText(
               'Authentication Required',
+              style: NeumorphicStyle(
+                color: currentNeumorphicTheme.defaultTextColor,
+                disableDepth: true,
+              ),
               textAlign: TextAlign.center,
-              style: textTheme.headlineSmall,
+              textStyle: NeumorphicTextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'Please use your device credentials (fingerprint, face, PIN, etc.) to continue.',
               textAlign: TextAlign.center,
-              style: textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: TextStyle(
+                fontSize: 16,
+                color: currentNeumorphicTheme.defaultTextColor,
               ),
             ),
             const SizedBox(height: 40),
-            ElevatedButton(
+            NeumorphicButton(
+              minDistance: isLoading ? 0 : -4,
+              style: NeumorphicStyle(
+                depth: isLoading ? 0 : 4,
+                color: currentNeumorphicTheme.accentColor,
+                boxShape: NeumorphicBoxShape.roundRect(
+                  BorderRadius.circular(12),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               onPressed: isLoading
-                  ? null
+                  ? null // Disables the button automatically
                   : () {
                       ref
                           .read(localAuthProvider.notifier)
@@ -75,17 +117,32 @@ class LoginScreen extends ConsumerWidget {
                   ? SizedBox(
                       height: 24,
                       width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: colorScheme.onPrimary,
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: currentNeumorphicTheme.baseColor,
+                          ),
+                        ),
                       ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.fingerprint),
+                        Icon(
+                          Icons.fingerprint,
+                          color: currentNeumorphicTheme.baseColor,
+                        ),
                         const SizedBox(width: 8),
-                        const Text('Unlock App'),
+                        Text(
+                          'Unlock App',
+                          style: TextStyle(
+                            color: currentNeumorphicTheme.baseColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
             ),
