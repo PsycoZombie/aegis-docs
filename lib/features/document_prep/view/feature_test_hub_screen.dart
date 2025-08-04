@@ -14,6 +14,7 @@ class FeatureTestHubScreen extends StatelessWidget {
         children: const [
           _FeatureButton(title: 'Resize Image', path: '/hub/resize'),
           _FeatureButton(title: 'Compress Image', path: '/hub/compress'),
+          _FeatureButton(title: 'Crop & Edit Image', path: '/hub/edit'),
         ],
       ),
     );

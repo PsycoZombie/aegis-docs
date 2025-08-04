@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show ThemeData;
 import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
@@ -83,15 +84,32 @@ class ImageProcessor {
     }, [imageBytes, format]);
   }
 
-  Future<Uint8List?> crop({required Uint8List imageBytes}) async {
+  Future<Uint8List?> crop({
+    required Uint8List imageBytes,
+    required ThemeData theme,
+  }) async {
     final tempDir = await getTemporaryDirectory();
     final tempPath = '${tempDir.path}/temp_crop_image.jpg';
     final file = await File(tempPath).writeAsBytes(imageBytes);
+    final colorScheme = theme.colorScheme;
 
     final CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: file.path,
       uiSettings: [
-        AndroidUiSettings(toolbarTitle: 'Crop Image', lockAspectRatio: false),
+        // THE FIX: We now provide specific colors for the native UI
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: colorScheme.primary,
+          statusBarColor: colorScheme.primary,
+          toolbarWidgetColor: colorScheme.onPrimary,
+          backgroundColor: theme.scaffoldBackgroundColor,
+          activeControlsWidgetColor: colorScheme.secondary,
+          cropFrameColor: colorScheme.primary,
+          cropGridColor: colorScheme.onPrimary.withAlpha((0.7 * 255).toInt()),
+          lockAspectRatio: false,
+          initAspectRatio: CropAspectRatioPreset.original,
+        ),
+        // You can also add IOSUiSettings here if needed
       ],
     );
 
@@ -102,5 +120,18 @@ class ImageProcessor {
     }
 
     return null;
+  }
+
+  Uint8List _grayscaleIsolate(Uint8List imageBytes) {
+    final image = img.decodeImage(imageBytes);
+    if (image == null) {
+      throw Exception("Failed to decode image for grayscale filter.");
+    }
+    final grayscaleImage = img.grayscale(image);
+    return Uint8List.fromList(img.encodeJpg(grayscaleImage));
+  }
+
+  Future<Uint8List> applyGrayscale({required Uint8List imageBytes}) async {
+    return await compute(_grayscaleIsolate, imageBytes);
   }
 }

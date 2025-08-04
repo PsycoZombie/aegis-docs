@@ -1,6 +1,7 @@
 import 'package:aegis_docs/features/auth/view/login_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/feature_test_hub_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_compression_screen.dart';
+import 'package:aegis_docs/features/document_prep/view/screens/image_editing_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_resize_screen.dart';
 import 'package:aegis_docs/features/home/view/home_screen.dart';
 import 'package:aegis_docs/features/wallet/view/document_detail_screen.dart';
@@ -36,6 +37,10 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/compress',
         builder: (context, state) => const ImageCompressionScreen(),
+      ),
+      GoRoute(
+        path: '/hub/edit',
+        builder: (context, state) => const ImageEditingScreen(),
       ),
     ],
   ),

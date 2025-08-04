@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+
 import '../../core/media_processing/file_picker_service.dart';
 import '../../core/media_processing/image_processor.dart';
 import '../../core/media_processing/pdf_processor.dart';
@@ -44,8 +46,10 @@ class DocumentRepository {
   );
   Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 85}) =>
       _imageProcessor.compressImage(imageBytes: imageBytes, quality: quality);
-  Future<Uint8List?> cropImage(Uint8List imageBytes) =>
-      _imageProcessor.crop(imageBytes: imageBytes);
+  Future<Uint8List?> cropImage(
+    Uint8List imageBytes, {
+    required ThemeData theme,
+  }) => _imageProcessor.crop(imageBytes: imageBytes, theme: theme);
   Future<Uint8List> changeImageFormat(
     Uint8List imageBytes, {
     required String format,
