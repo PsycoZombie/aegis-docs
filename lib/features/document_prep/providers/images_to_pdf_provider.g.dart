@@ -1,30 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'image_editing_provider.dart';
+part of 'images_to_pdf_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$imageEditingViewModelHash() =>
-    r'50ffb735f86b659d7f2735cd7b76c5f21c4965fd';
+String _$imagesToPdfViewModelHash() =>
+    r'089eb86625e8bb6c48f844660456b2ad1ba1dbfa';
 
-/// See also [ImageEditingViewModel].
-@ProviderFor(ImageEditingViewModel)
-final imageEditingViewModelProvider =
+/// See also [ImagesToPdfViewModel].
+@ProviderFor(ImagesToPdfViewModel)
+final imagesToPdfViewModelProvider =
     AutoDisposeAsyncNotifierProvider<
-      ImageEditingViewModel,
-      ImageEditingState
+      ImagesToPdfViewModel,
+      ImagesToPdfState
     >.internal(
-      ImageEditingViewModel.new,
-      name: r'imageEditingViewModelProvider',
+      ImagesToPdfViewModel.new,
+      name: r'imagesToPdfViewModelProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$imageEditingViewModelHash,
+          : _$imagesToPdfViewModelHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$ImageEditingViewModel = AutoDisposeAsyncNotifier<ImageEditingState>;
+typedef _$ImagesToPdfViewModel = AutoDisposeAsyncNotifier<ImagesToPdfState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

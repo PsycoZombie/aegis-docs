@@ -58,6 +58,45 @@ Uint8List _imageToPdfIsolate(Uint8List imageBytes) {
   return Uint8List.fromList(bytes);
 }
 
+Uint8List _imagesToPdfIsolate(List<Uint8List> imageBytesList) {
+  final pdf = sync_pdf.PdfDocument();
+  pdf.pageSettings.margins.all = 0;
+
+  for (final imageBytes in imageBytesList) {
+    final page = pdf.pages.add();
+    final image = sync_pdf.PdfBitmap(imageBytes);
+    final pageSize = page.getClientSize();
+
+    final imageAspectRatio = image.width / image.height;
+    final pageAspectRatio = pageSize.width / pageSize.height;
+
+    Rect drawRect;
+    if (imageAspectRatio > pageAspectRatio) {
+      final double scaledHeight = pageSize.width / imageAspectRatio;
+      drawRect = Rect.fromLTWH(
+        0,
+        (pageSize.height - scaledHeight) / 2,
+        pageSize.width,
+        scaledHeight,
+      );
+    } else {
+      final double scaledWidth = pageSize.height * imageAspectRatio;
+      drawRect = Rect.fromLTWH(
+        (pageSize.width - scaledWidth) / 2,
+        0,
+        scaledWidth,
+        pageSize.height,
+      );
+    }
+
+    page.graphics.drawImage(image, drawRect);
+  }
+
+  final bytes = pdf.saveSync();
+  pdf.dispose();
+  return Uint8List.fromList(bytes);
+}
+
 class PdfProcessor {
   Future<List<Uint8List>> convertPdfToImages({
     required Uint8List pdfBytes,
@@ -83,5 +122,11 @@ class PdfProcessor {
 
   Future<Uint8List> convertImageToPdf({required Uint8List imageBytes}) async {
     return await compute(_imageToPdfIsolate, imageBytes);
+  }
+
+  Future<Uint8List> convertImagesToPdf({
+    required List<Uint8List> imageBytesList,
+  }) async {
+    return await compute(_imagesToPdfIsolate, imageBytesList);
   }
 }

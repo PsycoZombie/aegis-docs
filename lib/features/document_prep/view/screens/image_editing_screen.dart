@@ -1,5 +1,3 @@
-// file: features/document_prep/view/screens/image_editing_screen.dart
-
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,18 +59,15 @@ class ImageEditingScreen extends ConsumerWidget {
   ) {
     return Column(
       children: [
-        // The main image preview area
         Expanded(
           child: Center(
             child: InteractiveViewer(child: Image.memory(state.currentImage!)),
           ),
         ),
-        // The editing toolbar at the bottom
         EditingToolbar(
           onCrop: () => notifier.cropImage(context: context),
           onUndo: state.editHistory.isNotEmpty ? () => notifier.undo() : null,
           onGrayscale: notifier.applyGrayscaleFilter,
-          // We can add callbacks for other tools here later
         ),
       ],
     );

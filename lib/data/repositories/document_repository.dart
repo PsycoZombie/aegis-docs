@@ -35,6 +35,8 @@ class DocumentRepository {
 
   Future<PickedFile?> pickImage() => _filePickerService.pickImage();
   Future<PickedFile?> pickPdf() => _filePickerService.pickPdf();
+  Future<List<PickedFile>> pickMultipleImages() =>
+      _filePickerService.pickMultipleImages();
   Future<Uint8List> resizeImage(
     Uint8List imageBytes, {
     required int width,
@@ -70,6 +72,9 @@ class DocumentRepository {
       preserveText: preserveText,
     );
   }
+
+  Future<Uint8List> convertImagesToPdf(List<Uint8List> imageBytesList) =>
+      _pdfProcessor.convertImagesToPdf(imageBytesList: imageBytesList);
 
   Future<String?> saveDocument(Uint8List bytes, {required String fileName}) =>
       _fileStorageService.saveFile(bytes, fileName);

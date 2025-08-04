@@ -96,7 +96,6 @@ class ImageProcessor {
     final CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: file.path,
       uiSettings: [
-        // THE FIX: We now provide specific colors for the native UI
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',
           toolbarColor: colorScheme.primary,
@@ -109,7 +108,6 @@ class ImageProcessor {
           lockAspectRatio: false,
           initAspectRatio: CropAspectRatioPreset.original,
         ),
-        // You can also add IOSUiSettings here if needed
       ],
     );
 

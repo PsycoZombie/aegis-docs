@@ -1,10 +1,8 @@
-// file: features/document_prep/view/widgets/image_editing/editing_toolbar.dart
-
 import 'package:flutter/material.dart';
 
 class EditingToolbar extends StatelessWidget {
   final VoidCallback onCrop;
-  final VoidCallback? onUndo; // Nullable because it can be disabled
+  final VoidCallback? onUndo;
   final VoidCallback? onGrayscale;
 
   const EditingToolbar({
@@ -24,22 +22,13 @@ class EditingToolbar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _ToolButton(
-            icon: Icons.undo,
-            label: 'Undo',
-            // Disable the button if onUndo is null
-            onPressed: onUndo,
-          ),
+          _ToolButton(icon: Icons.undo, label: 'Undo', onPressed: onUndo),
           _ToolButton(icon: Icons.edit, label: 'Edit', onPressed: onCrop),
           _ToolButton(
             icon: Icons.filter_b_and_w,
             label: 'B & W',
             onPressed: onGrayscale,
           ),
-          // We can add more buttons here later
-          // _ToolButton(icon: Icons.rotate_90_degrees_ccw, label: 'Rotate'),
-          // _ToolButton(icon: Icons.draw, label: 'Draw'),
-          // _ToolButton(icon: Icons.blur_on, label: 'Blur'),
         ],
       ),
     );

@@ -1,16 +1,13 @@
-// file: features/document_prep/providers/image_editing_provider.dart
-
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart'; // Import material.dart
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'document_providers.dart';
 
 part 'image_editing_provider.g.dart';
 
-// ImageEdit and ImageEditingState classes remain the same...
 class ImageEdit {
   final Uint8List bytes;
   const ImageEdit(this.bytes);
@@ -105,17 +102,19 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
+      ThemeData theme;
+      if (context.mounted) {
+        theme = Theme.of(context);
 
-      final theme = Theme.of(context);
+        final croppedBytes = await repo.cropImage(
+          currentImageBytes,
+          theme: theme,
+        );
 
-      final croppedBytes = await repo.cropImage(
-        currentImageBytes,
-        theme: theme,
-      );
+        if (croppedBytes == null) return state.value!;
 
-      if (croppedBytes == null) return state.value!;
-
-      _applyNewEdit(croppedBytes);
+        _applyNewEdit(croppedBytes);
+      }
       return state.value!;
     });
   }
