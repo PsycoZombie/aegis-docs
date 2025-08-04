@@ -20,12 +20,10 @@ class DocumentDetailScreen extends ConsumerWidget {
       title: fileName,
       body: Center(
         child: documentAsyncValue.when(
-          // 1. Reverted to CircularProgressIndicator
           loading: () => const CircularProgressIndicator(),
           error: (error, stack) => Text('Error loading document: $error'),
           data: (decryptedData) {
             if (decryptedData == null) {
-              // 2. Reverted to standard Text widget
               return const Text('Could not load or decrypt the document.');
             }
 
@@ -35,11 +33,9 @@ class DocumentDetailScreen extends ConsumerWidget {
                     child: Image.memory(decryptedData, fit: BoxFit.contain),
                   );
 
-            // 3. Reverted to a Card for a clean container with elevation
             return Card(
               elevation: 4,
-              clipBehavior:
-                  Clip.antiAlias, // Ensures content respects the shape
+              clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

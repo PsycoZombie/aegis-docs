@@ -94,9 +94,7 @@ class DocumentRepository {
     await _fileStorageService.deleteFromPrivateDirectory(fileName);
   }
 
-  /// Lists all files currently stored in the app's private, encrypted wallet.
   Future<List<File>> listEncryptedFiles() async {
-    // CORRECTED: Called the correct method name.
     return _fileStorageService.listPrivateFiles();
   }
 }

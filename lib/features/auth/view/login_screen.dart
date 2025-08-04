@@ -1,5 +1,3 @@
-// file: features/auth/view/login_screen.dart
-
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +42,6 @@ class LoginScreen extends ConsumerWidget {
       child: AppScaffold(
         title: 'Approve Sign in',
         body: Padding(
-          // Add padding here, inside the screen
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

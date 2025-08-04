@@ -54,10 +54,13 @@ class HomeScreen extends ConsumerWidget {
                     if (files.isEmpty) {
                       return Container(
                         decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest
-                              .withOpacity(0.5),
+                          color: colorScheme.surfaceContainerHighest.withAlpha(
+                            (0.5 * 255).toInt(),
+                          ),
                           border: Border.all(
-                            color: colorScheme.outline.withOpacity(0.5),
+                            color: colorScheme.outline.withAlpha(
+                              (0.5 * 255).toInt(),
+                            ),
                           ),
                           borderRadius: BorderRadius.circular(16),
                         ),
