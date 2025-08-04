@@ -10,14 +10,35 @@ class FeatureTestHubScreen extends StatelessWidget {
     return AppScaffold(
       title: 'Select a Workflow',
       body: ListView(
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              context.push('/hub/resize');
-            },
-            child: Text('Reize Image'),
-          ),
+        padding: const EdgeInsets.all(16.0),
+        children: const [
+          _FeatureButton(title: 'Resize Image', path: '/hub/resize'),
+          _FeatureButton(title: 'Compress Image', path: '/hub/compress'),
         ],
+      ),
+    );
+  }
+}
+
+class _FeatureButton extends StatelessWidget {
+  final String title;
+  final String path;
+
+  const _FeatureButton({required this.title, required this.path});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(fontSize: 16),
+        ),
+        child: Text(title),
+        onPressed: () {
+          context.push(path);
+        },
       ),
     );
   }

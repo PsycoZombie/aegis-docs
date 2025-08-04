@@ -57,7 +57,6 @@ class ImageProcessor {
     required Uint8List imageBytes,
     int quality = 85,
   }) async {
-    // Clamp the quality value to be safe
     final clampedQuality = quality.clamp(0, 100);
     return await compute(
       _compressIsolate,

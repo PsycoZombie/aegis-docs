@@ -5,7 +5,6 @@ import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Assuming your provider file and state model are in this location
 import '../../providers/resize_tool_provider.dart';
 
 class ImageResizeScreen extends ConsumerStatefulWidget {
@@ -123,36 +122,38 @@ class _ImageResizePanelState extends ConsumerState<ImageResizeScreen> {
   ) {
     final hasOriginal = state.originalImage != null;
     if (!hasOriginal) {
-      return Center(
-        child: FilledButton.icon(
-          icon: const Icon(Icons.add_photo_alternate_outlined, size: 24),
-          label: const Text('Pick an Image'),
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            textStyle: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      return SingleChildScrollView(
+        child: Center(
+          child: FilledButton.icon(
+            icon: const Icon(Icons.add_photo_alternate_outlined, size: 24),
+            label: const Text('Pick an Image'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              textStyle: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => notifier.pickImage(),
           ),
-          onPressed: () => notifier.pickImage(),
         ),
       );
     }
 
-    // THE FIX for sticky footer: Use a Column with spaceBetween.
     return Column(
-      key: const ValueKey("content"),
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Group the top content together.
-        Column(
-          children: [
-            ImagePreviewSection(state: state),
-            const SizedBox(height: 12),
-            SizeReductionInfo(state: state),
-          ],
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                ImagePreviewSection(state: state),
+                const SizedBox(height: 12),
+                SizeReductionInfo(state: state),
+              ],
+            ),
+          ),
         ),
-        // This will now be pushed to the bottom.
+        const SizedBox(height: 16),
         OptionsCard(
           formKey: _formKey,
           widthController: _widthController,

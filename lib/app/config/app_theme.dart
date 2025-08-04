@@ -95,6 +95,16 @@ final ThemeData lightTheme = ThemeData(
     ),
   ),
 
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: const Color(0xFF3A86FF),
+      side: const BorderSide(color: Color(0xFF3A86FF), width: 1.5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+    ),
+  ),
+
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
     backgroundColor: Color(0xFF0065FF),
     foregroundColor: Color(0xFFFFFFFF),

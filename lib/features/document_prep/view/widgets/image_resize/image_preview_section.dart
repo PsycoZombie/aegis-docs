@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
-import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/full_screen_image_view.dart';
+import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
 
 class ImagePreviewSection extends StatelessWidget {
@@ -15,7 +15,6 @@ class ImagePreviewSection extends StatelessWidget {
       children: [
         Text("Image Preview", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        // THE FIX for larger previews: Use a Row with Expanded widgets.
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -37,7 +36,7 @@ class ImagePreviewSection extends StatelessWidget {
                         label: 'Resized',
                         imageBytes: state.resizedImage!,
                       )
-                    : const SizedBox(), // Empty space if no resized image
+                    : const SizedBox(),
               ),
             ),
           ],
@@ -62,8 +61,6 @@ class _ImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // THE FIX for Hero animation: Wrap with GestureDetector and Hero.
-    // A unique tag is created for the animation.
     final heroTag = '$label-${imageBytes.hashCode}';
 
     return GestureDetector(
@@ -87,7 +84,6 @@ class _ImagePreview extends StatelessWidget {
               child: Image.memory(
                 imageBytes,
                 fit: BoxFit.contain,
-                // Make the image expand horizontally
                 width: double.infinity,
               ),
             ),
