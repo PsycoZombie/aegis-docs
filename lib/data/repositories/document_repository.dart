@@ -105,4 +105,23 @@ class DocumentRepository {
   Future<List<File>> listEncryptedFiles() async {
     return _fileStorageService.listPrivateFiles();
   }
+
+  Future<bool> isPdfEncrypted(Uint8List pdfBytes) =>
+      _pdfProcessor.isPdfEncrypted(pdfBytes: pdfBytes);
+
+  Future<Uint8List> lockPdf(Uint8List pdfBytes, {required String password}) =>
+      _pdfProcessor.lockPdf(pdfBytes: pdfBytes, password: password);
+
+  Future<Uint8List> unlockPdf(Uint8List pdfBytes, {required String password}) =>
+      _pdfProcessor.unlockPdf(pdfBytes: pdfBytes, password: password);
+
+  Future<Uint8List> changePdfPassword(
+    Uint8List pdfBytes, {
+    required String oldPassword,
+    required String newPassword,
+  }) => _pdfProcessor.changePdfPassword(
+    pdfBytes: pdfBytes,
+    oldPassword: oldPassword,
+    newPassword: newPassword,
+  );
 }

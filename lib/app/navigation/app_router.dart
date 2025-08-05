@@ -6,6 +6,7 @@ import 'package:aegis_docs/features/document_prep/view/screens/image_format_scre
 import 'package:aegis_docs/features/document_prep/view/screens/image_resize_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/images_to_pdf_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/pdf_compression_screen.dart';
+import 'package:aegis_docs/features/document_prep/view/screens/pdf_security_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/pdf_to_images_screen.dart';
 import 'package:aegis_docs/features/home/view/home_screen.dart';
 import 'package:aegis_docs/features/wallet/view/document_detail_screen.dart';
@@ -61,6 +62,10 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/image-format',
         builder: (context, state) => const ImageFormatScreen(),
+      ),
+      GoRoute(
+        path: '/hub/pdf-security',
+        builder: (context, state) => const PdfSecurityScreen(),
       ),
     ],
   ),

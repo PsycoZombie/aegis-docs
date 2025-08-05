@@ -19,6 +19,7 @@ class FeatureTestHubScreen extends StatelessWidget {
           _FeatureButton(title: 'PDF to Images', path: '/hub/pdf-to-images'),
           _FeatureButton(title: 'Compress PDF', path: '/hub/pdf-compression'),
           _FeatureButton(title: 'Change Image Type', path: '/hub/image-format'),
+          _FeatureButton(title: 'PDF Security', path: '/hub/pdf-security'),
         ],
       ),
     );

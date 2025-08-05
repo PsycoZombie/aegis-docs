@@ -1,30 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'image_format_provider.dart';
+part of 'pdf_security_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$imageFormatViewModelHash() =>
-    r'cb730a285cdf009c4ba7be6befa8cce6b1ad5909';
+String _$pdfSecurityViewModelHash() =>
+    r'608fc5319cab4ac1fa83b7a3581d115e3adf4ba0';
 
-/// See also [ImageFormatViewModel].
-@ProviderFor(ImageFormatViewModel)
-final imageFormatViewModelProvider =
+/// See also [PdfSecurityViewModel].
+@ProviderFor(PdfSecurityViewModel)
+final pdfSecurityViewModelProvider =
     AutoDisposeAsyncNotifierProvider<
-      ImageFormatViewModel,
-      ImageFormatState
+      PdfSecurityViewModel,
+      PdfSecurityState
     >.internal(
-      ImageFormatViewModel.new,
-      name: r'imageFormatViewModelProvider',
+      PdfSecurityViewModel.new,
+      name: r'pdfSecurityViewModelProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$imageFormatViewModelHash,
+          : _$pdfSecurityViewModelHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$ImageFormatViewModel = AutoDisposeAsyncNotifier<ImageFormatState>;
+typedef _$PdfSecurityViewModel = AutoDisposeAsyncNotifier<PdfSecurityState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
