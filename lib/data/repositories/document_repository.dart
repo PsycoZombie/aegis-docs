@@ -83,7 +83,7 @@ class DocumentRepository {
     required String fileName,
     required Uint8List data,
   }) async {
-    final encryptedDataBytes = _encryptionService.encrypt(data);
+    final encryptedDataBytes = await _encryptionService.encrypt(data);
 
     await _fileStorageService.saveToPrivateDirectory(
       fileName: fileName,

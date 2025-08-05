@@ -4,6 +4,7 @@ import 'package:aegis_docs/features/document_prep/view/screens/image_compression
 import 'package:aegis_docs/features/document_prep/view/screens/image_editing_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_resize_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/images_to_pdf_screen.dart';
+import 'package:aegis_docs/features/document_prep/view/screens/pdf_to_images_screen.dart';
 import 'package:aegis_docs/features/home/view/home_screen.dart';
 import 'package:aegis_docs/features/wallet/view/document_detail_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -46,6 +47,10 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/images-to-pdf',
         builder: (context, state) => const ImagesToPdfScreen(),
+      ),
+      GoRoute(
+        path: '/hub/pdf-to-images',
+        builder: (context, state) => const PdfToImagesScreen(),
       ),
     ],
   ),
