@@ -3,8 +3,11 @@ import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/imag
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/size_reduction_info.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 class ImageResizeScreen extends ConsumerStatefulWidget {
   const ImageResizeScreen({super.key});
@@ -104,7 +107,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
     return AppScaffold(
       title: 'Resize Image',
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),
@@ -112,8 +115,19 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
             if (state.originalImage == null) {
               return Center(
                 child: FilledButton.icon(
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Select an Image'),
+                  icon: const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 24,
+                  ),
+                  label: const Text('Pick an Image'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    textStyle: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () => notifier.pickImage(),
                 ),
               );
@@ -151,6 +165,32 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
           heightController: _heightController,
           state: state,
           notifier: notifier,
+          onSave: () async {
+            final originalName = p.basenameWithoutExtension(
+              state.originalFileName!,
+            );
+            final extension = p.extension(state.originalFileName!);
+            final defaultName = 'resized_$originalName';
+
+            final newName = await showSaveOptionsDialog(
+              context,
+              defaultFileName: defaultName,
+              fileExtension: extension.isNotEmpty ? extension : '.jpg',
+            );
+
+            if (newName != null && context.mounted) {
+              await notifier.saveResizedImage(fileName: newName);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Image saved successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                context.pop();
+              }
+            }
+          },
         ),
       ],
     );

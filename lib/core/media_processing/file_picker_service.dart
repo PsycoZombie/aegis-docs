@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart' hide PickedFile;
 import 'package:path/path.dart' as p;
@@ -12,21 +14,50 @@ class FilePickerService {
 
   Future<PickedFile?> _processPickedFile(XFile file) async {
     try {
-      final originalBytes = await file.readAsBytes();
-      final sanitizedBytes = await FlutterImageCompress.compressWithList(
-        originalBytes,
-        format: CompressFormat.jpeg,
-        quality: 100,
-      );
+      final fileExtension = p.extension(file.path).toLowerCase();
+      Uint8List imageBytes;
+      String finalFileName = file.name;
 
-      final finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
+      const decodableFormats = [
+        '.jpg',
+        '.jpeg',
+        '.png',
+        '.gif',
+        '.bmp',
+        '.ico',
+        '.webp',
+        '.tiff',
+        '.tga',
+        '.psd',
+        '.pvr',
+        '.exr',
+        '.pnm',
+      ];
+
+      if (decodableFormats.contains(fileExtension)) {
+        imageBytes = await file.readAsBytes();
+      } else {
+        debugPrint(
+          'Unsupported format "$fileExtension" detected. Converting to JPG...',
+        );
+        final originalBytes = await file.readAsBytes();
+        imageBytes = await FlutterImageCompress.compressWithList(
+          originalBytes,
+          format: CompressFormat.jpeg,
+          quality: 100,
+        );
+        finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
+      }
 
       return PickedFile(
-        bytes: sanitizedBytes,
+        bytes: imageBytes,
         name: finalFileName,
         path: file.path,
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint(
+        'Failed to process or convert image format for ${file.name}: $e',
+      );
       return null;
     }
   }

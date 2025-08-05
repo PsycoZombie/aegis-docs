@@ -7,7 +7,7 @@ part of 'resize_tool_provider.dart';
 // **************************************************************************
 
 String _$resizeToolViewModelHash() =>
-    r'6c94f1a42ccc6c37633a9e3db4efd07735f97594';
+    r'1e33304da56279b32d9afecf2958ba18d05e0715';
 
 /// See also [ResizeToolViewModel].
 @ProviderFor(ResizeToolViewModel)

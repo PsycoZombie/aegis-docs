@@ -14,7 +14,16 @@ class FormatOptionsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final supportedFormats = ['jpg', 'png', 'gif', 'bmp'];
+    final supportedFormats = [
+      'jpg',
+      'png',
+      'gif',
+      'bmp',
+      'ico',
+      'tiff',
+      'tga',
+      'pvr',
+    ];
 
     return Card(
       child: Padding(

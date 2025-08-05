@@ -10,8 +10,9 @@ class _ResizePayload {
   final Uint8List imageBytes;
   final int width;
   final int height;
+  final String outputFormat;
 
-  _ResizePayload(this.imageBytes, this.width, this.height);
+  _ResizePayload(this.imageBytes, this.width, this.height, this.outputFormat);
 }
 
 class _CompressPayload {
@@ -31,7 +32,11 @@ Uint8List _resizeIsolate(_ResizePayload payload) {
     width: payload.width,
     height: payload.height,
   );
-  return Uint8List.fromList(img.encodeJpg(resized, quality: 85));
+  if (payload.outputFormat.toLowerCase() == '.png') {
+    return Uint8List.fromList(img.encodePng(resized));
+  } else {
+    return Uint8List.fromList(img.encodeJpg(resized, quality: 100));
+  }
 }
 
 Uint8List _compressIsolate(_CompressPayload payload) {
@@ -50,7 +55,6 @@ Uint8List _formatChangeIsolate(Map<String, dynamic> params) {
   if (image == null) {
     throw Exception("Failed to decode image for format conversion.");
   }
-
   switch (format.toLowerCase()) {
     case 'png':
       return Uint8List.fromList(img.encodePng(image));
@@ -58,9 +62,17 @@ Uint8List _formatChangeIsolate(Map<String, dynamic> params) {
       return Uint8List.fromList(img.encodeGif(image));
     case 'bmp':
       return Uint8List.fromList(img.encodeBmp(image));
+    case 'ico':
+      return Uint8List.fromList(img.encodeIco(image));
+    case 'tiff':
+      return Uint8List.fromList(img.encodeTiff(image));
+    case 'tga':
+      return Uint8List.fromList(img.encodeTga(image));
+    case 'pvr':
+      return Uint8List.fromList(img.encodePvr(image));
     case 'jpg':
     default:
-      return Uint8List.fromList(img.encodeJpg(image, quality: 90));
+      return Uint8List.fromList(img.encodeJpg(image));
   }
 }
 
@@ -69,10 +81,11 @@ class ImageProcessor {
     required Uint8List imageBytes,
     required int width,
     required int height,
+    required String outputFormat,
   }) async {
     return await compute(
       _resizeIsolate,
-      _ResizePayload(imageBytes, width, height),
+      _ResizePayload(imageBytes, width, height, outputFormat),
     );
   }
 

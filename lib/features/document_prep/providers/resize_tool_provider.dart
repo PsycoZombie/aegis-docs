@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'document_providers.dart';
@@ -73,30 +74,31 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
 
   Future<void> resizeImage({required int width, required int height}) async {
     final originalImageBytes = state.value?.originalImage;
+    final originalFileName = state.value?.originalFileName;
     if (originalImageBytes == null) return;
 
     state = AsyncLoading<ResizeState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final imageProcessor = ref.read(imageProcessorProvider);
+      final outputFormat = p.extension(originalFileName!);
       final resizedBytes = await imageProcessor.resize(
         imageBytes: originalImageBytes,
         width: width,
         height: height,
+        outputFormat: outputFormat.isNotEmpty ? outputFormat : '.jpg',
       );
       return state.value!.copyWith(resizedImage: () => resizedBytes);
     });
   }
 
-  Future<void> saveResizedImage() async {
-    if (state.value?.resizedImage == null ||
-        state.value?.originalFileName == null) {
-      throw Exception("No resized image or filename available to save.");
+  Future<void> saveResizedImage({required String fileName}) async {
+    if (state.value?.resizedImage == null) {
+      throw Exception("No resized image available to save.");
     }
 
     final currentState = state.value!;
     final resizedBytes = currentState.resizedImage!;
-    final fileName = "resized_${currentState.originalFileName!}";
 
     state = AsyncLoading<ResizeState>().copyWithPrevious(state);
 

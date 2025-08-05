@@ -40,10 +40,12 @@ class DocumentRepository {
     Uint8List imageBytes, {
     required int width,
     required int height,
+    required String outputFormat,
   }) => _imageProcessor.resize(
     imageBytes: imageBytes,
     width: width,
     height: height,
+    outputFormat: outputFormat,
   );
   Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 85}) =>
       _imageProcessor.compressImage(imageBytes: imageBytes, quality: quality);

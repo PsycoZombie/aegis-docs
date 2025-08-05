@@ -8,6 +8,7 @@ class OptionsCard extends StatelessWidget {
   final TextEditingController heightController;
   final ResizeState state;
   final ResizeToolViewModel notifier;
+  final VoidCallback onSave;
 
   const OptionsCard({
     super.key,
@@ -16,6 +17,7 @@ class OptionsCard extends StatelessWidget {
     required this.heightController,
     required this.state,
     required this.notifier,
+    required this.onSave,
   });
 
   @override
@@ -93,17 +95,7 @@ class OptionsCard extends StatelessWidget {
                     FilledButton.icon(
                       icon: const Icon(Icons.save_alt_outlined),
                       label: const Text('Save'),
-                      onPressed: () async {
-                        await notifier.saveResizedImage();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Image saved successfully!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: onSave,
                     ),
                 ],
               ),
