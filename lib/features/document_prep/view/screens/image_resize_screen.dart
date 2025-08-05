@@ -10,10 +10,10 @@ class ImageResizeScreen extends ConsumerStatefulWidget {
   const ImageResizeScreen({super.key});
 
   @override
-  ConsumerState<ImageResizeScreen> createState() => _ImageResizePanelState();
+  ConsumerState<ImageResizeScreen> createState() => _ImageResizeScreenState();
 }
 
-class _ImageResizePanelState extends ConsumerState<ImageResizeScreen> {
+class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   final _widthController = TextEditingController();
   final _heightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -104,11 +104,22 @@ class _ImageResizePanelState extends ConsumerState<ImageResizeScreen> {
     return AppScaffold(
       title: 'Resize Image',
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.all(20),
         child: viewModel.when(
-          data: (state) => _buildContent(context, state, notifier),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),
+          data: (state) {
+            if (state.originalImage == null) {
+              return Center(
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: const Text('Select an Image'),
+                  onPressed: () => notifier.pickImage(),
+                ),
+              );
+            }
+            return _buildContent(context, state, notifier);
+          },
         ),
       ),
     );
@@ -119,25 +130,6 @@ class _ImageResizePanelState extends ConsumerState<ImageResizeScreen> {
     ResizeState state,
     ResizeToolViewModel notifier,
   ) {
-    final hasOriginal = state.originalImage != null;
-    if (!hasOriginal) {
-      return SingleChildScrollView(
-        child: Center(
-          child: FilledButton.icon(
-            icon: const Icon(Icons.add_photo_alternate_outlined, size: 24),
-            label: const Text('Pick an Image'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              textStyle: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            onPressed: () => notifier.pickImage(),
-          ),
-        ),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
