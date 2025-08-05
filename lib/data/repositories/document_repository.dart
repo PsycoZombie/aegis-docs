@@ -55,8 +55,13 @@ class DocumentRepository {
   }) => _imageProcessor.crop(imageBytes: imageBytes, theme: theme);
   Future<Uint8List> changeImageFormat(
     Uint8List imageBytes, {
-    required String format,
-  }) => _imageProcessor.changeFormat(imageBytes: imageBytes, format: format);
+    required String originalFormat,
+    required String targetFormat,
+  }) => _imageProcessor.changeFormat(
+    imageBytes: imageBytes,
+    originalFormat: originalFormat,
+    targetFormat: targetFormat,
+  );
   Future<Uint8List> convertImageToPdf(Uint8List imageBytes) =>
       _pdfProcessor.convertImageToPdf(imageBytes: imageBytes);
   Future<List<Uint8List>> convertPdfToImages(Uint8List pdfBytes) =>

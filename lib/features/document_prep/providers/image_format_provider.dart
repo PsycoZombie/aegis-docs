@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
@@ -14,12 +13,14 @@ part 'image_format_provider.g.dart';
 class ImageFormatState {
   final PickedFile? originalImage;
   final Uint8List? convertedImage;
+  final String? originalFormat;
   final String targetFormat;
   final bool isProcessing;
 
   const ImageFormatState({
     this.originalImage,
     this.convertedImage,
+    this.originalFormat,
     this.targetFormat = 'png',
     this.isProcessing = false,
   });
@@ -27,6 +28,7 @@ class ImageFormatState {
   ImageFormatState copyWith({
     PickedFile? originalImage,
     ValueGetter<Uint8List?>? convertedImage,
+    String? originalFormat,
     String? targetFormat,
     bool? isProcessing,
   }) {
@@ -35,6 +37,7 @@ class ImageFormatState {
       convertedImage: convertedImage != null
           ? convertedImage()
           : this.convertedImage,
+      originalFormat: originalFormat ?? this.originalFormat,
       targetFormat: targetFormat ?? this.targetFormat,
       isProcessing: isProcessing ?? this.isProcessing,
     );
@@ -54,7 +57,11 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       final repo = await ref.read(documentRepositoryProvider.future);
       final imageFile = await repo.pickImage();
       if (imageFile != null) {
-        return ImageFormatState(originalImage: imageFile);
+        final format = p.extension(imageFile.name);
+        return ImageFormatState(
+          originalImage: imageFile,
+          originalFormat: format,
+        );
       }
       return const ImageFormatState();
     });
@@ -74,9 +81,14 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       final currentState = state.value!;
       final repo = await ref.read(documentRepositoryProvider.future);
 
+      if (currentState.originalFormat == null) {
+        throw Exception("Original image format is unknown.");
+      }
+
       final convertedBytes = await repo.changeImageFormat(
         currentState.originalImage!.bytes,
-        format: currentState.targetFormat,
+        originalFormat: currentState.originalFormat!,
+        targetFormat: currentState.targetFormat,
       );
 
       final originalName = p.basenameWithoutExtension(

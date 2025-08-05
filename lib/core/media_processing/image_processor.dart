@@ -49,13 +49,50 @@ Uint8List _compressIsolate(_CompressPayload payload) {
 
 Uint8List _formatChangeIsolate(Map<String, dynamic> params) {
   final bytes = params['bytes'] as Uint8List;
-  final format = params['format'] as String;
+  final originalFormat = params['originalFormat'] as String;
+  final targetFormat = params['targetFormat'] as String;
 
-  final image = img.decodeImage(bytes);
+  img.Image? image;
+  switch (originalFormat.toLowerCase()) {
+    case '.jpg':
+    case '.jpeg':
+      image = img.decodeJpg(bytes);
+      break;
+    case '.png':
+      image = img.decodePng(bytes);
+      break;
+    case '.gif':
+      image = img.decodeGif(bytes);
+      break;
+    case '.bmp':
+      image = img.decodeBmp(bytes);
+      break;
+    case '.ico':
+      image = img.decodeIco(bytes);
+      break;
+    case '.tiff':
+      image = img.decodeTiff(bytes);
+      break;
+    case '.tga':
+      image = img.decodeTga(bytes);
+      break;
+    case '.pvr':
+      image = img.decodePvr(bytes);
+      break;
+    case '.psd':
+      image = img.decodePsd(bytes);
+      break;
+    case '.webp':
+      image = img.decodeWebP(bytes);
+      break;
+    default:
+      image = img.decodeImage(bytes);
+  }
+
   if (image == null) {
     throw Exception("Failed to decode image for format conversion.");
   }
-  switch (format.toLowerCase()) {
+  switch (targetFormat.toLowerCase()) {
     case 'png':
       return Uint8List.fromList(img.encodePng(image));
     case 'gif':
@@ -102,11 +139,13 @@ class ImageProcessor {
 
   Future<Uint8List> changeFormat({
     required Uint8List imageBytes,
-    required String format,
+    required String originalFormat,
+    required String targetFormat,
   }) async {
     return await compute(_formatChangeIsolate, {
       'bytes': imageBytes,
-      'format': format,
+      'originalformat': originalFormat,
+      'targetFormat': targetFormat,
     });
   }
 
