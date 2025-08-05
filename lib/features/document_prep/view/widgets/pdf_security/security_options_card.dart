@@ -1,9 +1,6 @@
-// file: features/document_prep/view/widgets/pdf_security/security_options_card.dart
-
+import 'package:aegis_docs/features/document_prep/providers/pdf_security_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../providers/pdf_security_provider.dart';
 
 class SecurityOptionsCard extends ConsumerStatefulWidget {
   final PdfSecurityState state;
@@ -26,13 +23,11 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // THE FIX: A state variable to explicitly control the visibility.
   bool _showConfirmField = false;
 
   @override
   void initState() {
     super.initState();
-    // Add a listener to the controller to manage the state.
     _newPasswordController.addListener(_onNewPasswordChanged);
   }
 
@@ -47,7 +42,6 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
 
   void _onNewPasswordChanged() {
     final shouldShow = _newPasswordController.text.isNotEmpty;
-    // Only call setState if the visibility needs to change.
     if (shouldShow != _showConfirmField) {
       setState(() {
         _showConfirmField = shouldShow;
@@ -55,25 +49,31 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
     }
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _submit() async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    if (!mounted || !_formKey.currentState!.validate()) return;
 
     if (widget.state.isEncrypted!) {
       if (_newPasswordController.text.isNotEmpty) {
-        widget.notifier.changePassword(
+        await widget.notifier.changePassword(
           _oldPasswordController.text,
           _newPasswordController.text,
         );
       } else {
-        widget.notifier.unlockPdf(_oldPasswordController.text);
+        await widget.notifier.unlockPdf(_oldPasswordController.text);
       }
     } else {
-      widget.notifier.lockPdf(_newPasswordController.text);
+      await widget.notifier.lockPdf(_newPasswordController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // This check is necessary because isEncrypted can be null during the initial load
+    if (widget.state.isEncrypted == null) {
+      return const SizedBox.shrink();
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -114,7 +114,6 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
                 },
               ),
               const SizedBox(height: 12),
-              // THE FIX: Use the state variable for visibility.
               if (_showConfirmField)
                 TextFormField(
                   controller: _confirmPasswordController,
@@ -123,7 +122,6 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
                     labelText: 'Confirm New Password',
                     border: OutlineInputBorder(),
                   ),
-                  // THE FIX: A more robust validator.
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please confirm your new password';

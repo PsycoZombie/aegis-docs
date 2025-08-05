@@ -1,5 +1,7 @@
-// file: features/document_prep/providers/pdf_security_provider.dart
+import 'dart:async';
+
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,12 +15,14 @@ class PdfSecurityState {
   final bool? isEncrypted;
   final bool isProcessing;
   final String? successMessage;
+  final String? errorMessage;
 
   const PdfSecurityState({
     this.pickedPdf,
     this.isEncrypted,
     this.isProcessing = false,
     this.successMessage,
+    this.errorMessage,
   });
 
   PdfSecurityState copyWith({
@@ -26,12 +30,14 @@ class PdfSecurityState {
     bool? isEncrypted,
     bool? isProcessing,
     String? successMessage,
+    String? errorMessage,
   }) {
     return PdfSecurityState(
       pickedPdf: pickedPdf ?? this.pickedPdf,
       isEncrypted: isEncrypted ?? this.isEncrypted,
       isProcessing: isProcessing ?? this.isProcessing,
-      successMessage: successMessage ?? this.successMessage,
+      successMessage: successMessage,
+      errorMessage: errorMessage,
     );
   }
 }
@@ -56,10 +62,12 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
     });
   }
 
-  Future<void> lockPdf(String password) async {
-    if (state.value?.pickedPdf == null) return;
-    state = AsyncData(state.value!.copyWith(isProcessing: true));
-    state = await AsyncValue.guard(() async {
+  Future<bool> lockPdf(String password) async {
+    if (state.value?.pickedPdf == null) return false;
+    state = AsyncData(
+      state.value!.copyWith(isProcessing: true, errorMessage: null),
+    );
+    try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.lockPdf(
         state.value!.pickedPdf!.bytes,
@@ -69,17 +77,30 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         fileName: state.value!.pickedPdf!.name,
         data: newBytes,
       );
-      return state.value!.copyWith(
-        isProcessing: false,
-        successMessage: 'PDF locked and saved!',
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          successMessage: 'PDF locked and saved!',
+        ),
       );
-    });
+      return true;
+    } catch (e) {
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          errorMessage: 'Failed to lock PDF.',
+        ),
+      );
+      return false;
+    }
   }
 
-  Future<void> unlockPdf(String password) async {
-    if (state.value?.pickedPdf == null) return;
-    state = AsyncData(state.value!.copyWith(isProcessing: true));
-    state = await AsyncValue.guard(() async {
+  Future<bool> unlockPdf(String password) async {
+    if (state.value?.pickedPdf == null) return false;
+    state = AsyncData(
+      state.value!.copyWith(isProcessing: true, errorMessage: null),
+    );
+    try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.unlockPdf(
         state.value!.pickedPdf!.bytes,
@@ -89,17 +110,31 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         fileName: state.value!.pickedPdf!.name,
         data: newBytes,
       );
-      return state.value!.copyWith(
-        isProcessing: false,
-        successMessage: 'PDF unlocked and saved!',
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          successMessage: 'PDF unlocked and saved!',
+        ),
       );
-    });
+      return true;
+    } catch (e) {
+      debugPrint("Unlock PDF failed: $e");
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          errorMessage: 'Invalid password. Please try again.',
+        ),
+      );
+      return false;
+    }
   }
 
-  Future<void> changePassword(String oldPassword, String newPassword) async {
-    if (state.value?.pickedPdf == null) return;
-    state = AsyncData(state.value!.copyWith(isProcessing: true));
-    state = await AsyncValue.guard(() async {
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    if (state.value?.pickedPdf == null) return false;
+    state = AsyncData(
+      state.value!.copyWith(isProcessing: true, errorMessage: null),
+    );
+    try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.changePdfPassword(
         state.value!.pickedPdf!.bytes,
@@ -110,10 +145,22 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         fileName: state.value!.pickedPdf!.name,
         data: newBytes,
       );
-      return state.value!.copyWith(
-        isProcessing: false,
-        successMessage: 'Password changed and saved!',
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          successMessage: 'Password changed and saved!',
+        ),
       );
-    });
+      return true;
+    } catch (e) {
+      debugPrint("Change Password failed: $e");
+      state = AsyncData(
+        state.value!.copyWith(
+          isProcessing: false,
+          errorMessage: 'Invalid current password. Please try again.',
+        ),
+      );
+      return false;
+    }
   }
 }

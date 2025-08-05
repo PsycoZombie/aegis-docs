@@ -13,7 +13,6 @@ class _PdfToImageRequest {
   _PdfToImageRequest(this.pdfBytes, this.sendPort, this.rootIsolateToken);
 }
 
-// A payload for security operations that require a password.
 class _PdfSecurityPayload {
   final Uint8List pdfBytes;
   final String? oldPassword;
@@ -21,25 +20,18 @@ class _PdfSecurityPayload {
   _PdfSecurityPayload(this.pdfBytes, {this.oldPassword, this.newPassword});
 }
 
-// Checks if a PDF is encrypted.
 bool _isPdfEncryptedIsolate(Uint8List pdfBytes) {
   sync_pdf.PdfDocument? doc;
   try {
-    // THE FIX: Try to load the document without a password.
     doc = sync_pdf.PdfDocument(inputBytes: pdfBytes);
-    // If the line above succeeds without throwing, the document is NOT encrypted.
     return false;
   } catch (e) {
-    // If loading throws an exception, it's because a password is required.
-    // Therefore, the document IS encrypted.
     return true;
   } finally {
-    // Ensure the document is always disposed to prevent memory leaks.
     doc?.dispose();
   }
 }
 
-// Locks (encrypts) an unlocked PDF.
 Uint8List _lockPdfIsolate(_PdfSecurityPayload payload) {
   final doc = sync_pdf.PdfDocument(inputBytes: payload.pdfBytes);
   doc.security.userPassword = payload.newPassword ?? '';
@@ -48,19 +40,16 @@ Uint8List _lockPdfIsolate(_PdfSecurityPayload payload) {
   return Uint8List.fromList(bytes);
 }
 
-// Unlocks (decrypts) a locked PDF.
 Uint8List _unlockPdfIsolate(_PdfSecurityPayload payload) {
   final doc = sync_pdf.PdfDocument(
     inputBytes: payload.pdfBytes,
     password: payload.oldPassword,
   );
-  // By not setting a new password, it's saved without encryption.
   final bytes = doc.saveSync();
   doc.dispose();
   return Uint8List.fromList(bytes);
 }
 
-// Changes the password of an already locked PDF.
 Uint8List _changePasswordIsolate(_PdfSecurityPayload payload) {
   final doc = sync_pdf.PdfDocument(
     inputBytes: payload.pdfBytes,

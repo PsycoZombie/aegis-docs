@@ -1,5 +1,3 @@
-// file: features/document_prep/view/screens/pdf_security_screen.dart
-
 import 'package:aegis_docs/features/document_prep/providers/pdf_security_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_security/security_options_card.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -15,21 +13,24 @@ class PdfSecurityScreen extends ConsumerWidget {
     final notifier = ref.read(pdfSecurityViewModelProvider.notifier);
 
     ref.listen(pdfSecurityViewModelProvider, (previous, next) {
-      if (next is AsyncData && next.value?.successMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.value!.successMessage!),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-      if (next is AsyncError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occurred: ${next.error}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if (next is AsyncData) {
+        final state = next.value;
+        if (state!.successMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.successMessage!),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     });
 
@@ -39,22 +40,29 @@ class PdfSecurityScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text('An error occurred: $err')),
-          data: (state) {
-            if (state.pickedPdf == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('Select a PDF'),
-                  onPressed: () => notifier.pickPdf(),
-                ),
-              );
-            }
-            return _buildContent(context, state, notifier);
-          },
+          error: (err, stack) =>
+              _buildData(context, viewModel.asData!.value, notifier),
+          data: (state) => _buildData(context, state, notifier),
         ),
       ),
     );
+  }
+
+  Widget _buildData(
+    BuildContext context,
+    PdfSecurityState state,
+    PdfSecurityViewModel notifier,
+  ) {
+    if (state.pickedPdf == null) {
+      return Center(
+        child: FilledButton.icon(
+          icon: const Icon(Icons.picture_as_pdf_outlined),
+          label: const Text('Select a PDF'),
+          onPressed: () => notifier.pickPdf(),
+        ),
+      );
+    }
+    return _buildContent(context, state, notifier);
   }
 
   Widget _buildContent(
@@ -76,15 +84,18 @@ class PdfSecurityScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                Chip(
-                  avatar: Icon(
-                    state.isEncrypted! ? Icons.lock : Icons.lock_open,
-                    color: state.isEncrypted! ? Colors.orange : Colors.green,
+                if (state.isEncrypted != null)
+                  Chip(
+                    avatar: Icon(
+                      state.isEncrypted! ? Icons.lock : Icons.lock_open,
+                      color: state.isEncrypted! ? Colors.orange : Colors.green,
+                    ),
+                    label: Text(
+                      state.isEncrypted!
+                          ? 'Password Protected'
+                          : 'Not Protected',
+                    ),
                   ),
-                  label: Text(
-                    state.isEncrypted! ? 'Password Protected' : 'Not Protected',
-                  ),
-                ),
               ],
             ),
           ),
