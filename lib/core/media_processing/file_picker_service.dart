@@ -8,15 +8,18 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart' hide PickedFile;
 import 'package:path/path.dart' as p;
 
+typedef ProcessedFileResult = (PickedFile?, bool wasConverted);
+
 class FilePickerService {
   final ImagePicker _imagePicker = ImagePicker();
   final FilePicker _filePicker = FilePicker.platform;
 
-  Future<PickedFile?> _processPickedFile(XFile file) async {
+  Future<ProcessedFileResult> _processPickedFile(XFile file) async {
     try {
       final fileExtension = p.extension(file.path).toLowerCase();
       Uint8List imageBytes;
       String finalFileName = file.name;
+      bool wasConverted = false;
 
       const decodableFormats = [
         '.jpg',
@@ -25,7 +28,6 @@ class FilePickerService {
         '.gif',
         '.bmp',
         '.ico',
-        '.webp',
         '.tiff',
         '.tga',
         '.psd',
@@ -47,22 +49,22 @@ class FilePickerService {
           quality: 100,
         );
         finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
+        wasConverted = true;
       }
 
-      return PickedFile(
-        bytes: imageBytes,
-        name: finalFileName,
-        path: file.path,
+      return (
+        PickedFile(bytes: imageBytes, name: finalFileName, path: file.path),
+        wasConverted,
       );
     } catch (e) {
       debugPrint(
         'Failed to process or convert image format for ${file.name}: $e',
       );
-      return null;
+      return (null, false);
     }
   }
 
-  Future<PickedFile?> pickImage() async {
+  Future<ProcessedFileResult> pickImage() async {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
@@ -71,25 +73,21 @@ class FilePickerService {
       if (pickedFile != null) {
         return await _processPickedFile(pickedFile);
       }
-    } catch (_) {}
-    return null;
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    }
+    return (null, false);
   }
 
-  Future<List<PickedFile>> pickMultipleImages() async {
+  Future<List<ProcessedFileResult>> pickMultipleImages() async {
     try {
       final List<XFile> pickedFiles = await _imagePicker.pickMultiImage();
-
       if (pickedFiles.isNotEmpty) {
-        final processedFiles = <PickedFile>[];
-        for (final file in pickedFiles) {
-          final processed = await _processPickedFile(file);
-          if (processed != null) {
-            processedFiles.add(processed);
-          }
-        }
-        return processedFiles;
+        return await Future.wait(pickedFiles.map(_processPickedFile));
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error picking multiple images: $e');
+    }
     return [];
   }
 

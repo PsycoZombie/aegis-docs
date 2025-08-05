@@ -25,7 +25,19 @@ class ImagesToPdfScreen extends ConsumerWidget {
                 child: FilledButton.icon(
                   icon: const Icon(Icons.add_photo_alternate_outlined),
                   label: const Text('Select Images'),
-                  onPressed: () => notifier.pickImages(),
+                  onPressed: () async {
+                    final anyConverted = await notifier.pickImages();
+                    if (anyConverted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'One or more unsupported formats were converted to JPG.',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
                 ),
               );
             }

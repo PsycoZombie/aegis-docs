@@ -32,9 +32,9 @@ class DocumentRepository {
        _fileStorageService = fileStorageService,
        _encryptionService = encryptionService;
 
-  Future<PickedFile?> pickImage() => _filePickerService.pickImage();
+  Future<ProcessedFileResult> pickImage() => _filePickerService.pickImage();
   Future<PickedFile?> pickPdf() => _filePickerService.pickPdf();
-  Future<List<PickedFile>> pickMultipleImages() =>
+  Future<List<ProcessedFileResult>> pickMultipleImages() =>
       _filePickerService.pickMultipleImages();
   Future<Uint8List> resizeImage(
     Uint8List imageBytes, {

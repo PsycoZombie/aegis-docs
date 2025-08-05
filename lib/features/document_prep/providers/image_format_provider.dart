@@ -51,11 +51,15 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
     return const ImageFormatState();
   }
 
-  Future<void> pickImage() async {
+  Future<bool> pickImage() async {
     state = const AsyncLoading();
+    bool wasConverted = false;
+
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
-      final imageFile = await repo.pickImage();
+      final (imageFile, converted) = await repo.pickImage();
+      wasConverted = converted;
+
       if (imageFile != null) {
         final format = p.extension(imageFile.name);
         return ImageFormatState(
@@ -65,6 +69,8 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       }
       return const ImageFormatState();
     });
+
+    return wasConverted;
   }
 
   void setTargetFormat(String format) {

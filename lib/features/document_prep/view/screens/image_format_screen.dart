@@ -26,7 +26,19 @@ class ImageFormatScreen extends ConsumerWidget {
                 child: FilledButton.icon(
                   icon: const Icon(Icons.add_photo_alternate_outlined),
                   label: const Text('Select an Image'),
-                  onPressed: () => notifier.pickImage(),
+                  onPressed: () async {
+                    final wasConverted = await notifier.pickImage();
+                    if (wasConverted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Unsupported format was converted to JPG.',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
                 ),
               );
             }

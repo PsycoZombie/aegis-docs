@@ -128,7 +128,19 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
                     textStyle: Theme.of(context).textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () => notifier.pickImage(),
+                  onPressed: () async {
+                    final wasConverted = await notifier.pickImage();
+                    if (wasConverted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Unsupported format was converted to JPG.',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
                 ),
               );
             }

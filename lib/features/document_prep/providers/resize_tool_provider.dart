@@ -49,11 +49,14 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
     return const ResizeState();
   }
 
-  Future<void> pickImage() async {
+  Future<bool> pickImage() async {
     state = const AsyncLoading();
+    bool wasConverted = false;
     state = await AsyncValue.guard(() async {
-      final picker = ref.read(filePickerServiceProvider);
-      final imageFile = await picker.pickImage();
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final result = await repo.pickImage();
+      final imageFile = result.$1;
+      wasConverted = result.$2;
 
       if (imageFile != null) {
         final decodedImage = await decodeImageFromList(imageFile.bytes);
@@ -70,6 +73,7 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
       }
       return const ResizeState();
     });
+    return wasConverted;
   }
 
   Future<void> resizeImage({required int width, required int height}) async {

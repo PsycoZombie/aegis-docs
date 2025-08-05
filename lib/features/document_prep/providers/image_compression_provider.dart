@@ -61,11 +61,14 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
     return const CompressionState();
   }
 
-  Future<void> pickImage() async {
+  Future<bool> pickImage() async {
     state = const AsyncLoading();
+    bool wasConverted = false;
     state = await AsyncValue.guard(() async {
-      final picker = ref.read(filePickerServiceProvider);
-      final imageFile = await picker.pickImage();
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final result = await repo.pickImage();
+      final imageFile = result.$1;
+      wasConverted = result.$2;
 
       if (imageFile != null) {
         return CompressionState(
@@ -76,6 +79,7 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
       }
       return const CompressionState();
     });
+    return wasConverted;
   }
 
   void setTargetSize(int kb) {

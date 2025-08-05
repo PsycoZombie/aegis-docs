@@ -49,11 +49,14 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     return const ImageEditingState();
   }
 
-  Future<void> pickImage() async {
+  Future<bool> pickImage() async {
     state = const AsyncLoading();
+    bool wasConverted = false;
+
     state = await AsyncValue.guard(() async {
-      final picker = ref.read(filePickerServiceProvider);
-      final imageFile = await picker.pickImage();
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final (imageFile, converted) = await repo.pickImage();
+      wasConverted = converted;
 
       if (imageFile != null) {
         return ImageEditingState(
@@ -64,6 +67,8 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
       }
       return const ImageEditingState();
     });
+
+    return wasConverted;
   }
 
   void _applyNewEdit(Uint8List newImageBytes) {
