@@ -1,30 +1,31 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'pdf_to_images_provider.dart';
+part of 'pdf_compression_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pdfToImagesViewModelHash() =>
-    r'fe83a1489b54deef3862a27bbee5b35c82e674cd';
+String _$pdfCompressionViewModelHash() =>
+    r'c8b3c817e18aef77f0ca66f8dc2b55c409759fe6';
 
-/// See also [PdfToImagesViewModel].
-@ProviderFor(PdfToImagesViewModel)
-final pdfToImagesViewModelProvider =
+/// See also [PdfCompressionViewModel].
+@ProviderFor(PdfCompressionViewModel)
+final pdfCompressionViewModelProvider =
     AutoDisposeAsyncNotifierProvider<
-      PdfToImagesViewModel,
-      PdfToImagesState
+      PdfCompressionViewModel,
+      PdfCompressionState
     >.internal(
-      PdfToImagesViewModel.new,
-      name: r'pdfToImagesViewModelProvider',
+      PdfCompressionViewModel.new,
+      name: r'pdfCompressionViewModelProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$pdfToImagesViewModelHash,
+          : _$pdfCompressionViewModelHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$PdfToImagesViewModel = AutoDisposeAsyncNotifier<PdfToImagesState>;
+typedef _$PdfCompressionViewModel =
+    AutoDisposeAsyncNotifier<PdfCompressionState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

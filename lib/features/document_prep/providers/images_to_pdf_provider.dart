@@ -1,7 +1,7 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../data/models/picked_file_model.dart';
 import 'document_providers.dart';
 
 part 'images_to_pdf_provider.g.dart';

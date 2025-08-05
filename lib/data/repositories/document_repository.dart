@@ -1,15 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/core/media_processing/file_picker_service.dart';
+import 'package:aegis_docs/core/media_processing/image_processor.dart';
+import 'package:aegis_docs/core/media_processing/pdf_processor.dart';
+import 'package:aegis_docs/core/services/encryption_service.dart';
+import 'package:aegis_docs/core/services/file_storage_service.dart';
+import 'package:aegis_docs/core/services/native_compression_service.dart';
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/media_processing/file_picker_service.dart';
-import '../../core/media_processing/image_processor.dart';
-import '../../core/media_processing/pdf_processor.dart';
-import '../../core/services/encryption_service.dart';
-import '../../core/services/file_storage_service.dart';
-import '../../core/services/native_compression_service.dart';
-import '../models/picked_file_model.dart';
 
 class DocumentRepository {
   final FilePickerService _filePickerService;
@@ -61,13 +60,13 @@ class DocumentRepository {
   Future<List<Uint8List>> convertPdfToImages(Uint8List pdfBytes) =>
       _pdfProcessor.convertPdfToImages(pdfBytes: pdfBytes);
   Future<String?> compressPdfWithNative({
+    required String filePath,
     required int sizeLimit,
     required bool preserveText,
   }) async {
-    final pickedPdf = await _filePickerService.pickPdf();
-    if (pickedPdf?.path == null) return null;
+    // The file picking logic has been removed.
     return _nativeCompressionService.compressPdf(
-      filePath: pickedPdf!.path!,
+      filePath: filePath,
       sizeLimit: sizeLimit,
       preserveText: preserveText,
     );

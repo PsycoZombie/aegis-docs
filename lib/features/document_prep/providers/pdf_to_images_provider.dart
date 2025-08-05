@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../data/models/picked_file_model.dart';
 import 'document_providers.dart';
 
 part 'pdf_to_images_provider.g.dart';
@@ -89,8 +89,9 @@ class PdfToImagesViewModel extends _$PdfToImagesViewModel {
   }
 
   Future<void> saveSelectedImages() async {
-    if (state.value == null || state.value!.selectedImageIndices.isEmpty)
+    if (state.value == null || state.value!.selectedImageIndices.isEmpty) {
       return;
+    }
 
     state = AsyncData(state.value!.copyWith(isProcessing: true));
 

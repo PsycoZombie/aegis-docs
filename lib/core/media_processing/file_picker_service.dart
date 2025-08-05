@@ -1,11 +1,10 @@
 import 'dart:io';
 
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart' hide PickedFile;
 import 'package:path/path.dart' as p;
-
-import '../../data/models/picked_file_model.dart';
 
 class FilePickerService {
   final ImagePicker _imagePicker = ImagePicker();

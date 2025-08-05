@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
+import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
-
-import '../../../shared_widgets/app_scaffold.dart';
-import '../../wallet/providers/wallet_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

@@ -1,13 +1,12 @@
+import 'package:aegis_docs/core/media_processing/file_picker_service.dart';
+import 'package:aegis_docs/core/media_processing/image_processor.dart';
+import 'package:aegis_docs/core/media_processing/pdf_processor.dart';
 import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:aegis_docs/core/services/file_storage_service.dart';
+import 'package:aegis_docs/core/services/native_compression_service.dart';
+import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/media_processing/file_picker_service.dart';
-import '../../../core/media_processing/image_processor.dart';
-import '../../../core/media_processing/pdf_processor.dart';
-import '../../../core/services/native_compression_service.dart';
-import '../../../data/repositories/document_repository.dart';
 
 part 'document_providers.g.dart';
 

@@ -1,9 +1,8 @@
+import 'package:aegis_docs/features/document_prep/providers/image_editing_provider.dart';
+import 'package:aegis_docs/features/document_prep/view/widgets/image_editing/editing_toolbar.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../providers/image_editing_provider.dart';
-import '../widgets/image_editing/editing_toolbar.dart';
 
 class ImageEditingScreen extends ConsumerWidget {
   const ImageEditingScreen({super.key});

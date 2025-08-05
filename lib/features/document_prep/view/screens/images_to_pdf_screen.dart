@@ -1,9 +1,8 @@
+import 'package:aegis_docs/features/document_prep/providers/images_to_pdf_provider.dart';
+import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/reorderable_image_grid.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../providers/images_to_pdf_provider.dart';
-import '../widgets/images_to_pdf/reorderable_image_grid.dart';
 
 class ImagesToPdfScreen extends ConsumerWidget {
   const ImagesToPdfScreen({super.key});

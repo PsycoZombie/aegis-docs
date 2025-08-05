@@ -44,6 +44,7 @@ class MainActivity : FlutterFragmentActivity() {
                 "compressPdf" -> {
                     // Extract arguments from the Flutter call
                     val filePath = call.argument<String>("filePath")!!
+                    val outputPath = call.argument<String>("outputPath")!!
                     val sizeLimit = call.argument<Int>("sizeLimit")!!
                     val preserveText = call.argument<Int>("preserveText")!!
 
@@ -51,9 +52,9 @@ class MainActivity : FlutterFragmentActivity() {
                     CoroutineScope(Dispatchers.Main).launch {
                         val output = withContext(Dispatchers.IO) {
                             if (preserveText == 0) {
-                                compressByRasterization(filePath, sizeLimit)
+                                compressByRasterization(filePath, outputPath, sizeLimit)
                             } else {
-                                compressWithTextPreservation(filePath, sizeLimit.toLong())
+                                compressWithTextPreservation(filePath, outputPath, sizeLimit.toLong())
                             }
                         }
                         // Send the result (the new file path or an error message) back to Flutter.
@@ -67,16 +68,13 @@ class MainActivity : FlutterFragmentActivity() {
 
     // --- All of your compression logic from the old file is below ---
 
-    private fun compressByRasterization(inputPath: String, sizeLimitKB: Int): String {
+    private fun compressByRasterization(inputPath: String, outputPath: String, sizeLimitKB: Int): String {
         var reader: PdfReader? = null
         var fos: FileOutputStream? = null
         var outDoc: iTextDocument? = null
         return try {
             reader = PdfReader(inputPath)
-            val outputFile = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "compressed_${UUID.randomUUID()}.pdf"
-            )
+            val outputFile = File(outputPath)
             fos = FileOutputStream(outputFile)
             outDoc = iTextDocument()
             val pdfCopy = PdfCopy(outDoc, fos)
@@ -98,7 +96,7 @@ class MainActivity : FlutterFragmentActivity() {
             fos.close()
             reader.close()
             if (outputFile.length() <= sizeLimitKB * 1024) {
-                outputFile.absolutePath
+                outputPath
             } else {
                 "Compressed but size ${outputFile.length() / 1024}KB > $sizeLimitKB KB"
             }
@@ -189,11 +187,11 @@ class MainActivity : FlutterFragmentActivity() {
         }.toByteArray()
     }
 
-    private fun compressWithTextPreservation(inputPath: String, sizeLimitKb: Long): String {
+    private fun compressWithTextPreservation(inputPath: String, outputPath: String, sizeLimitKb: Long): String {
         val sizeLimitBytes = sizeLimitKb * 1024L
         val originalFile = File(inputPath)
         if (originalFile.length() <= sizeLimitBytes) {
-            return copyToDownloads(inputPath)
+            return copyTo(inputPath, outputPath)
         }
 
         val textOnlyBytes = try {
@@ -241,13 +239,23 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
 
-        val finalFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "compressed_text_${UUID.randomUUID()}.pdf")
+        val finalFile = File(outputPath)
         FileOutputStream(finalFile).use { it.write(bestBytes!!) }
 
         return if (finalFile.length() <= sizeLimitBytes) {
-            finalFile.absolutePath
+            outputPath
         } else {
             "Compressed but size ${finalFile.length() / 1024}KB > $sizeLimitKb KB"
+        }
+    }
+
+    private fun copyTo(srcPath: String, destPath: String): String {
+        return try {
+            FileInputStream(File(srcPath)).use { inF -> FileOutputStream(File(destPath)).use { outF -> inF.copyTo(outF) } }
+            destPath
+        } catch (e: IOException) {
+            Log.e("PDFCompression", "Copy failed.", e)
+            "Error: Copy failed. ${e.message}"
         }
     }
 

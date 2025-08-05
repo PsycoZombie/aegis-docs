@@ -1,11 +1,10 @@
+import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/image_preview_section.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/size_reduction_info.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../providers/resize_tool_provider.dart';
 
 class ImageResizeScreen extends ConsumerStatefulWidget {
   const ImageResizeScreen({super.key});

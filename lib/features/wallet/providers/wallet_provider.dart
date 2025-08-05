@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../document_prep/providers/document_providers.dart';
 
 part 'wallet_provider.g.dart';
 
