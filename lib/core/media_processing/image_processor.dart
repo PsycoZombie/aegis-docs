@@ -42,6 +42,28 @@ Uint8List _compressIsolate(_CompressPayload payload) {
   return Uint8List.fromList(img.encodeJpg(image, quality: payload.quality));
 }
 
+Uint8List _formatChangeIsolate(Map<String, dynamic> params) {
+  final bytes = params['bytes'] as Uint8List;
+  final format = params['format'] as String;
+
+  final image = img.decodeImage(bytes);
+  if (image == null) {
+    throw Exception("Failed to decode image for format conversion.");
+  }
+
+  switch (format.toLowerCase()) {
+    case 'png':
+      return Uint8List.fromList(img.encodePng(image));
+    case 'gif':
+      return Uint8List.fromList(img.encodeGif(image));
+    case 'bmp':
+      return Uint8List.fromList(img.encodeBmp(image));
+    case 'jpg':
+    default:
+      return Uint8List.fromList(img.encodeJpg(image, quality: 90));
+  }
+}
+
 class ImageProcessor {
   Future<Uint8List> resize({
     required Uint8List imageBytes,
@@ -69,19 +91,10 @@ class ImageProcessor {
     required Uint8List imageBytes,
     required String format,
   }) async {
-    return await compute((List<dynamic> args) {
-      final bytes = args[0] as Uint8List;
-      final fmt = args[1] as String;
-      final image = img.decodeImage(bytes);
-      if (image == null) {
-        throw Exception("Failed to decode image for format conversion.");
-      }
-
-      if (fmt.toLowerCase() == 'png') {
-        return Uint8List.fromList(img.encodePng(image));
-      }
-      return Uint8List.fromList(img.encodeJpg(image, quality: 90));
-    }, [imageBytes, format]);
+    return await compute(_formatChangeIsolate, {
+      'bytes': imageBytes,
+      'format': format,
+    });
   }
 
   Future<Uint8List?> crop({

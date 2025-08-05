@@ -2,6 +2,7 @@ import 'package:aegis_docs/features/auth/view/login_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/feature_test_hub_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_compression_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_editing_screen.dart';
+import 'package:aegis_docs/features/document_prep/view/screens/image_format_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_resize_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/images_to_pdf_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/pdf_compression_screen.dart';
@@ -56,6 +57,10 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/pdf-compression',
         builder: (context, state) => const PdfCompressionScreen(),
+      ),
+      GoRoute(
+        path: '/hub/image-format',
+        builder: (context, state) => const ImageFormatScreen(),
       ),
     ],
   ),
