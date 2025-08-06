@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/auth/view/login_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/feature_test_hub_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_compression_screen.dart';
@@ -37,35 +38,59 @@ final List<RouteBase> appRoutes = [
       ),
       GoRoute(
         path: '/hub/resize',
-        builder: (context, state) => const ImageResizeScreen(),
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile?;
+          return ImageResizeScreen(initialFile: pickedFile);
+        },
       ),
       GoRoute(
         path: '/hub/compress',
-        builder: (context, state) => const ImageCompressionScreen(),
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile?;
+          return ImageCompressionScreen(initialFile: pickedFile);
+        },
       ),
       GoRoute(
         path: '/hub/edit',
-        builder: (context, state) => const ImageEditingScreen(),
-      ),
-      GoRoute(
-        path: '/hub/images-to-pdf',
-        builder: (context, state) => const ImagesToPdfScreen(),
-      ),
-      GoRoute(
-        path: '/hub/pdf-to-images',
-        builder: (context, state) => const PdfToImagesScreen(),
-      ),
-      GoRoute(
-        path: '/hub/pdf-compression',
-        builder: (context, state) => const PdfCompressionScreen(),
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile;
+          return ImageEditingScreen(initialFile: pickedFile);
+        },
       ),
       GoRoute(
         path: '/hub/image-format',
-        builder: (context, state) => const ImageFormatScreen(),
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile;
+          return ImageFormatScreen(initialFile: pickedFile);
+        },
+      ),
+      GoRoute(
+        path: '/hub/images-to-pdf',
+        builder: (context, state) {
+          final pickedFiles = state.extra as List<PickedFile>? ?? [];
+          return ImagesToPdfScreen(initialFiles: pickedFiles);
+        },
+      ),
+      GoRoute(
+        path: '/hub/pdf-to-images',
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile;
+          return PdfToImagesScreen(initialFile: pickedFile);
+        },
+      ),
+      GoRoute(
+        path: '/hub/pdf-compression',
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile?;
+          return PdfCompressionScreen(initialFile: pickedFile);
+        },
       ),
       GoRoute(
         path: '/hub/pdf-security',
-        builder: (context, state) => const PdfSecurityScreen(),
+        builder: (context, state) {
+          final pickedFile = state.extra as PickedFile?;
+          return PdfSecurityScreen(initialFile: pickedFile);
+        },
       ),
     ],
   ),

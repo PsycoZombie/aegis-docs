@@ -39,31 +39,17 @@ class ImageEditingState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class ImageEditingViewModel extends _$ImageEditingViewModel {
   @override
-  Future<ImageEditingState> build() async {
-    return const ImageEditingState();
-  }
-
-  Future<bool> pickImage() async {
-    state = const AsyncLoading();
-    bool wasConverted = false;
-
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final (imageFile, converted) = await repo.pickImage();
-      wasConverted = converted;
-
-      if (imageFile != null) {
-        return ImageEditingState(
-          originalImage: imageFile,
-          currentImage: imageFile.bytes,
-        );
-      }
+  Future<ImageEditingState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const ImageEditingState();
-    });
-    return wasConverted;
+    }
+    return ImageEditingState(
+      originalImage: initialFile,
+      currentImage: initialFile.bytes,
+    );
   }
 
   void _applyNewEdit(Uint8List newImageBytes) {

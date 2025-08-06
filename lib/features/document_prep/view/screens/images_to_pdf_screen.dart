@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/images_to_pdf_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/images_to_pdf_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/reorderable_image_grid.dart';
@@ -9,12 +10,15 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImagesToPdfScreen extends ConsumerWidget {
-  const ImagesToPdfScreen({super.key});
+  final List<PickedFile> initialFiles;
+  const ImagesToPdfScreen({super.key, required this.initialFiles});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(imagesToPdfViewModelProvider);
-    final notifier = ref.read(imagesToPdfViewModelProvider.notifier);
+    final viewModel = ref.watch(imagesToPdfViewModelProvider(initialFiles));
+    final notifier = ref.read(
+      imagesToPdfViewModelProvider(initialFiles).notifier,
+    );
 
     return AppScaffold(
       title: 'Images to PDF',
@@ -25,24 +29,8 @@ class ImagesToPdfScreen extends ConsumerWidget {
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.selectedImages.isEmpty) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Select Images'),
-                  onPressed: () async {
-                    final anyConverted = await notifier.pickImages();
-                    if (anyConverted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'One or more unsupported formats were converted to JPG.',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              return const Center(
+                child: Text('No images were selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);

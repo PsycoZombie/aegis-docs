@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -11,10 +12,8 @@ enum CompressionStatus { idle, success, failure }
 
 @immutable
 class CompressionState {
-  final Uint8List? originalImage;
+  final PickedFile? originalImage;
   final Uint8List? compressedImage;
-  final String? originalFileName;
-  final int? originalSize;
   final int? compressedSize;
   final int targetSizeKB;
   final CompressionStatus compressionStatus;
@@ -22,18 +21,14 @@ class CompressionState {
   const CompressionState({
     this.originalImage,
     this.compressedImage,
-    this.originalFileName,
-    this.originalSize,
     this.compressedSize,
     this.targetSizeKB = 100,
     this.compressionStatus = CompressionStatus.idle,
   });
 
   CompressionState copyWith({
-    Uint8List? originalImage,
+    PickedFile? originalImage,
     ValueGetter<Uint8List?>? compressedImage,
-    String? originalFileName,
-    int? originalSize,
     ValueGetter<int?>? compressedSize,
     int? targetSizeKB,
     CompressionStatus? compressionStatus,
@@ -43,8 +38,6 @@ class CompressionState {
       compressedImage: compressedImage != null
           ? compressedImage()
           : this.compressedImage,
-      originalFileName: originalFileName ?? this.originalFileName,
-      originalSize: originalSize ?? this.originalSize,
       compressedSize: compressedSize != null
           ? compressedSize()
           : this.compressedSize,
@@ -54,32 +47,21 @@ class CompressionState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class ImageCompressionViewModel extends _$ImageCompressionViewModel {
   @override
-  Future<CompressionState> build() async {
-    return const CompressionState();
-  }
-
-  Future<bool> pickImage() async {
-    state = const AsyncLoading();
-    bool wasConverted = false;
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final result = await repo.pickImage();
-      final imageFile = result.$1;
-      wasConverted = result.$2;
-
-      if (imageFile != null) {
-        return CompressionState(
-          originalImage: imageFile.bytes,
-          originalFileName: imageFile.name,
-          originalSize: imageFile.bytes.lengthInBytes,
-        );
-      }
+  Future<CompressionState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const CompressionState();
-    });
-    return wasConverted;
+    }
+    final initialTarget = (initialFile.bytes.lengthInBytes / 1024 / 2)
+        .clamp(50, 5000)
+        .toInt();
+
+    return CompressionState(
+      originalImage: initialFile,
+      targetSizeKB: initialTarget,
+    );
   }
 
   void setTargetSize(int kb) {
@@ -93,7 +75,7 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
   }
 
   Future<void> compressImage() async {
-    final originalImageBytes = state.value?.originalImage;
+    final originalImageBytes = state.value?.originalImage?.bytes;
     if (originalImageBytes == null) return;
 
     state = AsyncLoading<CompressionState>().copyWithPrevious(state);

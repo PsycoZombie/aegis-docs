@@ -21,7 +21,7 @@ class ImagePreviewSection extends StatelessWidget {
             Expanded(
               child: _ImagePreview(
                 label: 'Original',
-                imageBytes: state.originalImage!,
+                imageBytes: state.originalImage!.bytes,
                 dimensions: state.originalDimensions,
               ),
             ),

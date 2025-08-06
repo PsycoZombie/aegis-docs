@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -11,87 +12,71 @@ part 'resize_tool_provider.g.dart';
 
 @immutable
 class ResizeState {
-  final Uint8List? originalImage;
+  final PickedFile? originalImage;
   final Uint8List? resizedImage;
-  final String? originalFileName;
   final Size? originalDimensions;
   final bool isAspectRatioLocked;
 
   const ResizeState({
     this.originalImage,
     this.resizedImage,
-    this.originalFileName,
     this.originalDimensions,
     this.isAspectRatioLocked = true,
   });
 
   ResizeState copyWith({
-    Uint8List? originalImage,
+    PickedFile? originalImage,
     ValueGetter<Uint8List?>? resizedImage,
-    String? originalFileName,
     Size? originalDimensions,
     bool? isAspectRatioLocked,
   }) {
     return ResizeState(
       originalImage: originalImage ?? this.originalImage,
       resizedImage: resizedImage != null ? resizedImage() : this.resizedImage,
-      originalFileName: originalFileName ?? this.originalFileName,
       originalDimensions: originalDimensions ?? this.originalDimensions,
       isAspectRatioLocked: isAspectRatioLocked ?? this.isAspectRatioLocked,
     );
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class ResizeToolViewModel extends _$ResizeToolViewModel {
   @override
-  Future<ResizeState> build() async {
-    return const ResizeState();
-  }
-
-  Future<bool> pickImage() async {
-    state = const AsyncLoading();
-    bool wasConverted = false;
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final result = await repo.pickImage();
-      final imageFile = result.$1;
-      wasConverted = result.$2;
-
-      if (imageFile != null) {
-        final decodedImage = await decodeImageFromList(imageFile.bytes);
-        final dimensions = Size(
-          decodedImage.width.toDouble(),
-          decodedImage.height.toDouble(),
-        );
-
-        return ResizeState(
-          originalImage: imageFile.bytes,
-          originalFileName: imageFile.name,
-          originalDimensions: dimensions,
-        );
-      }
+  Future<ResizeState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const ResizeState();
-    });
-    return wasConverted;
+    }
+
+    final decodedImage = await decodeImageFromList(initialFile.bytes);
+    final dimensions = Size(
+      decodedImage.width.toDouble(),
+      decodedImage.height.toDouble(),
+    );
+
+    return ResizeState(
+      originalImage: initialFile,
+      originalDimensions: dimensions,
+    );
   }
 
   Future<void> resizeImage({required int width, required int height}) async {
-    final originalImageBytes = state.value?.originalImage;
-    final originalFileName = state.value?.originalFileName;
-    if (originalImageBytes == null) return;
+    final originalImageBytes = state.value?.originalImage?.bytes;
+    final originalFileName = state.value?.originalImage?.name;
+    if (originalImageBytes == null || originalFileName == null) return;
 
     state = AsyncLoading<ResizeState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final imageProcessor = ref.read(imageProcessorProvider);
-      final outputFormat = p.extension(originalFileName!);
+      final outputFormat = p.extension(originalFileName);
+
       final resizedBytes = await imageProcessor.resize(
         imageBytes: originalImageBytes,
         width: width,
         height: height,
         outputFormat: outputFormat.isNotEmpty ? outputFormat : '.jpg',
       );
+
       return state.value!.copyWith(resizedImage: () => resizedBytes);
     });
   }
@@ -114,7 +99,7 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
   }
 
   void toggleAspectRatioLock() {
-    state = AsyncValue.data(
+    state = AsyncData(
       state.value!.copyWith(
         isAspectRatioLocked: !state.value!.isAspectRatioLocked,
       ),
@@ -129,9 +114,5 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
     final newHeight = (originalDims.height * scale).round();
 
     resizeImage(width: newWidth, height: newHeight);
-  }
-
-  void clearResizedImage() {
-    state = AsyncValue.data(state.value!.copyWith(resizedImage: () => null));
   }
 }

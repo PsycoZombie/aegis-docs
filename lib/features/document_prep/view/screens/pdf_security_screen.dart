@@ -1,18 +1,23 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_security_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_security/security_options_card.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class PdfSecurityScreen extends ConsumerWidget {
-  const PdfSecurityScreen({super.key});
+  final PickedFile? initialFile;
+  const PdfSecurityScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(pdfSecurityViewModelProvider);
-    final notifier = ref.read(pdfSecurityViewModelProvider.notifier);
+    final viewModel = ref.watch(pdfSecurityViewModelProvider(initialFile));
+    final notifier = ref.read(
+      pdfSecurityViewModelProvider(initialFile).notifier,
+    );
 
-    ref.listen(pdfSecurityViewModelProvider, (previous, next) {
+    ref.listen(pdfSecurityViewModelProvider(initialFile), (previous, next) {
       if (next is AsyncData) {
         final state = next.value;
         if (state!.successMessage != null) {
@@ -22,6 +27,7 @@ class PdfSecurityScreen extends ConsumerWidget {
               backgroundColor: Colors.green,
             ),
           );
+          context.pop();
         }
         if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -54,13 +60,7 @@ class PdfSecurityScreen extends ConsumerWidget {
     PdfSecurityViewModel notifier,
   ) {
     if (state.pickedPdf == null) {
-      return Center(
-        child: FilledButton.icon(
-          icon: const Icon(Icons.picture_as_pdf_outlined),
-          label: const Text('Select a PDF'),
-          onPressed: () => notifier.pickPdf(),
-        ),
-      );
+      return const Center(child: Text('No PDF was selected. Please go back.'));
     }
     return _buildContent(context, state, notifier);
   }

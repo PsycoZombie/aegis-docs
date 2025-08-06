@@ -10,7 +10,7 @@ class SizeReductionInfo extends StatelessWidget {
     final hasResized = state.resizedImage != null;
     if (!hasResized) return const SizedBox.shrink();
 
-    final originalSize = state.originalImage!.lengthInBytes;
+    final originalSize = state.originalImage!.bytes.lengthInBytes;
     final resizedSize = state.resizedImage!.lengthInBytes;
     final reduction = ((originalSize - resizedSize) / originalSize * 100);
 

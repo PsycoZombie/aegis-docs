@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/compression_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/image_preview_section.dart';
@@ -9,16 +10,22 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageCompressionScreen extends ConsumerWidget {
-  const ImageCompressionScreen({super.key});
+  final PickedFile? initialFile;
+  const ImageCompressionScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(imageCompressionViewModelProvider);
-    final notifier = ref.read(imageCompressionViewModelProvider.notifier);
+    final viewModel = ref.watch(imageCompressionViewModelProvider(initialFile));
+    final notifier = ref.read(
+      imageCompressionViewModelProvider(initialFile).notifier,
+    );
 
-    ref.listen(imageCompressionViewModelProvider, (previous, next) {
+    ref.listen(imageCompressionViewModelProvider(initialFile), (
+      previous,
+      next,
+    ) {
       if (next is AsyncData &&
-          next.value!.compressionStatus == CompressionStatus.failure) {
+          next.value?.compressionStatus == CompressionStatus.failure) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -33,30 +40,14 @@ class ImageCompressionScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Compress Image',
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.all(16.0),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.originalImage == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Pick an Image'),
-                  onPressed: () async {
-                    final wasConverted = await notifier.pickImage();
-                    if (wasConverted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Unsupported format was converted to JPG.',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              return const Center(
+                child: Text('No image was selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);
@@ -84,9 +75,9 @@ class ImageCompressionScreen extends ConsumerWidget {
           notifier: notifier,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
-              state.originalFileName!,
+              state.originalImage!.name,
             );
-            final extension = p.extension(state.originalFileName!);
+            final extension = p.extension(state.originalImage!.name);
             final defaultName = 'compressed_$originalName';
 
             final newName = await showSaveOptionsDialog(

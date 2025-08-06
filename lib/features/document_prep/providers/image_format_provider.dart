@@ -44,32 +44,15 @@ class ImageFormatState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class ImageFormatViewModel extends _$ImageFormatViewModel {
   @override
-  Future<ImageFormatState> build() async {
-    return const ImageFormatState();
-  }
-
-  Future<bool> pickImage() async {
-    state = const AsyncLoading();
-    bool wasConverted = false;
-
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final (imageFile, converted) = await repo.pickImage();
-      wasConverted = converted;
-
-      if (imageFile != null) {
-        final format = p.extension(imageFile.name);
-        return ImageFormatState(
-          originalImage: imageFile,
-          originalFormat: format,
-        );
-      }
+  Future<ImageFormatState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const ImageFormatState();
-    });
-    return wasConverted;
+    }
+    final format = p.extension(initialFile.name);
+    return ImageFormatState(originalImage: initialFile, originalFormat: format);
   }
 
   void setTargetFormat(String format) {

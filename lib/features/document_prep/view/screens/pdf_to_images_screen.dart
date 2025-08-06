@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_to_images_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_to_images/selectable_image_grid.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -8,12 +9,15 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class PdfToImagesScreen extends ConsumerWidget {
-  const PdfToImagesScreen({super.key});
+  final PickedFile? initialFile;
+  const PdfToImagesScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(pdfToImagesViewModelProvider);
-    final notifier = ref.read(pdfToImagesViewModelProvider.notifier);
+    final viewModel = ref.watch(pdfToImagesViewModelProvider(initialFile));
+    final notifier = ref.read(
+      pdfToImagesViewModelProvider(initialFile).notifier,
+    );
 
     return AppScaffold(
       title: 'PDF to Images',
@@ -24,12 +28,8 @@ class PdfToImagesScreen extends ConsumerWidget {
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.originalPdf == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('Select a PDF'),
-                  onPressed: () => notifier.pickPdf(),
-                ),
+              return const Center(
+                child: Text('No PDF was selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);

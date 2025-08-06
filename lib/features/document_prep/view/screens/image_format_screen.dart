@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_format_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/format_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/image_preview_section.dart';
@@ -9,12 +10,15 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageFormatScreen extends ConsumerWidget {
-  const ImageFormatScreen({super.key});
+  final PickedFile? initialFile;
+  const ImageFormatScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(imageFormatViewModelProvider);
-    final notifier = ref.read(imageFormatViewModelProvider.notifier);
+    final viewModel = ref.watch(imageFormatViewModelProvider(initialFile));
+    final notifier = ref.read(
+      imageFormatViewModelProvider(initialFile).notifier,
+    );
 
     return AppScaffold(
       title: 'Change Image Format',
@@ -25,24 +29,8 @@ class ImageFormatScreen extends ConsumerWidget {
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.originalImage == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Select an Image'),
-                  onPressed: () async {
-                    final wasConverted = await notifier.pickImage();
-                    if (wasConverted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Unsupported format was converted to JPG.',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              return const Center(
+                child: Text('No image was selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);
@@ -72,7 +60,6 @@ class ImageFormatScreen extends ConsumerWidget {
             final originalName = p.basenameWithoutExtension(
               state.originalImage!.name,
             );
-            // The extension is the new target format
             final extension = '.${state.targetFormat}';
             final defaultName = '${originalName}_formatted';
 

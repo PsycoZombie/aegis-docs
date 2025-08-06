@@ -1,9 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../../../features/document_prep/providers/image_compression_provider.dart';
 
 class CompressionImagePreviewSection extends StatelessWidget {
   final CompressionState state;
@@ -25,8 +24,8 @@ class CompressionImagePreviewSection extends StatelessWidget {
               Expanded(
                 child: _ImagePreview(
                   label: 'Original',
-                  imageBytes: state.originalImage!,
-                  sizeInBytes: state.originalSize!,
+                  imageBytes: state.originalImage!.bytes,
+                  sizeInBytes: state.originalImage!.bytes.lengthInBytes,
                 ),
               ),
               if (state.compressedImage != null) ...[

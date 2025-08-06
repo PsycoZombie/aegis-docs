@@ -42,24 +42,16 @@ class PdfSecurityState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class PdfSecurityViewModel extends _$PdfSecurityViewModel {
   @override
-  Future<PdfSecurityState> build() async {
-    return const PdfSecurityState();
-  }
-
-  Future<void> pickPdf() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final pdfFile = await repo.pickPdf();
-      if (pdfFile != null) {
-        final isEncrypted = await repo.isPdfEncrypted(pdfFile.bytes);
-        return PdfSecurityState(pickedPdf: pdfFile, isEncrypted: isEncrypted);
-      }
+  Future<PdfSecurityState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const PdfSecurityState();
-    });
+    }
+    final repo = await ref.read(documentRepositoryProvider.future);
+    final isEncrypted = await repo.isPdfEncrypted(initialFile.bytes);
+    return PdfSecurityState(pickedPdf: initialFile, isEncrypted: isEncrypted);
   }
 
   Future<bool> lockPdf(String password) async {

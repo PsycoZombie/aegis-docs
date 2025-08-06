@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_option_cards_widget.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_preview_section.dart';
@@ -5,15 +6,33 @@ import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class PdfCompressionScreen extends ConsumerWidget {
-  const PdfCompressionScreen({super.key});
+  final PickedFile? initialFile;
+  const PdfCompressionScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(pdfCompressionViewModelProvider);
-    final notifier = ref.read(pdfCompressionViewModelProvider.notifier);
+    final viewModel = ref.watch(pdfCompressionViewModelProvider(initialFile));
+    final notifier = ref.read(
+      pdfCompressionViewModelProvider(initialFile).notifier,
+    );
+
+    ref.listen(pdfCompressionViewModelProvider(initialFile), (previous, next) {
+      if (next is AsyncData) {
+        final state = next.value;
+        if (state!.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    });
 
     return AppScaffold(
       title: 'Compress PDF',
@@ -24,12 +43,8 @@ class PdfCompressionScreen extends ConsumerWidget {
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.pickedPdf == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('Select a PDF to Compress'),
-                  onPressed: () => notifier.pickPdf(),
-                ),
+              return const Center(
+                child: Text('No PDF was selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);
@@ -66,7 +81,18 @@ class PdfCompressionScreen extends ConsumerWidget {
             );
 
             if (newName != null) {
-              await notifier.compressAndSavePdf(fileName: newName);
+              final success = await notifier.compressAndSavePdf(
+                fileName: newName,
+              );
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('PDF compressed and saved!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                context.pop();
+              }
             }
           },
         ),

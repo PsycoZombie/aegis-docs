@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/image_preview_section.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/options_card.dart';
@@ -10,7 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageResizeScreen extends ConsumerStatefulWidget {
-  const ImageResizeScreen({super.key});
+  final PickedFile? initialFile;
+  const ImageResizeScreen({super.key, this.initialFile});
 
   @override
   ConsumerState<ImageResizeScreen> createState() => _ImageResizeScreenState();
@@ -40,7 +42,9 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   }
 
   void _onWidthChanged() {
-    final state = ref.read(resizeToolViewModelProvider).value;
+    final state = ref
+        .read(resizeToolViewModelProvider(widget.initialFile))
+        .value;
     if (_isUpdatingFromListener ||
         state == null ||
         !state.isAspectRatioLocked) {
@@ -61,7 +65,9 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   }
 
   void _onHeightChanged() {
-    final state = ref.read(resizeToolViewModelProvider).value;
+    final state = ref
+        .read(resizeToolViewModelProvider(widget.initialFile))
+        .value;
     if (_isUpdatingFromListener ||
         state == null ||
         !state.isAspectRatioLocked) {
@@ -83,10 +89,14 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(resizeToolViewModelProvider);
-    final notifier = ref.read(resizeToolViewModelProvider.notifier);
+    final viewModel = ref.watch(
+      resizeToolViewModelProvider(widget.initialFile),
+    );
+    final notifier = ref.read(
+      resizeToolViewModelProvider(widget.initialFile).notifier,
+    );
 
-    ref.listen(resizeToolViewModelProvider, (_, next) {
+    ref.listen(resizeToolViewModelProvider(widget.initialFile), (_, next) {
       if (next.isLoading) return;
       final state = next.value;
       if (state != null) {
@@ -113,35 +123,8 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
           error: (err, _) => Center(child: Text('An error occurred: $err')),
           data: (state) {
             if (state.originalImage == null) {
-              return Center(
-                child: FilledButton.icon(
-                  icon: const Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: 24,
-                  ),
-                  label: const Text('Pick an Image'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    textStyle: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () async {
-                    final wasConverted = await notifier.pickImage();
-                    if (wasConverted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Unsupported format was converted to JPG.',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              return const Center(
+                child: Text('No image was selected. Please go back.'),
               );
             }
             return _buildContent(context, state, notifier);
@@ -179,9 +162,9 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
           notifier: notifier,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
-              state.originalFileName!,
+              state.originalImage!.name,
             );
-            final extension = p.extension(state.originalFileName!);
+            final extension = p.extension(state.originalImage!.name);
             final defaultName = 'resized_$originalName';
 
             final newName = await showSaveOptionsDialog(

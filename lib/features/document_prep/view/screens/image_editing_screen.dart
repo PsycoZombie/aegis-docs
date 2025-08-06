@@ -1,3 +1,4 @@
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_editing_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_editing/editing_toolbar.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -8,12 +9,15 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageEditingScreen extends ConsumerWidget {
-  const ImageEditingScreen({super.key});
+  final PickedFile? initialFile;
+  const ImageEditingScreen({super.key, this.initialFile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(imageEditingViewModelProvider);
-    final notifier = ref.read(imageEditingViewModelProvider.notifier);
+    final viewModel = ref.watch(imageEditingViewModelProvider(initialFile));
+    final notifier = ref.read(
+      imageEditingViewModelProvider(initialFile).notifier,
+    );
 
     return AppScaffold(
       title: 'Edit Image',
@@ -58,24 +62,8 @@ class ImageEditingScreen extends ConsumerWidget {
         error: (err, _) => Center(child: Text('An error occurred: $err')),
         data: (state) {
           if (state.currentImage == null) {
-            return Center(
-              child: FilledButton.icon(
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                label: const Text('Pick an Image to Edit'),
-                onPressed: () async {
-                  final wasConverted = await notifier.pickImage();
-                  if (wasConverted && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Unsupported format was converted to JPG.',
-                        ),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  }
-                },
-              ),
+            return const Center(
+              child: Text('No image was selected. Please go back.'),
             );
           }
           return _buildContent(context, state, notifier);
@@ -99,7 +87,7 @@ class ImageEditingScreen extends ConsumerWidget {
         EditingToolbar(
           onCrop: () => notifier.cropImage(context: context),
           onUndo: state.editHistory.isNotEmpty ? () => notifier.undo() : null,
-          onGrayscale: notifier.applyGrayscaleFilter,
+          onGrayscale: () => notifier.applyGrayscaleFilter(),
         ),
       ],
     );

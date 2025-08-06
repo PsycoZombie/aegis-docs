@@ -53,29 +53,20 @@ class PdfCompressionState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class PdfCompressionViewModel extends _$PdfCompressionViewModel {
   @override
-  Future<PdfCompressionState> build() async {
-    return const PdfCompressionState();
-  }
-
-  Future<void> pickPdf() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final pdfFile = await repo.pickPdf();
-      if (pdfFile != null) {
-        final initialSizeLimit = (pdfFile.bytes.lengthInBytes / 1024 / 2)
-            .clamp(50, 5000)
-            .toInt();
-        return PdfCompressionState(
-          pickedPdf: pdfFile,
-          sizeLimitKB: initialSizeLimit,
-        );
-      }
+  Future<PdfCompressionState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const PdfCompressionState();
-    });
+    }
+    final initialSizeLimit = (initialFile.bytes.lengthInBytes / 1024 / 2)
+        .clamp(50, 5000)
+        .toInt();
+    return PdfCompressionState(
+      pickedPdf: initialFile,
+      sizeLimitKB: initialSizeLimit,
+    );
   }
 
   void setSizeLimit(int kb) {

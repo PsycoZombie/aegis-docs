@@ -34,28 +34,11 @@ class ImagesToPdfState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class ImagesToPdfViewModel extends _$ImagesToPdfViewModel {
   @override
-  Future<ImagesToPdfState> build() async {
-    return const ImagesToPdfState();
-  }
-
-  Future<bool> pickImages() async {
-    state = const AsyncLoading();
-    bool anyFileWasConverted = false;
-
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final results = await repo.pickMultipleImages();
-      final validFiles = results
-          .map((res) => res.$1)
-          .whereType<PickedFile>()
-          .toList();
-      anyFileWasConverted = results.any((res) => res.$2);
-      return ImagesToPdfState(selectedImages: validFiles);
-    });
-    return anyFileWasConverted;
+  Future<ImagesToPdfState> build(List<PickedFile> initialFiles) async {
+    return ImagesToPdfState(selectedImages: initialFiles);
   }
 
   void reorderImages(int oldIndex, int newIndex) {

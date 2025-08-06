@@ -38,23 +38,14 @@ class PdfToImagesState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: false)
 class PdfToImagesViewModel extends _$PdfToImagesViewModel {
   @override
-  Future<PdfToImagesState> build() async {
-    return const PdfToImagesState();
-  }
-
-  Future<void> pickPdf() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repo = await ref.read(documentRepositoryProvider.future);
-      final pdfFile = await repo.pickPdf();
-      if (pdfFile != null) {
-        return const PdfToImagesState().copyWith(originalPdf: pdfFile);
-      }
+  Future<PdfToImagesState> build(PickedFile? initialFile) async {
+    if (initialFile == null) {
       return const PdfToImagesState();
-    });
+    }
+    return PdfToImagesState(originalPdf: initialFile);
   }
 
   Future<void> convertToImages() async {
