@@ -1,17 +1,18 @@
+import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../../features/document_prep/providers/image_compression_provider.dart';
-
 class CompressionOptionsCard extends ConsumerWidget {
   final CompressionState state;
   final ImageCompressionViewModel notifier;
+  final VoidCallback onSave;
 
   const CompressionOptionsCard({
     super.key,
     required this.state,
     required this.notifier,
+    required this.onSave,
   });
 
   @override
@@ -67,17 +68,7 @@ class CompressionOptionsCard extends ConsumerWidget {
                   FilledButton.icon(
                     icon: const Icon(Icons.save_alt_outlined),
                     label: const Text('Save'),
-                    onPressed: () async {
-                      await notifier.saveCompressedImage();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Image saved successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: onSave,
                   ),
               ],
             ),

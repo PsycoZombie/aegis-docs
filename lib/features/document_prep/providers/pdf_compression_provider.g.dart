@@ -7,7 +7,7 @@ part of 'pdf_compression_provider.dart';
 // **************************************************************************
 
 String _$pdfCompressionViewModelHash() =>
-    r'c8b3c817e18aef77f0ca66f8dc2b55c409759fe6';
+    r'928e65e71fa733e41e99b404b7d6c8982a335f40';
 
 /// See also [PdfCompressionViewModel].
 @ProviderFor(PdfCompressionViewModel)

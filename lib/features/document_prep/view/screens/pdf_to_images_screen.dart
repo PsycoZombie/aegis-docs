@@ -1,9 +1,11 @@
 import 'package:aegis_docs/features/document_prep/providers/pdf_to_images_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_to_images/selectable_image_grid.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/multi_save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 class PdfToImagesScreen extends ConsumerWidget {
   const PdfToImagesScreen({super.key});
@@ -105,17 +107,29 @@ class PdfToImagesScreen extends ConsumerWidget {
             onPressed: state.isProcessing || state.selectedImageIndices.isEmpty
                 ? null
                 : () async {
-                    await notifier.saveSelectedImages();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Saved ${state.selectedImageIndices.length} images!',
+                    final defaultName = p.basenameWithoutExtension(
+                      state.originalPdf!.name,
+                    );
+
+                    final baseName = await showMultiSaveOptionsDialog(
+                      context,
+                      defaultBaseName: defaultName,
+                      fileCount: state.selectedImageIndices.length,
+                    );
+
+                    if (baseName != null) {
+                      await notifier.saveSelectedImages(baseName: baseName);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Saved ${state.selectedImageIndices.length} images!',
+                            ),
+                            backgroundColor: Colors.green,
                           ),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      context.pop();
+                        );
+                        context.pop();
+                      }
                     }
                   },
           ),

@@ -7,7 +7,7 @@ part of 'image_editing_provider.dart';
 // **************************************************************************
 
 String _$imageEditingViewModelHash() =>
-    r'50ffb735f86b659d7f2735cd7b76c5f21c4965fd';
+    r'1e74041f0d0afbb53e2ce8956dfaea2b64612362';
 
 /// See also [ImageEditingViewModel].
 @ProviderFor(ImageEditingViewModel)

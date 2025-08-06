@@ -69,7 +69,6 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       }
       return const ImageFormatState();
     });
-
     return wasConverted;
   }
 
@@ -78,7 +77,7 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
     state = AsyncData(state.value!.copyWith(targetFormat: format));
   }
 
-  Future<void> convertAndSaveImage() async {
+  Future<void> convertImage() async {
     if (state.value?.originalImage == null) return;
 
     state = AsyncData(state.value!.copyWith(isProcessing: true));
@@ -87,7 +86,8 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       final currentState = state.value!;
       final repo = await ref.read(documentRepositoryProvider.future);
 
-      if (currentState.originalFormat == null) {
+      if (currentState.originalFormat == null ||
+          currentState.originalFormat!.isEmpty) {
         throw Exception("Original image format is unknown.");
       }
 
@@ -97,27 +97,26 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
         targetFormat: currentState.targetFormat,
       );
 
-      final originalName = p.basenameWithoutExtension(
-        currentState.originalImage!.name,
-      );
-      final newFileName = '$originalName.${currentState.targetFormat}';
-
-      await repo.saveEncryptedDocument(
-        fileName: newFileName,
-        data: convertedBytes,
-      );
-
       return currentState.copyWith(
         isProcessing: false,
         convertedImage: () => convertedBytes,
       );
     });
+  }
 
-    if (state.hasError) {
-      final previousData = state.asError!.value;
-      if (previousData != null) {
-        state = AsyncData(previousData.copyWith(isProcessing: false));
-      }
+  Future<void> saveImage({required String fileName}) async {
+    if (state.value?.convertedImage == null) {
+      throw Exception("No converted image to save.");
     }
+    final currentState = state.value!;
+    state = AsyncData(currentState.copyWith(isProcessing: true));
+    state = await AsyncValue.guard(() async {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      await repo.saveEncryptedDocument(
+        fileName: fileName,
+        data: currentState.convertedImage!,
+      );
+      return currentState.copyWith(isProcessing: false);
+    });
   }
 }

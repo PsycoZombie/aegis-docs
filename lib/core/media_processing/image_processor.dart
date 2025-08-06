@@ -144,7 +144,7 @@ class ImageProcessor {
   }) async {
     return await compute(_formatChangeIsolate, {
       'bytes': imageBytes,
-      'originalformat': originalFormat,
+      'originalFormat': originalFormat,
       'targetFormat': targetFormat,
     });
   }

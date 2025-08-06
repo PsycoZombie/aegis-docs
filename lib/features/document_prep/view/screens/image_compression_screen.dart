@@ -2,8 +2,11 @@ import 'package:aegis_docs/features/document_prep/providers/image_compression_pr
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/compression_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/image_preview_section.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 class ImageCompressionScreen extends ConsumerWidget {
   const ImageCompressionScreen({super.key});
@@ -76,7 +79,36 @@ class ImageCompressionScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        CompressionOptionsCard(state: state, notifier: notifier),
+        CompressionOptionsCard(
+          state: state,
+          notifier: notifier,
+          onSave: () async {
+            final originalName = p.basenameWithoutExtension(
+              state.originalFileName!,
+            );
+            final extension = p.extension(state.originalFileName!);
+            final defaultName = 'compressed_$originalName';
+
+            final newName = await showSaveOptionsDialog(
+              context,
+              defaultFileName: defaultName,
+              fileExtension: extension.isNotEmpty ? extension : '.jpg',
+            );
+
+            if (newName != null) {
+              await notifier.saveCompressedImage(fileName: newName);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Image saved successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                context.pop();
+              }
+            }
+          },
+        ),
       ],
     );
   }

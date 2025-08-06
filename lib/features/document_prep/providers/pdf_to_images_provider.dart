@@ -88,7 +88,7 @@ class PdfToImagesViewModel extends _$PdfToImagesViewModel {
     );
   }
 
-  Future<void> saveSelectedImages() async {
+  Future<void> saveSelectedImages({required String baseName}) async {
     if (state.value == null || state.value!.selectedImageIndices.isEmpty) {
       return;
     }
@@ -98,16 +98,14 @@ class PdfToImagesViewModel extends _$PdfToImagesViewModel {
     state = await AsyncValue.guard(() async {
       final currentState = state.value!;
       final repo = await ref.read(documentRepositoryProvider.future);
-      final originalFileName = currentState.originalPdf!.name.replaceAll(
-        '.pdf',
-        '',
-      );
 
-      for (final index in currentState.selectedImageIndices) {
+      final saveFutures = currentState.selectedImageIndices.map((index) {
         final imageBytes = currentState.generatedImages[index];
-        final fileName = '${originalFileName}_page_${index + 1}.png';
-        await repo.saveEncryptedDocument(fileName: fileName, data: imageBytes);
-      }
+        final fileName = '${baseName}_page_${index + 1}.png';
+        return repo.saveEncryptedDocument(fileName: fileName, data: imageBytes);
+      });
+
+      await Future.wait(saveFutures);
 
       return currentState.copyWith(isProcessing: false);
     });

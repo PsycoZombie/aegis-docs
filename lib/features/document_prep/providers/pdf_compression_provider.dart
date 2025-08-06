@@ -1,5 +1,3 @@
-// file: features/document_prep/providers/pdf_compression_provider.dart
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -15,39 +13,42 @@ part 'pdf_compression_provider.g.dart';
 @immutable
 class PdfCompressionState {
   final PickedFile? pickedPdf;
-  // THE FIX: This field is now included in the state.
   final Uint8List? compressedPdfBytes;
-  final String? resultMessage;
   final bool isProcessing;
   final int sizeLimitKB;
   final bool preserveText;
+  final String? successMessage;
+  final String? errorMessage;
 
   const PdfCompressionState({
     this.pickedPdf,
     this.compressedPdfBytes,
-    this.resultMessage,
     this.isProcessing = false,
     this.sizeLimitKB = 500,
     this.preserveText = true,
+    this.successMessage,
+    this.errorMessage,
   });
 
   PdfCompressionState copyWith({
     PickedFile? pickedPdf,
     ValueGetter<Uint8List?>? compressedPdfBytes,
-    String? resultMessage,
     bool? isProcessing,
     int? sizeLimitKB,
     bool? preserveText,
+    String? successMessage,
+    String? errorMessage,
   }) {
     return PdfCompressionState(
       pickedPdf: pickedPdf ?? this.pickedPdf,
       compressedPdfBytes: compressedPdfBytes != null
           ? compressedPdfBytes()
           : this.compressedPdfBytes,
-      resultMessage: resultMessage ?? this.resultMessage,
       isProcessing: isProcessing ?? this.isProcessing,
       sizeLimitKB: sizeLimitKB ?? this.sizeLimitKB,
       preserveText: preserveText ?? this.preserveText,
+      successMessage: successMessage,
+      errorMessage: errorMessage,
     );
   }
 }
@@ -87,11 +88,15 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
     state = AsyncData(state.value!.copyWith(preserveText: value));
   }
 
-  Future<bool> compressAndSavePdf() async {
+  Future<bool> compressAndSavePdf({required String fileName}) async {
     if (state.value?.pickedPdf == null) return false;
 
     state = AsyncData(
-      state.value!.copyWith(isProcessing: true, resultMessage: null),
+      state.value!.copyWith(
+        isProcessing: true,
+        successMessage: null,
+        errorMessage: null,
+      ),
     );
     bool success = false;
 
@@ -112,17 +117,15 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
       final compressedFile = File(resultPath);
       if (await compressedFile.exists()) {
         final bytes = await compressedFile.readAsBytes();
-        final fileName = 'compressed_${currentState.pickedPdf!.name}';
 
         await repo.saveEncryptedDocument(fileName: fileName, data: bytes);
         await compressedFile.delete();
         success = true;
 
-        // THE FIX: Update the state with the compressed bytes.
         return currentState.copyWith(
           isProcessing: false,
           compressedPdfBytes: () => bytes,
-          resultMessage: 'Successfully compressed and saved to wallet!',
+          successMessage: 'Successfully compressed and saved to wallet!',
         );
       } else {
         throw Exception("Compression failed: $resultPath");

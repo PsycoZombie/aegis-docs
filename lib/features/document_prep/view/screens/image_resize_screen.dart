@@ -190,7 +190,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
               fileExtension: extension.isNotEmpty ? extension : '.jpg',
             );
 
-            if (newName != null && context.mounted) {
+            if (newName != null) {
               await notifier.saveResizedImage(fileName: newName);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

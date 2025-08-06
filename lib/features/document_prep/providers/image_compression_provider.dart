@@ -135,15 +135,13 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
     });
   }
 
-  Future<void> saveCompressedImage() async {
-    if (state.value?.compressedImage == null ||
-        state.value?.originalFileName == null) {
+  Future<void> saveCompressedImage({required String fileName}) async {
+    if (state.value?.compressedImage == null) {
       throw Exception("No compressed image to save.");
     }
 
     final currentState = state.value!;
     final compressedBytes = currentState.compressedImage!;
-    final fileName = "compressed_${currentState.originalFileName!}";
 
     state = AsyncLoading<CompressionState>().copyWithPrevious(state);
 

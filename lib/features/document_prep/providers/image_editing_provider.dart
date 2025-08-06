@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -15,27 +16,23 @@ class ImageEdit {
 
 @immutable
 class ImageEditingState {
-  final Uint8List? originalImage;
-  final String? originalFileName;
+  final PickedFile? originalImage;
   final Uint8List? currentImage;
   final List<ImageEdit> editHistory;
 
   const ImageEditingState({
     this.originalImage,
-    this.originalFileName,
     this.currentImage,
     this.editHistory = const [],
   });
 
   ImageEditingState copyWith({
-    Uint8List? originalImage,
-    String? originalFileName,
+    PickedFile? originalImage,
     Uint8List? currentImage,
     List<ImageEdit>? editHistory,
   }) {
     return ImageEditingState(
       originalImage: originalImage ?? this.originalImage,
-      originalFileName: originalFileName ?? this.originalFileName,
       currentImage: currentImage ?? this.currentImage,
       editHistory: editHistory ?? this.editHistory,
     );
@@ -60,14 +57,12 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
 
       if (imageFile != null) {
         return ImageEditingState(
-          originalImage: imageFile.bytes,
+          originalImage: imageFile,
           currentImage: imageFile.bytes,
-          originalFileName: imageFile.name,
         );
       }
       return const ImageEditingState();
     });
-
     return wasConverted;
   }
 
@@ -107,10 +102,8 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
-      ThemeData theme;
       if (context.mounted) {
-        theme = Theme.of(context);
-
+        final theme = Theme.of(context);
         final croppedBytes = await repo.cropImage(
           currentImageBytes,
           theme: theme,
@@ -140,15 +133,13 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     });
   }
 
-  Future<void> saveImage() async {
-    if (state.value?.currentImage == null ||
-        state.value?.originalFileName == null) {
+  Future<void> saveImage({required String fileName}) async {
+    if (state.value?.currentImage == null) {
       throw Exception("No image to save.");
     }
 
     final currentState = state.value!;
     final editedBytes = currentState.currentImage!;
-    final fileName = "edited_${currentState.originalFileName!}";
 
     state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
 

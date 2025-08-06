@@ -1,5 +1,3 @@
-// file: features/document_prep/view/widgets/pdf_compression/pdf_options_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +6,13 @@ import '../../../providers/pdf_compression_provider.dart';
 class PdfOptionsCard extends ConsumerWidget {
   final PdfCompressionState state;
   final PdfCompressionViewModel notifier;
+  final VoidCallback onSave;
 
   const PdfOptionsCard({
     super.key,
     required this.state,
     required this.notifier,
+    required this.onSave,
   });
 
   @override
@@ -31,7 +31,7 @@ class PdfOptionsCard extends ConsumerWidget {
             Slider(
               value: state.sizeLimitKB.toDouble(),
               min: 50,
-              max: originalSizeKB, // Slider max is the original file size
+              max: originalSizeKB,
               label: '${state.sizeLimitKB} KB',
               onChanged: (value) => notifier.setSizeLimit(value.toInt()),
             ),
@@ -52,32 +52,9 @@ class PdfOptionsCard extends ConsumerWidget {
                     )
                   : const Icon(Icons.compress),
               label: Text(
-                state.isProcessing ? 'Compressing...' : 'Compress & Save',
+                state.isProcessing ? 'Processing...' : 'Compress & Save',
               ),
-              onPressed: state.isProcessing
-                  ? null
-                  : () async {
-                      final success = await notifier.compressAndSavePdf();
-                      if (context.mounted) {
-                        if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('PDF compressed and saved!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Compression failed. Please check the logs.',
-                              ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
+              onPressed: state.isProcessing ? null : onSave,
             ),
           ],
         ),

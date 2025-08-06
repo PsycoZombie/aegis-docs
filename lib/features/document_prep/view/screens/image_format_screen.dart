@@ -2,8 +2,11 @@ import 'package:aegis_docs/features/document_prep/providers/image_format_provide
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/format_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/image_preview_section.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 class ImageFormatScreen extends ConsumerWidget {
   const ImageFormatScreen({super.key});
@@ -62,7 +65,37 @@ class ImageFormatScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        FormatOptionsCard(state: state, notifier: notifier),
+        FormatOptionsCard(
+          state: state,
+          notifier: notifier,
+          onSave: () async {
+            final originalName = p.basenameWithoutExtension(
+              state.originalImage!.name,
+            );
+            // The extension is the new target format
+            final extension = '.${state.targetFormat}';
+            final defaultName = '${originalName}_formatted';
+
+            final newName = await showSaveOptionsDialog(
+              context,
+              defaultFileName: defaultName,
+              fileExtension: extension,
+            );
+
+            if (newName != null) {
+              await notifier.saveImage(fileName: newName);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Image saved successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                context.pop();
+              }
+            }
+          },
+        ),
       ],
     );
   }

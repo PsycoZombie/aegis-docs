@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class FormatOptionsCard extends ConsumerWidget {
   final ImageFormatState state;
   final ImageFormatViewModel notifier;
+  final VoidCallback onSave;
 
   const FormatOptionsCard({
     super.key,
     required this.state,
     required this.notifier,
+    required this.onSave,
   });
 
   @override
@@ -54,32 +56,29 @@ class FormatOptionsCard extends ConsumerWidget {
               },
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              icon: state.isProcessing
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.transform),
-              label: Text(
-                state.isProcessing ? 'Processing...' : 'Convert & Save',
-              ),
-              onPressed: state.isProcessing
-                  ? null
-                  : () async {
-                      await notifier.convertAndSaveImage();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Image saved successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.transform),
+                  label: const Text('Convert'),
+                  onPressed: state.isProcessing ? null : notifier.convertImage,
+                ),
+                if (state.convertedImage != null)
+                  FilledButton.icon(
+                    icon: state.isProcessing
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.save_alt_outlined),
+                    label: Text(state.isProcessing ? 'Saving...' : 'Save'),
+                    onPressed: state.isProcessing ? null : onSave,
+                  ),
+              ],
             ),
           ],
         ),

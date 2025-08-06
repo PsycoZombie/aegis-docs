@@ -7,7 +7,7 @@ part of 'image_format_provider.dart';
 // **************************************************************************
 
 String _$imageFormatViewModelHash() =>
-    r'cb730a285cdf009c4ba7be6befa8cce6b1ad5909';
+    r'71293051ff4717446f30efdfa1945f8ca4c40d55';
 
 /// See also [ImageFormatViewModel].
 @ProviderFor(ImageFormatViewModel)

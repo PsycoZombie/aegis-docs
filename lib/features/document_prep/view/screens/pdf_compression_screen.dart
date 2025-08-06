@@ -2,8 +2,10 @@ import 'package:aegis_docs/features/document_prep/providers/pdf_compression_prov
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_option_cards_widget.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_preview_section.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 
 class PdfCompressionScreen extends ConsumerWidget {
   const PdfCompressionScreen({super.key});
@@ -48,7 +50,26 @@ class PdfCompressionScreen extends ConsumerWidget {
           child: SingleChildScrollView(child: PdfPreviewSection(state: state)),
         ),
         const SizedBox(height: 16),
-        PdfOptionsCard(state: state, notifier: notifier),
+        PdfOptionsCard(
+          state: state,
+          notifier: notifier,
+          onSave: () async {
+            final originalName = p.basenameWithoutExtension(
+              state.pickedPdf!.name,
+            );
+            final defaultName = 'compressed_$originalName';
+
+            final newName = await showSaveOptionsDialog(
+              context,
+              defaultFileName: defaultName,
+              fileExtension: '.pdf',
+            );
+
+            if (newName != null) {
+              await notifier.compressAndSavePdf(fileName: newName);
+            }
+          },
+        ),
       ],
     );
   }
