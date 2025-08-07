@@ -15,14 +15,19 @@ class AegisDocsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    final themeMode = ref.watch(themeProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
 
-    return MaterialApp.router(
-      title: 'Aegis Docs',
-      routerConfig: router,
-      themeMode: themeMode,
-      theme: lightTheme,
-      darkTheme: darkTheme,
+    return themeMode.when(
+      data: (mode) => MaterialApp.router(
+        title: 'Aegis Docs',
+        routerConfig: router,
+        themeMode: mode,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        debugShowCheckedModeBanner: false,
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error loading theme: $err')),
     );
   }
 }

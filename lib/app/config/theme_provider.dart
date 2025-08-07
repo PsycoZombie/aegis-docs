@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
+part 'theme_provider.g.dart';
 
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(_getInitialTheme());
+const _themePrefsKey = 'appTheme';
 
-  static ThemeMode _getInitialTheme() {
-    final brightness =
-        SchedulerBinding.instance.platformDispatcher.platformBrightness;
-    return brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+@Riverpod(keepAlive: true)
+class ThemeNotifier extends _$ThemeNotifier {
+  late SharedPreferences _prefs;
+
+  @override
+  Future<ThemeMode> build() async {
+    _prefs = await SharedPreferences.getInstance();
+    return _loadThemeFromPrefs();
   }
 
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  ThemeMode _loadThemeFromPrefs() {
+    final themeIndex = _prefs.getInt(_themePrefsKey);
+    if (themeIndex == null) {
+      final brightness =
+          SchedulerBinding.instance.platformDispatcher.platformBrightness;
+      return brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+    }
+    return ThemeMode.values[themeIndex];
+  }
+
+  Future<void> toggleTheme() async {
+    final newTheme = state.value == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
+
+    await _prefs.setInt(_themePrefsKey, newTheme.index);
+
+    state = AsyncValue.data(newTheme);
   }
 }

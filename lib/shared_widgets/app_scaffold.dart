@@ -18,12 +18,12 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = ref.watch(themeProvider);
+    final currentTheme = ref.watch(themeNotifierProvider);
 
     final themeToggleButton = IconButton(
       tooltip: 'Toggle Theme',
       onPressed: () {
-        ref.read(themeProvider.notifier).toggleTheme();
+        ref.read(themeNotifierProvider.notifier).toggleTheme();
       },
       icon: Icon(
         currentTheme == ThemeMode.dark
