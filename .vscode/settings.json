@@ -1,3 +1,7 @@
 {
-  "cmake.sourceDirectory": "D:/Desktop/cats/aegis_docs/linux"
+  "cmake.sourceDirectory": "D:/Desktop/cats/aegis_docs/linux",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+  }
 }

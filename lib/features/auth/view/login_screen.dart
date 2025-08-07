@@ -12,10 +12,10 @@ class AuthStateListener extends ConsumerWidget {
     ref.listen<AuthState>(localAuthProvider, (previous, next) {
       if (next == AuthState.error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            content: const Text(
+            content: Text(
               'Authentication Failed. Please try again.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white),
@@ -28,11 +28,28 @@ class AuthStateListener extends ConsumerWidget {
   }
 }
 
-class LoginScreen extends ConsumerWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(localAuthProvider) == AuthState.initial) {
+        ref
+            .read(localAuthProvider.notifier)
+            .authenticateWithDeviceCredentials();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(localAuthProvider);
     final isLoading = authState == AuthState.loading;
     final textTheme = Theme.of(context).textTheme;
