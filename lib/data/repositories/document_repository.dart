@@ -33,9 +33,12 @@ class DocumentRepository {
        _encryptionService = encryptionService;
 
   Future<ProcessedFileResult> pickImage() => _filePickerService.pickImage();
+
   Future<PickedFile?> pickPdf() => _filePickerService.pickPdf();
+
   Future<List<ProcessedFileResult>> pickMultipleImages() =>
       _filePickerService.pickMultipleImages();
+
   Future<Uint8List> resizeImage(
     Uint8List imageBytes, {
     required int width,
@@ -47,12 +50,62 @@ class DocumentRepository {
     height: height,
     outputFormat: outputFormat,
   );
+
+  Future<void> saveEncryptedDocument({
+    required String fileName,
+    required Uint8List data,
+    String? folderPath,
+  }) async {
+    final encryptedDataBytes = await _encryptionService.encrypt(data);
+    await _fileStorageService.saveToPrivateDirectory(
+      fileName: fileName,
+      data: encryptedDataBytes,
+      folderPath: folderPath,
+    );
+  }
+
+  Future<Uint8List?> loadDecryptedDocument({
+    required String fileName,
+    String? folderPath,
+  }) async {
+    final encryptedDataBytes = await _fileStorageService
+        .loadFromPrivateDirectory(fileName: fileName, folderPath: folderPath);
+    if (encryptedDataBytes == null) return null;
+    return await _encryptionService.decrypt(encryptedDataBytes);
+  }
+
+  Future<void> deleteEncryptedDocument({
+    required String fileName,
+    String? folderPath,
+  }) async {
+    await _fileStorageService.deleteFromPrivateDirectory(
+      fileName: fileName,
+      folderPath: folderPath,
+    );
+  }
+
+  Future<List<FileSystemEntity>> listWalletContents({String? folderPath}) =>
+      _fileStorageService.listDirectoryContents(folderPath: folderPath);
+
+  Future<void> createFolderInWallet({
+    required String folderName,
+    String? parentFolderPath,
+  }) => _fileStorageService.createFolder(
+    folderName: folderName,
+    parentFolderPath: parentFolderPath,
+  );
+
+  Future<void> deleteFolderFromWallet({required String folderPath}) =>
+      _fileStorageService.deleteFolder(folderPath: folderPath);
+
   Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 85}) =>
       _imageProcessor.compressImage(imageBytes: imageBytes, quality: quality);
+
   Future<Uint8List?> cropImage(
     Uint8List imageBytes, {
     required ThemeData theme,
   }) => _imageProcessor.crop(imageBytes: imageBytes, theme: theme);
+
   Future<Uint8List> changeImageFormat(
     Uint8List imageBytes, {
     required String originalFormat,
@@ -62,16 +115,18 @@ class DocumentRepository {
     originalFormat: originalFormat,
     targetFormat: targetFormat,
   );
+
   Future<Uint8List> convertImageToPdf(Uint8List imageBytes) =>
       _pdfProcessor.convertImageToPdf(imageBytes: imageBytes);
+
   Future<List<Uint8List>> convertPdfToImages(Uint8List pdfBytes) =>
       _pdfProcessor.convertPdfToImages(pdfBytes: pdfBytes);
+
   Future<String?> compressPdfWithNative({
     required String filePath,
     required int sizeLimit,
     required bool preserveText,
   }) async {
-    // The file picking logic has been removed.
     return _nativeCompressionService.compressPdf(
       filePath: filePath,
       sizeLimit: sizeLimit,
@@ -84,30 +139,6 @@ class DocumentRepository {
 
   Future<String?> saveDocument(Uint8List bytes, {required String fileName}) =>
       _fileStorageService.saveFile(bytes, fileName);
-
-  Future<void> saveEncryptedDocument({
-    required String fileName,
-    required Uint8List data,
-  }) async {
-    final encryptedDataBytes = await _encryptionService.encrypt(data);
-
-    await _fileStorageService.saveToPrivateDirectory(
-      fileName: fileName,
-      data: encryptedDataBytes,
-    );
-  }
-
-  Future<Uint8List?> loadDecryptedDocument(String fileName) async {
-    final encryptedDataBytes = await _fileStorageService
-        .loadFromPrivateDirectory(fileName);
-    if (encryptedDataBytes == null) return null;
-
-    return _encryptionService.decrypt(encryptedDataBytes);
-  }
-
-  Future<void> deleteEncryptedDocument(String fileName) async {
-    await _fileStorageService.deleteFromPrivateDirectory(fileName);
-  }
 
   Future<List<File>> listEncryptedFiles() async {
     return _fileStorageService.listPrivateFiles();

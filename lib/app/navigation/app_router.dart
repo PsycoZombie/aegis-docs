@@ -29,7 +29,11 @@ final List<RouteBase> appRoutes = [
         path: '/document/:fileName',
         builder: (context, state) {
           final fileName = state.pathParameters['fileName']!;
-          return DocumentDetailScreen(fileName: fileName);
+          final folderPath = state.extra as String?;
+          return DocumentDetailScreen(
+            fileName: fileName,
+            folderPath: folderPath,
+          );
         },
       ),
       GoRoute(

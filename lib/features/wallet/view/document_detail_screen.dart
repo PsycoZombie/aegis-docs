@@ -6,42 +6,50 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class DocumentDetailScreen extends ConsumerWidget {
   final String fileName;
+  final String? folderPath;
 
-  const DocumentDetailScreen({super.key, required this.fileName});
+  const DocumentDetailScreen({
+    super.key,
+    required this.fileName,
+    this.folderPath,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final documentAsyncValue = ref.watch(
-      documentDetailProvider(fileName: fileName),
+      documentDetailProvider(fileName: fileName, folderPath: folderPath),
     );
     final isPdf = fileName.toLowerCase().endsWith('.pdf');
 
     return AppScaffold(
       title: fileName,
-      body: Center(
-        child: documentAsyncValue.when(
-          loading: () => const CircularProgressIndicator(),
-          error: (error, stack) => Text('Error loading document: $error'),
-          data: (decryptedData) {
-            if (decryptedData == null) {
-              return const Text('Could not load or decrypt the document.');
-            }
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: documentAsyncValue.when(
+            loading: () => const CircularProgressIndicator(),
+            error: (error, stack) => Text('Error loading document: $error'),
+            data: (decryptedData) {
+              if (decryptedData == null) {
+                return const Text('Could not load or decrypt the document.');
+              }
 
-            final Widget documentView = isPdf
-                ? SfPdfViewer.memory(decryptedData)
-                : InteractiveViewer(
-                    child: Image.memory(decryptedData, fit: BoxFit.contain),
-                  );
+              final Widget documentView = isPdf
+                  ? SfPdfViewer.memory(decryptedData)
+                  : InteractiveViewer(
+                      child: Image.memory(decryptedData, fit: BoxFit.contain),
+                    );
 
-            return Card(
-              elevation: 4,
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: documentView,
-            );
-          },
+              return Card(
+                elevation: 4,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: documentView,
+              );
+            },
+          ),
         ),
       ),
     );

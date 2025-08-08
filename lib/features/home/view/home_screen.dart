@@ -8,115 +8,230 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
-    final walletState = ref.watch(walletProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
 
-    return AppScaffold(
-      title: 'Aegis Docs',
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          tooltip: 'Logout',
-          onPressed: () {
-            ref.read(localAuthProvider.notifier).logout();
-          },
-        ),
-      ],
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.wallet_outlined, color: colorScheme.primary),
-                const SizedBox(width: 8),
-                Text('My Wallet', style: textTheme.headlineSmall),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => ref.read(walletProvider.notifier).refresh(),
-                child: walletState.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(child: Text('Error: $error')),
-                  data: (files) {
-                    if (files.isEmpty) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest.withAlpha(
-                            (0.5 * 255).toInt(),
-                          ),
-                          border: Border.all(
-                            color: colorScheme.outline.withAlpha(
-                              (0.5 * 255).toInt(),
-                            ),
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: Text('Your saved documents will appear here.'),
-                        ),
-                      );
-                    }
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 0.8,
-                          ),
-                      itemCount: files.length,
-                      itemBuilder: (context, index) {
-                        final file = files[index];
-                        final fileName = p.basename(file.path);
-                        return _DocumentCard(file: file, fileName: fileName);
-                      },
-                    );
-                  },
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  String? _currentFolderPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final walletState = ref.watch(walletViewModelProvider(_currentFolderPath));
+    final notifier = ref.read(
+      walletViewModelProvider(_currentFolderPath).notifier,
+    );
+
+    return PopScope(
+      canPop: _currentFolderPath == null,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        setState(() {
+          final parent = p.dirname(_currentFolderPath!);
+          _currentFolderPath = (parent == '.') ? null : parent;
+        });
+      },
+      child: AppScaffold(
+        title: 'Secure Wallet',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.create_new_folder_outlined),
+            tooltip: 'New Folder',
+            onPressed: () => _showCreateFolderDialog(context, notifier),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout') {
+                ref.read(localAuthProvider.notifier).logout();
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: ListTile(
+                  leading: Icon(Icons.logout),
+                  title: Text('Logout'),
                 ),
+              ),
+            ],
+          ),
+        ],
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _BreadcrumbNavigation(
+                path: _currentFolderPath,
+                onPathChanged: (newPath) {
+                  setState(() {
+                    _currentFolderPath = newPath;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async => notifier.refresh(),
+                  child: walletState.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) =>
+                        Center(child: Text('Error: $error')),
+                    data: (state) {
+                      if (state.folders.isEmpty && state.files.isEmpty) {
+                        return const Center(
+                          child: Text('This folder is empty.'),
+                        );
+                      }
+                      return GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
+                        itemCount: state.folders.length + state.files.length,
+                        itemBuilder: (context, index) {
+                          if (index < state.folders.length) {
+                            final folder = state.folders[index];
+                            return _FolderCard(
+                              folder: folder,
+                              onTap: () {
+                                setState(() {
+                                  final folderName = p.basename(folder.path);
+                                  _currentFolderPath =
+                                      _currentFolderPath == null
+                                      ? folderName
+                                      : p.join(_currentFolderPath!, folderName);
+                                });
+                              },
+                            );
+                          }
+                          final fileIndex = index - state.folders.length;
+                          final file = state.files[fileIndex];
+                          return _DocumentCard(
+                            file: file,
+                            folderPath: _currentFolderPath,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            context.push('/hub');
+          },
+          label: const Text('Start New Prep'),
+          icon: const Icon(Icons.add),
+        ),
+      ),
+    );
+  }
+
+  void _showCreateFolderDialog(BuildContext context, WalletViewModel notifier) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create New Folder'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: 'Folder Name'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (controller.text.isNotEmpty) {
+                  final success = await notifier.createFolder(
+                    folderName: controller.text,
+                    parentFolderPath: _currentFolderPath,
+                  );
+                  if (success && context.mounted) {
+                    context.pop();
+                  } else if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'A folder named "${controller.text}" already exists.',
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FolderCard extends StatelessWidget {
+  final Directory folder;
+  final VoidCallback onTap;
+
+  const _FolderCard({required this.folder, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Card(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.folder, size: 50, color: Colors.amber),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                p.basename(folder.path),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.push('/hub').then((_) {
-            ref.read(walletProvider.notifier).refresh();
-          });
-        },
-        label: const Text('Start New Prep'),
-        icon: const Icon(Icons.add),
       ),
     );
   }
 }
 
 class _DocumentCard extends ConsumerWidget {
-  const _DocumentCard({required this.file, required this.fileName});
-
   final File file;
-  final String fileName;
+  final String? folderPath;
+
+  const _DocumentCard({required this.file, this.folderPath});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final fileName = p.basename(file.path);
     final isPdf = fileName.toLowerCase().endsWith('.pdf');
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          context.push('/document/$fileName');
+          context.push('/document/$fileName', extra: folderPath);
         },
         child: GridTile(
           header: Align(
@@ -143,8 +258,13 @@ class _DocumentCard extends ConsumerWidget {
                         ),
                         onPressed: () {
                           ref
-                              .read(walletProvider.notifier)
-                              .deleteDocument(fileName);
+                              .read(
+                                walletViewModelProvider(folderPath).notifier,
+                              )
+                              .deleteDocument(
+                                fileName: fileName,
+                                folderPath: folderPath,
+                              );
                           context.pop();
                         },
                       ),
@@ -164,6 +284,53 @@ class _DocumentCard extends ConsumerWidget {
             color: isPdf ? Colors.red.shade300 : Colors.blue.shade300,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BreadcrumbNavigation extends StatelessWidget {
+  final String? path;
+  final ValueChanged<String?> onPathChanged;
+
+  const _BreadcrumbNavigation({
+    required this.path,
+    required this.onPathChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = path?.split(p.separator) ?? [];
+    return SizedBox(
+      height: 30,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: parts.length + 1,
+        separatorBuilder: (context, index) => const Center(
+          child: Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+        ),
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Center(
+              child: InkWell(
+                onTap: () => onPathChanged(null),
+                child: const Text(
+                  'Wallet',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+          }
+          final partIndex = index - 1;
+          final currentPart = parts[partIndex];
+          final currentPath = p.joinAll(parts.sublist(0, partIndex + 1));
+          return Center(
+            child: InkWell(
+              onTap: () => onPathChanged(currentPath),
+              child: Text(currentPart),
+            ),
+          );
+        },
       ),
     );
   }

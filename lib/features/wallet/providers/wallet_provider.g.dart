@@ -6,7 +6,7 @@ part of 'wallet_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$documentDetailHash() => r'dbd2c46b3a3d85ba00cc38378d19c9d88958a514';
+String _$documentDetailHash() => r'c50fdffb8a6ee3026335216575f05b20fe2e89bc';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,15 +39,18 @@ class DocumentDetailFamily extends Family<AsyncValue<Uint8List?>> {
   const DocumentDetailFamily();
 
   /// See also [documentDetail].
-  DocumentDetailProvider call({required String fileName}) {
-    return DocumentDetailProvider(fileName: fileName);
+  DocumentDetailProvider call({
+    required String fileName,
+    required String? folderPath,
+  }) {
+    return DocumentDetailProvider(fileName: fileName, folderPath: folderPath);
   }
 
   @override
   DocumentDetailProvider getProviderOverride(
     covariant DocumentDetailProvider provider,
   ) {
-    return call(fileName: provider.fileName);
+    return call(fileName: provider.fileName, folderPath: provider.folderPath);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -68,19 +71,26 @@ class DocumentDetailFamily extends Family<AsyncValue<Uint8List?>> {
 /// See also [documentDetail].
 class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
   /// See also [documentDetail].
-  DocumentDetailProvider({required String fileName})
-    : this._internal(
-        (ref) => documentDetail(ref as DocumentDetailRef, fileName: fileName),
-        from: documentDetailProvider,
-        name: r'documentDetailProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$documentDetailHash,
-        dependencies: DocumentDetailFamily._dependencies,
-        allTransitiveDependencies:
-            DocumentDetailFamily._allTransitiveDependencies,
-        fileName: fileName,
-      );
+  DocumentDetailProvider({
+    required String fileName,
+    required String? folderPath,
+  }) : this._internal(
+         (ref) => documentDetail(
+           ref as DocumentDetailRef,
+           fileName: fileName,
+           folderPath: folderPath,
+         ),
+         from: documentDetailProvider,
+         name: r'documentDetailProvider',
+         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+             ? null
+             : _$documentDetailHash,
+         dependencies: DocumentDetailFamily._dependencies,
+         allTransitiveDependencies:
+             DocumentDetailFamily._allTransitiveDependencies,
+         fileName: fileName,
+         folderPath: folderPath,
+       );
 
   DocumentDetailProvider._internal(
     super._createNotifier, {
@@ -90,9 +100,11 @@ class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.fileName,
+    required this.folderPath,
   }) : super.internal();
 
   final String fileName;
+  final String? folderPath;
 
   @override
   Override overrideWith(
@@ -108,6 +120,7 @@ class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         fileName: fileName,
+        folderPath: folderPath,
       ),
     );
   }
@@ -119,13 +132,16 @@ class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
 
   @override
   bool operator ==(Object other) {
-    return other is DocumentDetailProvider && other.fileName == fileName;
+    return other is DocumentDetailProvider &&
+        other.fileName == fileName &&
+        other.folderPath == folderPath;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, fileName.hashCode);
+    hash = _SystemHash.combine(hash, folderPath.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -136,6 +152,9 @@ class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
 mixin DocumentDetailRef on AutoDisposeFutureProviderRef<Uint8List?> {
   /// The parameter `fileName` of this provider.
   String get fileName;
+
+  /// The parameter `folderPath` of this provider.
+  String? get folderPath;
 }
 
 class _DocumentDetailProviderElement
@@ -145,23 +164,142 @@ class _DocumentDetailProviderElement
 
   @override
   String get fileName => (origin as DocumentDetailProvider).fileName;
+  @override
+  String? get folderPath => (origin as DocumentDetailProvider).folderPath;
 }
 
-String _$walletHash() => r'56cff6cf8206e60b2ca84d279748588d14b82a2b';
+String _$walletViewModelHash() => r'779698c4d5c4757dbc9ce93bfbfb8bd08af2c0d7';
 
-/// See also [Wallet].
-@ProviderFor(Wallet)
-final walletProvider =
-    AutoDisposeAsyncNotifierProvider<Wallet, List<File>>.internal(
-      Wallet.new,
-      name: r'walletProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$walletHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+abstract class _$WalletViewModel
+    extends BuildlessAutoDisposeAsyncNotifier<WalletState> {
+  late final String? folderPath;
+
+  FutureOr<WalletState> build(String? folderPath);
+}
+
+/// See also [WalletViewModel].
+@ProviderFor(WalletViewModel)
+const walletViewModelProvider = WalletViewModelFamily();
+
+/// See also [WalletViewModel].
+class WalletViewModelFamily extends Family<AsyncValue<WalletState>> {
+  /// See also [WalletViewModel].
+  const WalletViewModelFamily();
+
+  /// See also [WalletViewModel].
+  WalletViewModelProvider call(String? folderPath) {
+    return WalletViewModelProvider(folderPath);
+  }
+
+  @override
+  WalletViewModelProvider getProviderOverride(
+    covariant WalletViewModelProvider provider,
+  ) {
+    return call(provider.folderPath);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'walletViewModelProvider';
+}
+
+/// See also [WalletViewModel].
+class WalletViewModelProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<WalletViewModel, WalletState> {
+  /// See also [WalletViewModel].
+  WalletViewModelProvider(String? folderPath)
+    : this._internal(
+        () => WalletViewModel()..folderPath = folderPath,
+        from: walletViewModelProvider,
+        name: r'walletViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$walletViewModelHash,
+        dependencies: WalletViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            WalletViewModelFamily._allTransitiveDependencies,
+        folderPath: folderPath,
+      );
+
+  WalletViewModelProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.folderPath,
+  }) : super.internal();
+
+  final String? folderPath;
+
+  @override
+  FutureOr<WalletState> runNotifierBuild(covariant WalletViewModel notifier) {
+    return notifier.build(folderPath);
+  }
+
+  @override
+  Override overrideWith(WalletViewModel Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: WalletViewModelProvider._internal(
+        () => create()..folderPath = folderPath,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        folderPath: folderPath,
+      ),
     );
+  }
 
-typedef _$Wallet = AutoDisposeAsyncNotifier<List<File>>;
+  @override
+  AutoDisposeAsyncNotifierProviderElement<WalletViewModel, WalletState>
+  createElement() {
+    return _WalletViewModelProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is WalletViewModelProvider && other.folderPath == folderPath;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, folderPath.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin WalletViewModelRef on AutoDisposeAsyncNotifierProviderRef<WalletState> {
+  /// The parameter `folderPath` of this provider.
+  String? get folderPath;
+}
+
+class _WalletViewModelProviderElement
+    extends
+        AutoDisposeAsyncNotifierProviderElement<WalletViewModel, WalletState>
+    with WalletViewModelRef {
+  _WalletViewModelProviderElement(super.provider);
+
+  @override
+  String? get folderPath => (origin as WalletViewModelProvider).folderPath;
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
