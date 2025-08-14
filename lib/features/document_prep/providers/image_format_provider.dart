@@ -87,7 +87,7 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
     });
   }
 
-  Future<void> saveImage({required String fileName}) async {
+  Future<void> saveImage({required String fileName, String? folderPath}) async {
     if (state.value?.convertedImage == null) {
       throw Exception("No converted image to save.");
     }
@@ -98,6 +98,7 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       await repo.saveEncryptedDocument(
         fileName: fileName,
         data: currentState.convertedImage!,
+        folderPath: folderPath,
       );
       return currentState.copyWith(isProcessing: false);
     });

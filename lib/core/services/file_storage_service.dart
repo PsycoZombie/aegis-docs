@@ -86,6 +86,21 @@ class FileStorageService {
     return [];
   }
 
+  Future<void> renameFile({
+    required String oldName,
+    required String newName,
+    String? folderPath,
+  }) async {
+    final directory = await _getPrivateDirectory(folderPath: folderPath);
+    final oldPath = p.join(directory.path, oldName);
+    final newPath = p.join(directory.path, newName);
+    final file = File(oldPath);
+    if (await file.exists()) {
+      await file.rename(newPath);
+      debugPrint('Renamed file to: $newPath');
+    }
+  }
+
   Future<void> createFolder({
     required String folderName,
     String? parentFolderPath,
@@ -153,6 +168,30 @@ class FileStorageService {
     return getDownloadsDirectory();
   }
 
+  Future<List<String>> listAllFoldersRecursively() async {
+    final baseDir = await _getBaseWalletDirectory();
+    final allFolders = <String>[];
+
+    void search(Directory dir) {
+      try {
+        final entities = dir.listSync();
+        for (final entity in entities) {
+          if (entity is Directory) {
+            final relativePath = p.relative(entity.path, from: baseDir.path);
+            allFolders.add(relativePath);
+            search(entity);
+          }
+        }
+      } catch (e) {
+        debugPrint('Could not list directory ${dir.path}: $e');
+      }
+    }
+
+    search(baseDir);
+    allFolders.sort();
+    return allFolders;
+  }
+
   Future<Directory> _getPrivateWalletDirectory() async {
     final appDocsDir = await getApplicationDocumentsDirectory();
     final walletDir = Directory(p.join(appDocsDir.path, _privateSubdirectory));
@@ -168,5 +207,20 @@ class FileStorageService {
       return directory.listSync().whereType<File>().toList();
     }
     return [];
+  }
+
+  Future<void> renameFolder({
+    required String oldPath,
+    required String newName,
+  }) async {
+    final baseDir = await _getBaseWalletDirectory();
+    final oldFullPath = p.join(baseDir.path, oldPath);
+    final parentPath = p.dirname(oldFullPath);
+    final newFullPath = p.join(parentPath, newName);
+    final directory = Directory(oldFullPath);
+    if (await directory.exists()) {
+      await directory.rename(newFullPath);
+      debugPrint('Renamed folder to: $newFullPath');
+    }
   }
 }

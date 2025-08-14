@@ -79,7 +79,10 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
     state = AsyncData(state.value!.copyWith(preserveText: value));
   }
 
-  Future<bool> compressAndSavePdf({required String fileName}) async {
+  Future<bool> compressAndSavePdf({
+    required String fileName,
+    String? folderPath,
+  }) async {
     if (state.value?.pickedPdf == null) return false;
 
     state = AsyncData(
@@ -109,7 +112,11 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
       if (await compressedFile.exists()) {
         final bytes = await compressedFile.readAsBytes();
 
-        await repo.saveEncryptedDocument(fileName: fileName, data: bytes);
+        await repo.saveEncryptedDocument(
+          fileName: fileName,
+          data: bytes,
+          folderPath: folderPath,
+        );
         await compressedFile.delete();
         success = true;
 

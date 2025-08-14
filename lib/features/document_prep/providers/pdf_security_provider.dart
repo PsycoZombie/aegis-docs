@@ -1,8 +1,9 @@
+// file: features/document_prep/providers/pdf_security_provider.dart
+
 import 'dart:async';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'document_providers.dart';
@@ -12,13 +13,16 @@ part 'pdf_security_provider.g.dart';
 @immutable
 class PdfSecurityState {
   final PickedFile? pickedPdf;
+  final Uint8List? processedPdfBytes;
   final bool? isEncrypted;
   final bool isProcessing;
+  // THE FIX: Add the missing successMessage and errorMessage fields.
   final String? successMessage;
   final String? errorMessage;
 
   const PdfSecurityState({
     this.pickedPdf,
+    this.processedPdfBytes,
     this.isEncrypted,
     this.isProcessing = false,
     this.successMessage,
@@ -27,6 +31,7 @@ class PdfSecurityState {
 
   PdfSecurityState copyWith({
     PickedFile? pickedPdf,
+    ValueGetter<Uint8List?>? processedPdfBytes,
     bool? isEncrypted,
     bool? isProcessing,
     String? successMessage,
@@ -34,8 +39,12 @@ class PdfSecurityState {
   }) {
     return PdfSecurityState(
       pickedPdf: pickedPdf ?? this.pickedPdf,
+      processedPdfBytes: processedPdfBytes != null
+          ? processedPdfBytes()
+          : this.processedPdfBytes,
       isEncrypted: isEncrypted ?? this.isEncrypted,
       isProcessing: isProcessing ?? this.isProcessing,
+      // Use null-aware assignment to allow clearing the messages.
       successMessage: successMessage,
       errorMessage: errorMessage,
     );
@@ -57,7 +66,11 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
   Future<bool> lockPdf(String password) async {
     if (state.value?.pickedPdf == null) return false;
     state = AsyncData(
-      state.value!.copyWith(isProcessing: true, errorMessage: null),
+      state.value!.copyWith(
+        isProcessing: true,
+        errorMessage: null,
+        successMessage: null,
+      ),
     );
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
@@ -65,14 +78,10 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         state.value!.pickedPdf!.bytes,
         password: password,
       );
-      await repo.saveEncryptedDocument(
-        fileName: state.value!.pickedPdf!.name,
-        data: newBytes,
-      );
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
-          successMessage: 'PDF locked and saved!',
+          processedPdfBytes: () => newBytes,
         ),
       );
       return true;
@@ -90,7 +99,11 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
   Future<bool> unlockPdf(String password) async {
     if (state.value?.pickedPdf == null) return false;
     state = AsyncData(
-      state.value!.copyWith(isProcessing: true, errorMessage: null),
+      state.value!.copyWith(
+        isProcessing: true,
+        errorMessage: null,
+        successMessage: null,
+      ),
     );
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
@@ -98,14 +111,10 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         state.value!.pickedPdf!.bytes,
         password: password,
       );
-      await repo.saveEncryptedDocument(
-        fileName: state.value!.pickedPdf!.name,
-        data: newBytes,
-      );
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
-          successMessage: 'PDF unlocked and saved!',
+          processedPdfBytes: () => newBytes,
         ),
       );
       return true;
@@ -124,7 +133,11 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
   Future<bool> changePassword(String oldPassword, String newPassword) async {
     if (state.value?.pickedPdf == null) return false;
     state = AsyncData(
-      state.value!.copyWith(isProcessing: true, errorMessage: null),
+      state.value!.copyWith(
+        isProcessing: true,
+        errorMessage: null,
+        successMessage: null,
+      ),
     );
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
@@ -133,14 +146,10 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         oldPassword: oldPassword,
         newPassword: newPassword,
       );
-      await repo.saveEncryptedDocument(
-        fileName: state.value!.pickedPdf!.name,
-        data: newBytes,
-      );
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
-          successMessage: 'Password changed and saved!',
+          processedPdfBytes: () => newBytes,
         ),
       );
       return true;
@@ -154,5 +163,26 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
       );
       return false;
     }
+  }
+
+  Future<void> savePdf({required String fileName, String? folderPath}) async {
+    if (state.value?.processedPdfBytes == null) {
+      throw Exception("No processed PDF to save.");
+    }
+    final currentState = state.value!;
+    state = AsyncData(currentState.copyWith(isProcessing: true));
+    state = await AsyncValue.guard(() async {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      await repo.saveEncryptedDocument(
+        fileName: fileName,
+        data: currentState.processedPdfBytes!,
+        folderPath: folderPath,
+      );
+      // THE FIX: Set the success message here, after a successful save.
+      return currentState.copyWith(
+        isProcessing: false,
+        successMessage: 'PDF security updated and saved!',
+      );
+    });
   }
 }

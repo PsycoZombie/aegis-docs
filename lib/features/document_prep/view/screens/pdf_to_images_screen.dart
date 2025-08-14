@@ -1,6 +1,7 @@
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_to_images_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_to_images/selectable_image_grid.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/multi_save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ class PdfToImagesScreen extends ConsumerWidget {
                 child: Text('No PDF was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, ref);
           },
         ),
       ),
@@ -43,6 +44,7 @@ class PdfToImagesScreen extends ConsumerWidget {
     BuildContext context,
     PdfToImagesState state,
     PdfToImagesViewModel notifier,
+    WidgetRef ref,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,14 +113,17 @@ class PdfToImagesScreen extends ConsumerWidget {
                       state.originalPdf!.name,
                     );
 
-                    final baseName = await showMultiSaveOptionsDialog(
+                    final saveResult = await showMultiSaveOptionsDialog(
                       context,
                       defaultBaseName: defaultName,
                       fileCount: state.selectedImageIndices.length,
                     );
 
-                    if (baseName != null) {
-                      await notifier.saveSelectedImages(baseName: baseName);
+                    if (saveResult != null) {
+                      await notifier.saveSelectedImages(
+                        baseName: saveResult.baseName,
+                        folderPath: saveResult.folderPath,
+                      );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -128,6 +133,7 @@ class PdfToImagesScreen extends ConsumerWidget {
                             backgroundColor: Colors.green,
                           ),
                         );
+                        ref.invalidate(walletViewModelProvider);
                         context.pop();
                       }
                     }

@@ -8,7 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'document_providers.dart';
 
-part 'resize_tool_provider.g.dart';
+part 'image_resize_provider.g.dart';
 
 @immutable
 class ResizeState {
@@ -40,7 +40,7 @@ class ResizeState {
 }
 
 @Riverpod(keepAlive: false)
-class ResizeToolViewModel extends _$ResizeToolViewModel {
+class ImageResizeViewModel extends _$ImageResizeViewModel {
   @override
   Future<ResizeState> build(PickedFile? initialFile) async {
     if (initialFile == null) {
@@ -81,7 +81,10 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
     });
   }
 
-  Future<void> saveResizedImage({required String fileName}) async {
+  Future<void> saveResizedImage({
+    required String fileName,
+    String? folderPath,
+  }) async {
     if (state.value?.resizedImage == null) {
       throw Exception("No resized image available to save.");
     }
@@ -93,7 +96,11 @@ class ResizeToolViewModel extends _$ResizeToolViewModel {
 
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
-      await repo.saveEncryptedDocument(fileName: fileName, data: resizedBytes);
+      await repo.saveEncryptedDocument(
+        fileName: fileName,
+        data: resizedBytes,
+        folderPath: folderPath,
+      );
       return currentState;
     });
   }

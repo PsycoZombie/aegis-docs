@@ -2,6 +2,7 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_format_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/format_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_format/image_preview_section.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class ImageFormatScreen extends ConsumerWidget {
                 child: Text('No image was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, ref);
           },
         ),
       ),
@@ -44,6 +45,7 @@ class ImageFormatScreen extends ConsumerWidget {
     BuildContext context,
     ImageFormatState state,
     ImageFormatViewModel notifier,
+    WidgetRef ref,
   ) {
     return Column(
       children: [
@@ -63,14 +65,17 @@ class ImageFormatScreen extends ConsumerWidget {
             final extension = '.${state.targetFormat}';
             final defaultName = '${originalName}_formatted';
 
-            final newName = await showSaveOptionsDialog(
+            final saveResult = await showSaveOptionsDialog(
               context,
               defaultFileName: defaultName,
               fileExtension: extension,
             );
 
-            if (newName != null) {
-              await notifier.saveImage(fileName: newName);
+            if (saveResult != null) {
+              await notifier.saveImage(
+                fileName: saveResult.fileName,
+                folderPath: saveResult.folderPath,
+              );
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -78,6 +83,7 @@ class ImageFormatScreen extends ConsumerWidget {
                     backgroundColor: Colors.green,
                   ),
                 );
+                ref.invalidate(walletViewModelProvider);
                 context.pop();
               }
             }

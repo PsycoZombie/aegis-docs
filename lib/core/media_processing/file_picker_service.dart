@@ -64,6 +64,26 @@ class FilePickerService {
     }
   }
 
+  Future<PickedFile?> _processAndSanitizeFileForPdf(XFile file) async {
+    try {
+      final originalBytes = await file.readAsBytes();
+      final sanitizedBytes = await FlutterImageCompress.compressWithList(
+        originalBytes,
+        format: CompressFormat.jpeg,
+        quality: 95,
+      );
+      final finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
+      return PickedFile(
+        bytes: sanitizedBytes,
+        name: finalFileName,
+        path: file.path,
+      );
+    } catch (e) {
+      debugPrint('Failed to sanitize image for PDF: $e');
+      return null;
+    }
+  }
+
   Future<ProcessedFileResult> pickImage() async {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
@@ -112,5 +132,17 @@ class FilePickerService {
       }
     } catch (_) {}
     return null;
+  }
+
+  Future<List<PickedFile>> pickAndSanitizeMultipleImagesForPdf() async {
+    final List<XFile> pickedFiles = await _imagePicker.pickMultiImage();
+    if (pickedFiles.isNotEmpty) {
+      final results = await Future.wait(
+        pickedFiles.map(_processAndSanitizeFileForPdf),
+      );
+      // Filter out any files that failed to process
+      return results.whereType<PickedFile>().toList();
+    }
+    return [];
   }
 }

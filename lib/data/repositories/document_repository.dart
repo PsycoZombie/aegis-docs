@@ -32,6 +32,9 @@ class DocumentRepository {
        _fileStorageService = fileStorageService,
        _encryptionService = encryptionService;
 
+  Future<List<String>> listAllFolders() =>
+      _fileStorageService.listAllFoldersRecursively();
+
   Future<ProcessedFileResult> pickImage() => _filePickerService.pickImage();
 
   Future<PickedFile?> pickPdf() => _filePickerService.pickPdf();
@@ -162,4 +165,22 @@ class DocumentRepository {
     oldPassword: oldPassword,
     newPassword: newPassword,
   );
+
+  Future<List<PickedFile>> pickAndSanitizeMultipleImagesForPdf() =>
+      _filePickerService.pickAndSanitizeMultipleImagesForPdf();
+
+  Future<void> renameFileInWallet({
+    required String oldName,
+    required String newName,
+    String? folderPath,
+  }) => _fileStorageService.renameFile(
+    oldName: oldName,
+    newName: newName,
+    folderPath: folderPath,
+  );
+
+  Future<void> renameFolderInWallet({
+    required String oldPath,
+    required String newName,
+  }) => _fileStorageService.renameFolder(oldPath: oldPath, newName: newName);
 }

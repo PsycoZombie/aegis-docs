@@ -119,7 +119,7 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     });
   }
 
-  Future<void> saveImage({required String fileName}) async {
+  Future<void> saveImage({required String fileName, String? folderPath}) async {
     if (state.value?.currentImage == null) {
       throw Exception("No image to save.");
     }
@@ -131,7 +131,11 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
 
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
-      await repo.saveEncryptedDocument(fileName: fileName, data: editedBytes);
+      await repo.saveEncryptedDocument(
+        fileName: fileName,
+        data: editedBytes,
+        folderPath: folderPath,
+      );
       return currentState;
     });
   }

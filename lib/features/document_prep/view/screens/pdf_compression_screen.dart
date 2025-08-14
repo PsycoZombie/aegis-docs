@@ -2,6 +2,7 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_option_cards_widget.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_preview_section.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class PdfCompressionScreen extends ConsumerWidget {
                 child: Text('No PDF was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, ref);
           },
         ),
       ),
@@ -58,6 +59,7 @@ class PdfCompressionScreen extends ConsumerWidget {
     BuildContext context,
     PdfCompressionState state,
     PdfCompressionViewModel notifier,
+    WidgetRef ref,
   ) {
     return Column(
       children: [
@@ -74,23 +76,19 @@ class PdfCompressionScreen extends ConsumerWidget {
             );
             final defaultName = 'compressed_$originalName';
 
-            final newName = await showSaveOptionsDialog(
+            final saveResult = await showSaveOptionsDialog(
               context,
               defaultFileName: defaultName,
               fileExtension: '.pdf',
             );
 
-            if (newName != null) {
+            if (saveResult != null) {
               final success = await notifier.compressAndSavePdf(
-                fileName: newName,
+                fileName: saveResult.fileName,
+                folderPath: saveResult.folderPath,
               );
               if (success && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('PDF compressed and saved!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                ref.invalidate(walletViewModelProvider);
                 context.pop();
               }
             }

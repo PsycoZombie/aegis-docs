@@ -117,7 +117,10 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
     });
   }
 
-  Future<void> saveCompressedImage({required String fileName}) async {
+  Future<void> saveCompressedImage({
+    required String fileName,
+    String? folderPath,
+  }) async {
     if (state.value?.compressedImage == null) {
       throw Exception("No compressed image to save.");
     }
@@ -132,6 +135,7 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
       await repo.saveEncryptedDocument(
         fileName: fileName,
         data: compressedBytes,
+        folderPath: folderPath,
       );
       return currentState;
     });

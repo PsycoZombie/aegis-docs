@@ -1,5 +1,3 @@
-// file: features/document_prep/view/widgets/pdf_compression/pdf_preview_section.dart
-
 import 'package:aegis_docs/features/document_prep/providers/pdf_compression_provider.dart';
 import 'package:flutter/material.dart';
 

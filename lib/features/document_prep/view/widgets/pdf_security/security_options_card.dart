@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class SecurityOptionsCard extends ConsumerStatefulWidget {
   final PdfSecurityState state;
   final PdfSecurityViewModel notifier;
+  final VoidCallback onSave;
 
   const SecurityOptionsCard({
     super.key,
     required this.state,
     required this.notifier,
+    required this.onSave,
   });
 
   @override
@@ -49,27 +51,33 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
     }
   }
 
-  Future<void> _submit() async {
+  Future<void> _applySecurity() async {
     await Future.delayed(const Duration(milliseconds: 50));
     if (!mounted || !_formKey.currentState!.validate()) return;
 
+    Future<bool> action;
     if (widget.state.isEncrypted!) {
       if (_newPasswordController.text.isNotEmpty) {
-        await widget.notifier.changePassword(
+        action = widget.notifier.changePassword(
           _oldPasswordController.text,
           _newPasswordController.text,
         );
       } else {
-        await widget.notifier.unlockPdf(_oldPasswordController.text);
+        action = widget.notifier.unlockPdf(_oldPasswordController.text);
       }
     } else {
-      await widget.notifier.lockPdf(_newPasswordController.text);
+      action = widget.notifier.lockPdf(_newPasswordController.text);
+    }
+
+    final success = await action;
+
+    if (success && mounted) {
+      widget.onSave();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This check is necessary because isEncrypted can be null during the initial load
     if (widget.state.isEncrypted == null) {
       return const SizedBox.shrink();
     }
@@ -134,7 +142,7 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
                 ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: widget.state.isProcessing ? null : _submit,
+                onPressed: widget.state.isProcessing ? null : _applySecurity,
                 child: Text(
                   widget.state.isProcessing
                       ? 'Processing...'

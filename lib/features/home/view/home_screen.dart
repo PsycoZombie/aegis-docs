@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/rename_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -100,6 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             final folder = state.folders[index];
                             return _FolderCard(
                               folder: folder,
+                              currentPath: _currentFolderPath,
                               onTap: () {
                                 setState(() {
                                   final folderName = p.basename(folder.path);
@@ -184,17 +186,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _FolderCard extends StatelessWidget {
+class _FolderCard extends ConsumerWidget {
   final Directory folder;
+  final String? currentPath;
   final VoidCallback onTap;
 
-  const _FolderCard({required this.folder, required this.onTap});
+  const _FolderCard({
+    required this.folder,
+    required this.currentPath,
+    required this.onTap,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final folderName = p.basename(folder.path);
+    final folderPath = currentPath == null
+        ? folderName
+        : p.join(currentPath!, folderName);
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      onLongPress: () => _showContextMenu(context, ref, folderPath, true),
       child: Card(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -204,7 +216,7 @@ class _FolderCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
-                p.basename(folder.path),
+                folderName,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -227,53 +239,11 @@ class _DocumentCard extends ConsumerWidget {
     final fileName = p.basename(file.path);
     final isPdf = fileName.toLowerCase().endsWith('.pdf');
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          context.push('/document/$fileName', extra: folderPath);
-        },
+    return GestureDetector(
+      onTap: () => context.push('/document/$fileName', extra: folderPath),
+      onLongPress: () => _showContextMenu(context, ref, fileName, false),
+      child: Card(
         child: GridTile(
-          header: Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Document?'),
-                    content: Text(
-                      'Are you sure you want to delete "$fileName"?',
-                    ),
-                    actions: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () => context.pop(),
-                      ),
-                      TextButton(
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                        onPressed: () {
-                          ref
-                              .read(
-                                walletViewModelProvider(folderPath).notifier,
-                              )
-                              .deleteDocument(
-                                fileName: fileName,
-                                folderPath: folderPath,
-                              );
-                          context.pop();
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
           footer: GridTileBar(
             backgroundColor: Colors.black45,
             title: Text(fileName, overflow: TextOverflow.ellipsis),
@@ -287,6 +257,130 @@ class _DocumentCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+void _showContextMenu(
+  BuildContext context,
+  WidgetRef ref,
+  String path,
+  bool isFolder,
+) {
+  final RenderBox overlay =
+      Overlay.of(context).context.findRenderObject() as RenderBox;
+  final RenderBox button = context.findRenderObject() as RenderBox;
+  final position = RelativeRect.fromRect(
+    Rect.fromPoints(
+      button.localToGlobal(Offset.zero, ancestor: overlay),
+      button.localToGlobal(
+        button.size.bottomRight(Offset.zero),
+        ancestor: overlay,
+      ),
+    ),
+    Offset.zero & overlay.size,
+  );
+
+  showMenu(
+    context: context,
+    position: position,
+    items: [
+      PopupMenuItem(
+        value: 'rename',
+        child: const ListTile(leading: Icon(Icons.edit), title: Text('Rename')),
+      ),
+      PopupMenuItem(
+        value: 'delete',
+        child: const ListTile(
+          leading: Icon(Icons.delete_outline, color: Colors.red),
+          title: Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ),
+    ],
+  ).then((value) {
+    if (value == null) return;
+
+    final currentFolderPath = (context as Element)
+        .findAncestorStateOfType<_HomeScreenState>()
+        ?._currentFolderPath;
+    final notifier = ref.read(
+      walletViewModelProvider(currentFolderPath).notifier,
+    );
+
+    if (value == 'rename') {
+      if (context.mounted) {
+        // ignore: use_build_context_synchronously
+        _handleRename(context, notifier, path, isFolder, currentFolderPath);
+      }
+    } else if (value == 'delete') {
+      if (context.mounted) {
+        // ignore: use_build_context_synchronously
+        _handleDelete(context, notifier, path, isFolder, currentFolderPath);
+      }
+    }
+  });
+}
+
+Future<void> _handleRename(
+  BuildContext context,
+  WalletViewModel notifier,
+  String path,
+  bool isFolder,
+  String? currentFolderPath,
+) async {
+  final currentName = p.basename(path);
+  final newName = await showRenameDialog(
+    context,
+    currentName: currentName,
+    title: isFolder ? 'Rename Folder' : 'Rename File',
+  );
+
+  if (newName != null && newName != currentName) {
+    if (isFolder) {
+      await notifier.renameFolder(oldPath: path, newName: newName);
+    } else {
+      final extension = p.extension(currentName);
+      await notifier.renameFile(
+        oldName: currentName,
+        newName: '$newName$extension',
+        folderPath: currentFolderPath,
+      );
+    }
+  }
+}
+
+void _handleDelete(
+  BuildContext context,
+  WalletViewModel notifier,
+  String path,
+  bool isFolder,
+  String? currentFolderPath,
+) {
+  final name = p.basename(path);
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(isFolder ? 'Delete Folder?' : 'Delete Document?'),
+      content: Text(
+        'Are you sure you want to delete "$name"?\n${isFolder ? 'This will delete all contents inside.' : ''}\nThis action cannot be undone.',
+      ),
+      actions: [
+        TextButton(child: const Text('Cancel'), onPressed: () => context.pop()),
+        TextButton(
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          onPressed: () {
+            if (isFolder) {
+              notifier.deleteFolder(folderPathToDelete: path);
+            } else {
+              notifier.deleteDocument(
+                fileName: name,
+                folderPath: currentFolderPath,
+              );
+            }
+            context.pop();
+          },
+        ),
+      ],
+    ),
+  );
 }
 
 class _BreadcrumbNavigation extends StatelessWidget {

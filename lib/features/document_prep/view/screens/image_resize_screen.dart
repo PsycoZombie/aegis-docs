@@ -1,8 +1,9 @@
 import 'package:aegis_docs/data/models/picked_file_model.dart';
-import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
+import 'package:aegis_docs/features/document_prep/providers/image_resize_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/image_preview_section.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/size_reduction_info.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
 
   void _onWidthChanged() {
     final state = ref
-        .read(resizeToolViewModelProvider(widget.initialFile))
+        .read(imageResizeViewModelProvider(widget.initialFile))
         .value;
     if (_isUpdatingFromListener ||
         state == null ||
@@ -66,7 +67,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
 
   void _onHeightChanged() {
     final state = ref
-        .read(resizeToolViewModelProvider(widget.initialFile))
+        .read(imageResizeViewModelProvider(widget.initialFile))
         .value;
     if (_isUpdatingFromListener ||
         state == null ||
@@ -90,13 +91,13 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = ref.watch(
-      resizeToolViewModelProvider(widget.initialFile),
+      imageResizeViewModelProvider(widget.initialFile),
     );
     final notifier = ref.read(
-      resizeToolViewModelProvider(widget.initialFile).notifier,
+      imageResizeViewModelProvider(widget.initialFile).notifier,
     );
 
-    ref.listen(resizeToolViewModelProvider(widget.initialFile), (_, next) {
+    ref.listen(imageResizeViewModelProvider(widget.initialFile), (_, next) {
       if (next.isLoading) return;
       final state = next.value;
       if (state != null) {
@@ -137,7 +138,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   Widget _buildContent(
     BuildContext context,
     ResizeState state,
-    ResizeToolViewModel notifier,
+    ImageResizeViewModel notifier,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,14 +168,17 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
             final extension = p.extension(state.originalImage!.name);
             final defaultName = 'resized_$originalName';
 
-            final newName = await showSaveOptionsDialog(
+            final saveResult = await showSaveOptionsDialog(
               context,
               defaultFileName: defaultName,
               fileExtension: extension.isNotEmpty ? extension : '.jpg',
             );
 
-            if (newName != null) {
-              await notifier.saveResizedImage(fileName: newName);
+            if (saveResult != null) {
+              await notifier.saveResizedImage(
+                fileName: saveResult.fileName,
+                folderPath: saveResult.folderPath,
+              );
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -182,6 +186,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
                     backgroundColor: Colors.green,
                   ),
                 );
+                ref.invalidate(walletViewModelProvider);
                 context.pop();
               }
             }

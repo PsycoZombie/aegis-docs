@@ -2,6 +2,7 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/compression_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/image_preview_section.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,7 @@ class ImageCompressionScreen extends ConsumerWidget {
                 child: Text('No image was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, ref);
           },
         ),
       ),
@@ -61,6 +62,7 @@ class ImageCompressionScreen extends ConsumerWidget {
     BuildContext context,
     CompressionState state,
     ImageCompressionViewModel notifier,
+    WidgetRef ref,
   ) {
     return Column(
       children: [
@@ -80,14 +82,17 @@ class ImageCompressionScreen extends ConsumerWidget {
             final extension = p.extension(state.originalImage!.name);
             final defaultName = 'compressed_$originalName';
 
-            final newName = await showSaveOptionsDialog(
+            final saveResult = await showSaveOptionsDialog(
               context,
               defaultFileName: defaultName,
               fileExtension: extension.isNotEmpty ? extension : '.jpg',
             );
 
-            if (newName != null) {
-              await notifier.saveCompressedImage(fileName: newName);
+            if (saveResult != null) {
+              await notifier.saveCompressedImage(
+                fileName: saveResult.fileName,
+                folderPath: saveResult.folderPath,
+              );
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -95,6 +100,7 @@ class ImageCompressionScreen extends ConsumerWidget {
                     backgroundColor: Colors.green,
                   ),
                 );
+                ref.invalidate(walletViewModelProvider);
                 context.pop();
               }
             }

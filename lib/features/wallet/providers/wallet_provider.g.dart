@@ -6,6 +6,23 @@ part of 'wallet_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$allFoldersHash() => r'd9ad430657262cbc7f0316248cac93c605d581aa';
+
+/// See also [allFolders].
+@ProviderFor(allFolders)
+final allFoldersProvider = AutoDisposeFutureProvider<List<String>>.internal(
+  allFolders,
+  name: r'allFoldersProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allFoldersHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AllFoldersRef = AutoDisposeFutureProviderRef<List<String>>;
 String _$documentDetailHash() => r'c50fdffb8a6ee3026335216575f05b20fe2e89bc';
 
 /// Copied from Dart SDK
@@ -168,7 +185,7 @@ class _DocumentDetailProviderElement
   String? get folderPath => (origin as DocumentDetailProvider).folderPath;
 }
 
-String _$walletViewModelHash() => r'779698c4d5c4757dbc9ce93bfbfb8bd08af2c0d7';
+String _$walletViewModelHash() => r'22334cc75a80aea54b33a3cd6a1996d1af508dc8';
 
 abstract class _$WalletViewModel
     extends BuildlessAutoDisposeAsyncNotifier<WalletState> {

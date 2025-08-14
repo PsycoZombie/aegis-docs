@@ -7,7 +7,7 @@ part of 'image_editing_provider.dart';
 // **************************************************************************
 
 String _$imageEditingViewModelHash() =>
-    r'2663dd80e0114313320be506b188e5a615a06534';
+    r'5d3cc50c01aab39298816dd226c33e6f104729ba';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -73,7 +73,7 @@ class ImagesToPdfViewModel extends _$ImagesToPdfViewModel {
     });
   }
 
-  Future<void> savePdf({required String fileName}) async {
+  Future<void> savePdf({required String fileName, String? folderPath}) async {
     if (state.value?.generatedPdf == null) {
       throw Exception("No PDF to save.");
     }
@@ -84,6 +84,7 @@ class ImagesToPdfViewModel extends _$ImagesToPdfViewModel {
       await repo.saveEncryptedDocument(
         fileName: fileName,
         data: currentState.generatedPdf!,
+        folderPath: folderPath,
       );
       return currentState.copyWith(isProcessing: false);
     });

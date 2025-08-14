@@ -1,4 +1,3 @@
-import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -113,23 +112,17 @@ class _FeatureButton extends StatelessWidget {
               }
               break;
             case PickType.multiImage:
-              final results = await repo.pickMultipleImages();
-              final pickedFiles = results
-                  .map((res) => res.$1)
-                  .whereType<PickedFile>()
-                  .toList();
-              final anyConverted = results.any((res) => res.$2);
+              final pickedFiles = await repo
+                  .pickAndSanitizeMultipleImagesForPdf();
               if (pickedFiles.isNotEmpty && context.mounted) {
-                if (anyConverted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'One or more unsupported formats were converted to JPG.',
-                      ),
-                      backgroundColor: Colors.orange,
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Images sanitized and ready for PDF conversion.',
                     ),
-                  );
-                }
+                    backgroundColor: Colors.blue,
+                  ),
+                );
                 context.push(path, extra: pickedFiles);
               }
               break;

@@ -80,6 +80,35 @@ class WalletViewModel extends _$WalletViewModel {
   void refresh() {
     ref.invalidateSelf();
   }
+
+  Future<void> renameFile({
+    required String oldName,
+    required String newName,
+    required String? folderPath,
+  }) async {
+    final repository = await ref.read(documentRepositoryProvider.future);
+    await repository.renameFileInWallet(
+      oldName: oldName,
+      newName: newName,
+      folderPath: folderPath,
+    );
+    ref.invalidateSelf();
+  }
+
+  Future<void> renameFolder({
+    required String oldPath,
+    required String newName,
+  }) async {
+    final repository = await ref.read(documentRepositoryProvider.future);
+    await repository.renameFolderInWallet(oldPath: oldPath, newName: newName);
+    ref.invalidateSelf();
+  }
+}
+
+@riverpod
+Future<List<String>> allFolders(Ref ref) async {
+  final repository = await ref.read(documentRepositoryProvider.future);
+  return repository.listAllFolders();
 }
 
 @riverpod

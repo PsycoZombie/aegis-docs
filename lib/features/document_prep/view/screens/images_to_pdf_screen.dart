@@ -2,6 +2,7 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/images_to_pdf_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/images_to_pdf_options_card.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/reorderable_image_grid.dart';
+import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
                 child: Text('No images were selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, ref);
           },
         ),
       ),
@@ -44,6 +45,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
     BuildContext context,
     ImagesToPdfState state,
     ImagesToPdfViewModel notifier,
+    WidgetRef ref,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -65,14 +67,17 @@ class ImagesToPdfScreen extends ConsumerWidget {
             );
             final defaultName = '${originalName}_document';
 
-            final newName = await showSaveOptionsDialog(
+            final saveResult = await showSaveOptionsDialog(
               context,
               defaultFileName: defaultName,
               fileExtension: '.pdf',
             );
 
-            if (newName != null) {
-              await notifier.savePdf(fileName: newName);
+            if (saveResult != null) {
+              await notifier.savePdf(
+                fileName: saveResult.fileName,
+                folderPath: saveResult.folderPath,
+              );
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -80,6 +85,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
                     backgroundColor: Colors.green,
                   ),
                 );
+                ref.invalidate(walletViewModelProvider);
                 context.pop();
               }
             }

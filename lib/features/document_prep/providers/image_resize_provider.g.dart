@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'resize_tool_provider.dart';
+part of 'image_resize_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$resizeToolViewModelHash() =>
-    r'59217e7427c272cb233170de9d19031a3a4feb37';
+String _$imageResizeViewModelHash() =>
+    r'2080e0f3b812f08797341132b056f000979f4866';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,30 +30,30 @@ class _SystemHash {
   }
 }
 
-abstract class _$ResizeToolViewModel
+abstract class _$ImageResizeViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ResizeState> {
   late final PickedFile? initialFile;
 
   FutureOr<ResizeState> build(PickedFile? initialFile);
 }
 
-/// See also [ResizeToolViewModel].
-@ProviderFor(ResizeToolViewModel)
-const resizeToolViewModelProvider = ResizeToolViewModelFamily();
+/// See also [ImageResizeViewModel].
+@ProviderFor(ImageResizeViewModel)
+const imageResizeViewModelProvider = ImageResizeViewModelFamily();
 
-/// See also [ResizeToolViewModel].
-class ResizeToolViewModelFamily extends Family<AsyncValue<ResizeState>> {
-  /// See also [ResizeToolViewModel].
-  const ResizeToolViewModelFamily();
+/// See also [ImageResizeViewModel].
+class ImageResizeViewModelFamily extends Family<AsyncValue<ResizeState>> {
+  /// See also [ImageResizeViewModel].
+  const ImageResizeViewModelFamily();
 
-  /// See also [ResizeToolViewModel].
-  ResizeToolViewModelProvider call(PickedFile? initialFile) {
-    return ResizeToolViewModelProvider(initialFile);
+  /// See also [ImageResizeViewModel].
+  ImageResizeViewModelProvider call(PickedFile? initialFile) {
+    return ImageResizeViewModelProvider(initialFile);
   }
 
   @override
-  ResizeToolViewModelProvider getProviderOverride(
-    covariant ResizeToolViewModelProvider provider,
+  ImageResizeViewModelProvider getProviderOverride(
+    covariant ImageResizeViewModelProvider provider,
   ) {
     return call(provider.initialFile);
   }
@@ -70,29 +70,32 @@ class ResizeToolViewModelFamily extends Family<AsyncValue<ResizeState>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'resizeToolViewModelProvider';
+  String? get name => r'imageResizeViewModelProvider';
 }
 
-/// See also [ResizeToolViewModel].
-class ResizeToolViewModelProvider
+/// See also [ImageResizeViewModel].
+class ImageResizeViewModelProvider
     extends
-        AutoDisposeAsyncNotifierProviderImpl<ResizeToolViewModel, ResizeState> {
-  /// See also [ResizeToolViewModel].
-  ResizeToolViewModelProvider(PickedFile? initialFile)
+        AutoDisposeAsyncNotifierProviderImpl<
+          ImageResizeViewModel,
+          ResizeState
+        > {
+  /// See also [ImageResizeViewModel].
+  ImageResizeViewModelProvider(PickedFile? initialFile)
     : this._internal(
-        () => ResizeToolViewModel()..initialFile = initialFile,
-        from: resizeToolViewModelProvider,
-        name: r'resizeToolViewModelProvider',
+        () => ImageResizeViewModel()..initialFile = initialFile,
+        from: imageResizeViewModelProvider,
+        name: r'imageResizeViewModelProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$resizeToolViewModelHash,
-        dependencies: ResizeToolViewModelFamily._dependencies,
+            : _$imageResizeViewModelHash,
+        dependencies: ImageResizeViewModelFamily._dependencies,
         allTransitiveDependencies:
-            ResizeToolViewModelFamily._allTransitiveDependencies,
+            ImageResizeViewModelFamily._allTransitiveDependencies,
         initialFile: initialFile,
       );
 
-  ResizeToolViewModelProvider._internal(
+  ImageResizeViewModelProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -106,16 +109,16 @@ class ResizeToolViewModelProvider
 
   @override
   FutureOr<ResizeState> runNotifierBuild(
-    covariant ResizeToolViewModel notifier,
+    covariant ImageResizeViewModel notifier,
   ) {
     return notifier.build(initialFile);
   }
 
   @override
-  Override overrideWith(ResizeToolViewModel Function() create) {
+  Override overrideWith(ImageResizeViewModel Function() create) {
     return ProviderOverride(
       origin: this,
-      override: ResizeToolViewModelProvider._internal(
+      override: ImageResizeViewModelProvider._internal(
         () => create()..initialFile = initialFile,
         from: from,
         name: null,
@@ -128,14 +131,14 @@ class ResizeToolViewModelProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<ResizeToolViewModel, ResizeState>
+  AutoDisposeAsyncNotifierProviderElement<ImageResizeViewModel, ResizeState>
   createElement() {
-    return _ResizeToolViewModelProviderElement(this);
+    return _ImageResizeViewModelProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ResizeToolViewModelProvider &&
+    return other is ImageResizeViewModelProvider &&
         other.initialFile == initialFile;
   }
 
@@ -150,24 +153,24 @@ class ResizeToolViewModelProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ResizeToolViewModelRef
+mixin ImageResizeViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<ResizeState> {
   /// The parameter `initialFile` of this provider.
   PickedFile? get initialFile;
 }
 
-class _ResizeToolViewModelProviderElement
+class _ImageResizeViewModelProviderElement
     extends
         AutoDisposeAsyncNotifierProviderElement<
-          ResizeToolViewModel,
+          ImageResizeViewModel,
           ResizeState
         >
-    with ResizeToolViewModelRef {
-  _ResizeToolViewModelProviderElement(super.provider);
+    with ImageResizeViewModelRef {
+  _ImageResizeViewModelProviderElement(super.provider);
 
   @override
   PickedFile? get initialFile =>
-      (origin as ResizeToolViewModelProvider).initialFile;
+      (origin as ImageResizeViewModelProvider).initialFile;
 }
 
 // ignore_for_file: type=lint

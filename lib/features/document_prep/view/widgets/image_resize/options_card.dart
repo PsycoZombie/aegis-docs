@@ -1,4 +1,4 @@
-import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
+import 'package:aegis_docs/features/document_prep/providers/image_resize_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/dimension_textfield.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +7,7 @@ class OptionsCard extends StatelessWidget {
   final TextEditingController widthController;
   final TextEditingController heightController;
   final ResizeState state;
-  final ResizeToolViewModel notifier;
+  final ImageResizeViewModel notifier;
   final VoidCallback onSave;
 
   const OptionsCard({

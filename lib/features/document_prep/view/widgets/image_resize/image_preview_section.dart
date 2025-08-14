@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
+import 'package:aegis_docs/features/document_prep/providers/image_resize_provider.dart';
 import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
 

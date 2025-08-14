@@ -1,4 +1,4 @@
-import 'package:aegis_docs/features/document_prep/providers/resize_tool_provider.dart';
+import 'package:aegis_docs/features/document_prep/providers/image_resize_provider.dart';
 import 'package:flutter/material.dart';
 
 class SizeReductionInfo extends StatelessWidget {
