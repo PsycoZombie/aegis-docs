@@ -1,9 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class NativeCompressionService {
   static const _platform = MethodChannel('com.aegis_docs.compress');
+
+  Future<void> cleanupExportedFiles({required int expirationInMinutes}) async {
+    try {
+      await _platform.invokeMethod('cleanupExportedFiles', {
+        'expirationInMinutes': expirationInMinutes,
+      });
+    } on PlatformException catch (e) {
+      debugPrint("Failed to run native cleanup: ${e.message}");
+    }
+  }
 
   Future<String> saveToDownloads({
     required String fileName,

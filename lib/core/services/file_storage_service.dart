@@ -195,7 +195,7 @@ class FileStorageService {
     required String fileName,
     required Uint8List data,
   }) async {
-    final directory = await _getPublicExportDirectory();
+    final directory = await getPublicExportDirectory();
     if (directory == null) return null;
 
     try {
@@ -225,7 +225,7 @@ class FileStorageService {
     }
   }
 
-  Future<Directory?> _getPublicExportDirectory() async {
+  Future<Directory?> getPublicExportDirectory() async {
     if (Platform.isAndroid) {
       final status = await Permission.storage.request();
       if (!status.isGranted) {

@@ -10,6 +10,7 @@ import 'package:aegis_docs/features/document_prep/view/screens/pdf_compression_s
 import 'package:aegis_docs/features/document_prep/view/screens/pdf_security_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/pdf_to_images_screen.dart';
 import 'package:aegis_docs/features/home/view/home_screen.dart';
+import 'package:aegis_docs/features/settings/view/settings_screen.dart';
 import 'package:aegis_docs/features/wallet/view/document_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -95,6 +96,10 @@ final List<RouteBase> appRoutes = [
           final pickedFile = state.extra as PickedFile?;
           return PdfSecurityScreen(initialFile: pickedFile);
         },
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   ),

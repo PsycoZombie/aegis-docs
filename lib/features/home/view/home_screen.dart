@@ -52,8 +52,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (value == 'logout') {
                 ref.read(localAuthProvider.notifier).logout();
               }
+              if (value == 'settings') {
+                context.push('/settings');
+              }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings'),
+                ),
+              ),
+              const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'logout',
                 child: ListTile(

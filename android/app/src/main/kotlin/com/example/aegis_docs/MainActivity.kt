@@ -72,8 +72,52 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(outputPath)
                     }
                 }
+                "cleanupExportedFiles" -> {
+                    val expirationInMinutes = call.argument<Int>("expirationInMinutes")!!
+                    CoroutineScope(Dispatchers.Main).launch {
+                        withContext(Dispatchers.IO) {
+                            cleanupFiles(expirationInMinutes)
+                        }
+                        result.success(null)
+                    }
+                }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun cleanupFiles(expirationInMinutes: Int) {
+        try {
+            Log.d("Cleanup", "Starting cleanup with expiration of $expirationInMinutes minutes.")
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val aegisDir = File(downloadsDir, "AegisDocs")
+
+            if (!aegisDir.exists() || !aegisDir.isDirectory) {
+                Log.d("Cleanup", "AegisDocs directory not found. No cleanup needed.")
+                return
+            }
+
+            // THE FIX: Calculate expiration in milliseconds from minutes.
+            val expirationInMillis = expirationInMinutes * 60 * 1000L
+            val currentTime = System.currentTimeMillis()
+            var deletedCount = 0
+
+            aegisDir.listFiles()?.forEach { file ->
+                if (file.isFile) {
+                    val lastModified = file.lastModified()
+                    if (currentTime - lastModified > expirationInMillis) {
+                        if (file.delete()) {
+                            deletedCount++
+                            Log.d("Cleanup", "Deleted expired file: ${file.name}")
+                        } else {
+                            Log.w("Cleanup", "Failed to delete file: ${file.name}")
+                        }
+                    }
+                }
+            }
+            Log.d("Cleanup", "Cleanup complete. Deleted $deletedCount expired file(s).")
+        } catch (e: Exception) {
+            Log.e("Cleanup", "Error during cleanup process", e)
         }
     }
 
