@@ -341,15 +341,19 @@ void _showContextMenu(
 
     switch (value) {
       case 'rename':
+        // ignore: use_build_context_synchronously
         _handleRename(context, notifier, path, isFolder, currentFolderPath);
         break;
       case 'delete':
+        // ignore: use_build_context_synchronously
         _handleDelete(context, notifier, path, isFolder, currentFolderPath);
         break;
       case 'export':
+        // ignore: use_build_context_synchronously
         _handleExport(context, notifier, path, currentFolderPath);
         break;
       case 'share':
+        // ignore: use_build_context_synchronously
         _handleShare(context, notifier, path, currentFolderPath);
         break;
     }
