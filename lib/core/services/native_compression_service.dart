@@ -5,6 +5,29 @@ import 'package:uuid/uuid.dart';
 class NativeCompressionService {
   static const _platform = MethodChannel('com.aegis_docs.compress');
 
+  Future<String> saveToDownloads({
+    required String fileName,
+    required Uint8List data,
+  }) async {
+    try {
+      final String? resultPath = await _platform.invokeMethod(
+        'saveToDownloads',
+        {'fileName': fileName, 'data': data},
+      );
+
+      if (resultPath == null ||
+          resultPath.isEmpty ||
+          resultPath.startsWith("Error:")) {
+        throw Exception(
+          resultPath ?? 'Native save returned an empty or null path.',
+        );
+      }
+      return resultPath;
+    } on PlatformException catch (e) {
+      throw Exception("Failed to save file via native code: ${e.message}");
+    }
+  }
+
   Future<String> compressPdf({
     required String filePath,
     required int sizeLimit,

@@ -83,8 +83,9 @@ class PdfToImagesViewModel extends _$PdfToImagesViewModel {
     required String baseName,
     String? folderPath,
   }) async {
-    if (state.value == null || state.value!.selectedImageIndices.isEmpty)
+    if (state.value == null || state.value!.selectedImageIndices.isEmpty) {
       return;
+    }
 
     state = AsyncData(state.value!.copyWith(isProcessing: true));
 

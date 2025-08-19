@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class FileStorageService {
   static const String _privateSubdirectory = 'aegis_wallet';
+  static const String _publicSubdirectory = 'AegisDocs';
 
   Future<Directory> _getBaseWalletDirectory() async {
     final appDocsDir = await getApplicationDocumentsDirectory();
@@ -149,25 +150,6 @@ class FileStorageService {
     return null;
   }
 
-  Future<Directory?> _getPublicDownloadsDirectory() async {
-    if (Platform.isAndroid) {
-      try {
-        const String downloadsPathString = '/storage/emulated/0/Download';
-        final Directory publicDownloadsDir = Directory(downloadsPathString);
-        if (!await publicDownloadsDir.exists()) {
-          await publicDownloadsDir.create(recursive: true);
-        }
-        return publicDownloadsDir;
-      } catch (e) {
-        debugPrint(
-          "Error accessing public downloads directory: $e. Falling back.",
-        );
-        return getDownloadsDirectory();
-      }
-    }
-    return getDownloadsDirectory();
-  }
-
   Future<List<String>> listAllFoldersRecursively() async {
     final baseDir = await _getBaseWalletDirectory();
     final allFolders = <String>[];
@@ -209,6 +191,25 @@ class FileStorageService {
     return [];
   }
 
+  Future<String?> saveToPublicDirectory({
+    required String fileName,
+    required Uint8List data,
+  }) async {
+    final directory = await _getPublicExportDirectory();
+    if (directory == null) return null;
+
+    try {
+      final filePath = p.join(directory.path, fileName);
+      final file = File(filePath);
+      await file.writeAsBytes(data);
+      debugPrint('File exported to public directory: $filePath');
+      return filePath;
+    } catch (e) {
+      debugPrint('Error saving to public directory: $e');
+      return null;
+    }
+  }
+
   Future<void> renameFolder({
     required String oldPath,
     required String newName,
@@ -222,5 +223,28 @@ class FileStorageService {
       await directory.rename(newFullPath);
       debugPrint('Renamed folder to: $newFullPath');
     }
+  }
+
+  Future<Directory?> _getPublicExportDirectory() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        debugPrint('Storage permission denied.');
+        return null;
+      }
+    }
+
+    Directory? downloadsDir = await getDownloadsDirectory();
+
+    if (downloadsDir == null) {
+      debugPrint('Could not get downloads directory.');
+      return null;
+    }
+
+    final exportDir = Directory(p.join(downloadsDir.path, _publicSubdirectory));
+    if (!await exportDir.exists()) {
+      await exportDir.create(recursive: true);
+    }
+    return exportDir;
   }
 }

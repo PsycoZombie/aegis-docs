@@ -1,13 +1,19 @@
+// file: features/home/view/home_screen.dart
+
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/rename_dialog.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -186,6 +192,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+// --- Helper Widgets ---
+
 class _FolderCard extends ConsumerWidget {
   final Directory folder;
   final String? currentPath;
@@ -243,6 +251,7 @@ class _DocumentCard extends ConsumerWidget {
       onTap: () => context.push('/document/$fileName', extra: folderPath),
       onLongPress: () => _showContextMenu(context, ref, fileName, false),
       child: Card(
+        clipBehavior: Clip.antiAlias,
         child: GridTile(
           footer: GridTileBar(
             backgroundColor: Colors.black45,
@@ -258,6 +267,8 @@ class _DocumentCard extends ConsumerWidget {
     );
   }
 }
+
+// --- Context Menu Logic ---
 
 void _showContextMenu(
   BuildContext context,
@@ -279,23 +290,37 @@ void _showContextMenu(
     Offset.zero & overlay.size,
   );
 
-  showMenu(
+  showMenu<String>(
     context: context,
     position: position,
     items: [
-      PopupMenuItem(
+      if (!isFolder) ...[
+        const PopupMenuItem<String>(
+          value: 'export',
+          child: ListTile(
+            leading: Icon(Icons.save_alt),
+            title: Text('Export to Device'),
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'share',
+          child: ListTile(leading: Icon(Icons.share), title: Text('Share')),
+        ),
+        const PopupMenuDivider(),
+      ],
+      const PopupMenuItem<String>(
         value: 'rename',
-        child: const ListTile(leading: Icon(Icons.edit), title: Text('Rename')),
+        child: ListTile(leading: Icon(Icons.edit), title: Text('Rename')),
       ),
-      PopupMenuItem(
+      const PopupMenuItem<String>(
         value: 'delete',
-        child: const ListTile(
+        child: ListTile(
           leading: Icon(Icons.delete_outline, color: Colors.red),
           title: Text('Delete', style: TextStyle(color: Colors.red)),
         ),
       ),
     ],
-  ).then((value) {
+  ).then((String? value) {
     if (value == null) return;
 
     final currentFolderPath = (context as Element)
@@ -305,18 +330,104 @@ void _showContextMenu(
       walletViewModelProvider(currentFolderPath).notifier,
     );
 
-    if (value == 'rename') {
-      if (context.mounted) {
-        // ignore: use_build_context_synchronously
+    switch (value) {
+      case 'rename':
         _handleRename(context, notifier, path, isFolder, currentFolderPath);
-      }
-    } else if (value == 'delete') {
-      if (context.mounted) {
-        // ignore: use_build_context_synchronously
+        break;
+      case 'delete':
         _handleDelete(context, notifier, path, isFolder, currentFolderPath);
-      }
+        break;
+      case 'export':
+        _handleExport(context, notifier, path, currentFolderPath);
+        break;
+      case 'share':
+        _handleShare(context, notifier, path, currentFolderPath);
+        break;
     }
   });
+}
+
+Future<void> _handleExport(
+  BuildContext context,
+  WalletViewModel notifier,
+  String fileName,
+  String? folderPath,
+) async {
+  try {
+    final decryptedBytes = await notifier.exportDocument(
+      fileName: fileName,
+      folderPath: folderPath,
+    );
+
+    if (decryptedBytes == null) {
+      throw Exception('Failed to load document.');
+    }
+
+    // Use FileSaver to open the native "Save As..." dialog.
+    await FileSaver.instance.saveFile(
+      name: fileName,
+      bytes: Uint8List.fromList(decryptedBytes),
+    );
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('File saved successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+Future<void> _handleShare(
+  BuildContext context,
+  WalletViewModel notifier,
+  String fileName,
+  String? folderPath,
+) async {
+  try {
+    final decryptedBytes = await notifier.exportDocument(
+      fileName: fileName,
+      folderPath: folderPath,
+    );
+
+    if (decryptedBytes == null) {
+      throw Exception('Failed to load document for sharing.');
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = await File(
+      '${tempDir.path}/$fileName',
+    ).writeAsBytes(decryptedBytes);
+
+    final params = ShareParams(
+      text: 'Great picture',
+      files: [XFile('${tempFile.path}/image.jpg')],
+    );
+
+    await SharePlus.instance.share(params);
+
+    await tempFile.delete();
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Share failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
 
 Future<void> _handleRename(
@@ -326,20 +437,22 @@ Future<void> _handleRename(
   bool isFolder,
   String? currentFolderPath,
 ) async {
-  final currentName = p.basename(path);
+  final currentName = isFolder
+      ? p.basename(path)
+      : p.basenameWithoutExtension(path);
   final newName = await showRenameDialog(
     context,
     currentName: currentName,
     title: isFolder ? 'Rename Folder' : 'Rename File',
   );
 
-  if (newName != null && newName != currentName) {
+  if (newName != null && newName.isNotEmpty && newName != currentName) {
     if (isFolder) {
       await notifier.renameFolder(oldPath: path, newName: newName);
     } else {
-      final extension = p.extension(currentName);
+      final extension = p.extension(path);
       await notifier.renameFile(
-        oldName: currentName,
+        oldName: p.basename(path),
         newName: '$newName$extension',
         folderPath: currentFolderPath,
       );

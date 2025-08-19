@@ -47,6 +47,17 @@ class WalletViewModel extends _$WalletViewModel {
     ref.invalidateSelf();
   }
 
+  Future<List<int>?> exportDocument({
+    required String fileName,
+    String? folderPath,
+  }) async {
+    final repository = await ref.read(documentRepositoryProvider.future);
+    return await repository.exportDecryptedDocument(
+      fileName: fileName,
+      folderPath: folderPath,
+    );
+  }
+
   Future<bool> createFolder({
     required String folderName,
     required String? parentFolderPath,

@@ -42,6 +42,28 @@ class DocumentRepository {
   Future<List<ProcessedFileResult>> pickMultipleImages() =>
       _filePickerService.pickMultipleImages();
 
+  Future<List<int>?> exportDecryptedDocument({
+    required String fileName,
+    String? folderPath,
+  }) async {
+    // 1. Load and decrypt the document's data from the secure wallet.
+    final decryptedBytes = await loadDecryptedDocument(
+      fileName: fileName,
+      folderPath: folderPath,
+    );
+
+    if (decryptedBytes == null) {
+      throw Exception('Failed to load or decrypt the document.');
+    }
+
+    // 2. THE FIX: Call the native service to save the decrypted data to the public directory.
+    await _nativeCompressionService.saveToDownloads(
+      fileName: fileName,
+      data: decryptedBytes,
+    );
+    return decryptedBytes;
+  }
+
   Future<Uint8List> resizeImage(
     Uint8List imageBytes, {
     required int width,

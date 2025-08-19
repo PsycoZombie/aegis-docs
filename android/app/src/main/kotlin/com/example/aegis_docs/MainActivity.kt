@@ -61,8 +61,36 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(output)
                     }
                 }
+                "saveToDownloads" -> {
+                    val fileName = call.argument<String>("fileName")!!
+                    val data = call.argument<ByteArray>("data")!!
+
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val outputPath = withContext(Dispatchers.IO) {
+                            saveBytesToDownloads(fileName, data)
+                        }
+                        result.success(outputPath)
+                    }
+                }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun saveBytesToDownloads(fileName: String, data: ByteArray): String {
+        return try {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val aegisDir = File(downloadsDir, "AegisDocs")
+            if (!aegisDir.exists()) {
+                aegisDir.mkdirs()
+            }
+            val outputFile = File(aegisDir, fileName)
+            FileOutputStream(outputFile).use { it.write(data) }
+            Log.d("FileSave", "File saved successfully at ${outputFile.absolutePath}")
+            outputFile.absolutePath
+        } catch (e: Exception) {
+            Log.e("FileSave", "Error saving file to downloads", e)
+            "Error: ${e.message}"
         }
     }
 
