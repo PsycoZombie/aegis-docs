@@ -1,5 +1,3 @@
-// file: features/home/view/home_screen.dart
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -363,7 +361,6 @@ Future<void> _handleExport(
       throw Exception('Failed to load document.');
     }
 
-    // Use FileSaver to open the native "Save As..." dialog.
     await FileSaver.instance.saveFile(
       name: fileName,
       bytes: Uint8List.fromList(decryptedBytes),
