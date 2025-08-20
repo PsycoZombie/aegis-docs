@@ -106,6 +106,7 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                 labelText: 'Location',
                 border: OutlineInputBorder(),
               ),
+              isExpanded: true,
               items: [
                 const DropdownMenuItem<String?>(
                   value: null,
@@ -125,7 +126,17 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
                       value: folderPath,
-                      child: Text(folderPath.replaceAll(p.separator, ' / ')),
+                      // THE FIX: Wrap the Text in a Row with Flexible to allow wrapping.
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              folderPath.replaceAll(p.separator, ' / '),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   }),
               ],

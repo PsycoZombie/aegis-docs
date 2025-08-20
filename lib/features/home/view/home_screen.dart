@@ -424,7 +424,7 @@ Future<void> _handleShare(
 
     final params = ShareParams(
       text: 'Great picture',
-      files: [XFile('${tempFile.path}/image.jpg')],
+      files: [XFile(tempFile.path)],
     );
 
     await SharePlus.instance.share(params);

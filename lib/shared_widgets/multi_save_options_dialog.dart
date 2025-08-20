@@ -94,6 +94,7 @@ class _MultiSaveOptionsDialogState
                 labelText: 'Location',
                 border: OutlineInputBorder(),
               ),
+              isExpanded: true,
               items: [
                 const DropdownMenuItem<String?>(
                   value: null,
@@ -103,7 +104,16 @@ class _MultiSaveOptionsDialogState
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
                       value: folderPath,
-                      child: Text(folderPath.replaceAll(p.separator, ' / ')),
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              folderPath.replaceAll(p.separator, ' / '),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   }),
               ],
