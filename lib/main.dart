@@ -4,11 +4,15 @@ import 'package:aegis_docs/app/navigation/app_router_provider.dart';
 import 'package:aegis_docs/core/services/cleanup_service.dart';
 import 'package:aegis_docs/core/services/native_compression_service.dart';
 import 'package:aegis_docs/core/services/settings_service.dart';
+import 'package:aegis_docs/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final cleanupService = CleanupService(
     nativeService: NativeCompressionService(),

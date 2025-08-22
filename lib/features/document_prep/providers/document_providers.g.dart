@@ -41,6 +41,25 @@ final fileStorageServiceProvider = Provider<FileStorageService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FileStorageServiceRef = ProviderRef<FileStorageService>;
+String _$cloudStorageServiceHash() =>
+    r'726eef7c302672195ab6609760f7b5b72b6fcd8a';
+
+/// See also [cloudStorageService].
+@ProviderFor(cloudStorageService)
+final cloudStorageServiceProvider =
+    AutoDisposeProvider<CloudStorageService>.internal(
+      cloudStorageService,
+      name: r'cloudStorageServiceProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$cloudStorageServiceHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CloudStorageServiceRef = AutoDisposeProviderRef<CloudStorageService>;
 String _$imageProcessorHash() => r'9ff24df7ba683b672a40b2ef34542876e8c02d15';
 
 /// See also [imageProcessor].
@@ -95,7 +114,7 @@ final nativeCompressionServiceProvider =
 // ignore: unused_element
 typedef NativeCompressionServiceRef = ProviderRef<NativeCompressionService>;
 String _$documentRepositoryHash() =>
-    r'48b12b0bb3488fe14de45c2029d941106f0421a2';
+    r'744bbf6682ad78254257db903ca2631d2d39bd69';
 
 /// See also [documentRepository].
 @ProviderFor(documentRepository)

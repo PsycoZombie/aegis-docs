@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "168730393077",
+    "project_id": "aegis-docs",
+    "storage_bucket": "aegis-docs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168730393077:android:68666ef30191f9c15a08bc",
+        "android_client_info": {
+          "package_name": "com.example.aegis_docs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168730393077-l60i21tj7lftfc5h6ro6o4fsec4g327e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.aegis_docs",
+            "certificate_hash": "3661c36b86026bdeb2b7b6d8a1120a71a915a64d"
+          }
+        },
+        {
+          "client_id": "***REMOVED***",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjeCnCQdG73642hCCjnzasQAwcpBZLX8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "***REMOVED***",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

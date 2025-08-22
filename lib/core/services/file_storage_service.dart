@@ -9,7 +9,7 @@ class FileStorageService {
   static const String _privateSubdirectory = 'aegis_wallet';
   static const String _publicSubdirectory = 'AegisDocs';
 
-  Future<Directory> _getBaseWalletDirectory() async {
+  Future<Directory> getBaseWalletDirectory() async {
     final appDocsDir = await getApplicationDocumentsDirectory();
     final walletDir = Directory(p.join(appDocsDir.path, _privateSubdirectory));
     if (!await walletDir.exists()) {
@@ -19,7 +19,7 @@ class FileStorageService {
   }
 
   Future<Directory> _getPrivateDirectory({String? folderPath}) async {
-    final baseDir = await _getBaseWalletDirectory();
+    final baseDir = await getBaseWalletDirectory();
     if (folderPath == null || folderPath.isEmpty) {
       return baseDir;
     }
@@ -151,7 +151,7 @@ class FileStorageService {
   }
 
   Future<List<String>> listAllFoldersRecursively() async {
-    final baseDir = await _getBaseWalletDirectory();
+    final baseDir = await getBaseWalletDirectory();
     final allFolders = <String>[];
 
     void search(Directory dir) {
@@ -214,7 +214,7 @@ class FileStorageService {
     required String oldPath,
     required String newName,
   }) async {
-    final baseDir = await _getBaseWalletDirectory();
+    final baseDir = await getBaseWalletDirectory();
     final oldFullPath = p.join(baseDir.path, oldPath);
     final parentPath = p.dirname(oldFullPath);
     final newFullPath = p.join(parentPath, newName);

@@ -185,7 +185,7 @@ class _DocumentDetailProviderElement
   String? get folderPath => (origin as DocumentDetailProvider).folderPath;
 }
 
-String _$walletViewModelHash() => r'bb4f705e23f9bc6975a7d50df6ebde9f13ec738b';
+String _$walletViewModelHash() => r'c46a2b5e26dfc30a9994bb3e543cd4f2f75f0b63';
 
 abstract class _$WalletViewModel
     extends BuildlessAutoDisposeAsyncNotifier<WalletState> {

@@ -1,14 +1,85 @@
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:aegis_docs/core/media_processing/file_picker_service.dart';
 import 'package:aegis_docs/core/media_processing/image_processor.dart';
 import 'package:aegis_docs/core/media_processing/pdf_processor.dart';
+import 'package:aegis_docs/core/services/cloud_storage_service.dart';
 import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:aegis_docs/core/services/file_storage_service.dart';
 import 'package:aegis_docs/core/services/native_compression_service.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+
+class _BackupPayload {
+  final String walletPath;
+  final String keyJson;
+
+  _BackupPayload(this.walletPath, this.keyJson);
+}
+
+class _RestorePayload {
+  final Uint8List zipBytes;
+  final String walletPath;
+
+  _RestorePayload(this.zipBytes, this.walletPath);
+}
+
+// --- Isolate Functions ---
+// These top-level functions run in a separate isolate to prevent UI freezes.
+
+Uint8List _createBackupIsolate(_BackupPayload payload) {
+  // 1. Create an in-memory archive.
+  final archive = Archive();
+
+  // 2. Add the key file to the archive.
+  archive.addFile(
+    ArchiveFile(
+      'aegis_key.json',
+      payload.keyJson.length,
+      utf8.encode(payload.keyJson),
+    ),
+  );
+
+  // 3. Recursively find all files in the wallet directory and add them.
+  final walletDir = Directory(payload.walletPath);
+  final files = walletDir.listSync(recursive: true);
+  for (final file in files) {
+    if (file is File) {
+      final relativePath = p.relative(file.path, from: walletDir.path);
+      final fileBytes = file.readAsBytesSync();
+      archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
+    }
+  }
+
+  // 4. Encode the entire in-memory archive into a zip file.
+  final zipEncoder = ZipEncoder();
+  return Uint8List.fromList(zipEncoder.encode(archive));
+}
+
+void _restoreBackupIsolate(_RestorePayload payload) {
+  final archive = ZipDecoder().decodeBytes(payload.zipBytes);
+  final walletDir = Directory(payload.walletPath);
+
+  // Clear the existing wallet and restore the files.
+  if (walletDir.existsSync()) {
+    walletDir.deleteSync(recursive: true);
+  }
+  walletDir.createSync(recursive: true);
+
+  for (final file in archive) {
+    // Correctly handle ArchiveFile objects.
+    if (file.isFile && file.name != 'aegis_key.json') {
+      final filePath = p.join(walletDir.path, file.name);
+      final outFile = File(filePath);
+      outFile.parent.createSync(recursive: true);
+      outFile.writeAsBytesSync(file.content as List<int>);
+    }
+  }
+}
 
 class DocumentRepository {
   final FilePickerService _filePickerService;
@@ -17,6 +88,7 @@ class DocumentRepository {
   final NativeCompressionService _nativeCompressionService;
   final FileStorageService _fileStorageService;
   final EncryptionService _encryptionService;
+  final CloudStorageService _cloudStorageService;
 
   DocumentRepository({
     required FilePickerService filePickerService,
@@ -25,12 +97,14 @@ class DocumentRepository {
     required NativeCompressionService nativeCompressionService,
     required FileStorageService fileStorageService,
     required EncryptionService encryptionService,
+    required CloudStorageService cloudStorageService,
   }) : _filePickerService = filePickerService,
        _imageProcessor = imageProcessor,
        _pdfProcessor = pdfProcessor,
        _nativeCompressionService = nativeCompressionService,
        _fileStorageService = fileStorageService,
-       _encryptionService = encryptionService;
+       _encryptionService = encryptionService,
+       _cloudStorageService = cloudStorageService;
 
   Future<List<String>> listAllFolders() =>
       _fileStorageService.listAllFoldersRecursively();
@@ -41,6 +115,10 @@ class DocumentRepository {
 
   Future<List<ProcessedFileResult>> pickMultipleImages() =>
       _filePickerService.pickMultipleImages();
+
+  Future<void> deleteBackupFromDrive() async {
+    await _cloudStorageService.deleteBackup('aegis_wallet_backup.zip');
+  }
 
   Future<List<int>?> exportDecryptedDocument({
     required String fileName,
@@ -203,4 +281,52 @@ class DocumentRepository {
     required String oldPath,
     required String newName,
   }) => _fileStorageService.renameFolder(oldPath: oldPath, newName: newName);
+
+  Future<void> backupWalletToDrive(String masterPassword) async {
+    final keyData = await _encryptionService.getEncryptedDataKeyForBackup(
+      masterPassword,
+    );
+    final keyJson = jsonEncode(keyData);
+    final walletDir = await _fileStorageService.getBaseWalletDirectory();
+
+    // Create the zip archive in a separate isolate to prevent UI freezes.
+    final zipBytes = await compute(
+      _createBackupIsolate,
+      _BackupPayload(walletDir.path, keyJson),
+    );
+
+    await _cloudStorageService.uploadBackup(
+      zipBytes,
+      'aegis_wallet_backup.zip',
+    );
+  }
+
+  Future<Uint8List?> downloadBackupFromDrive() async {
+    return await _cloudStorageService.downloadBackup('aegis_wallet_backup.zip');
+  }
+
+  /// Step 2 of Restore: Processes the downloaded backup data.
+  Future<void> restoreWalletFromBackupData({
+    required Uint8List backupBytes,
+    required String masterPassword,
+  }) async {
+    // 1. Unzip the archive in memory to find the key file
+    final archive = ZipDecoder().decodeBytes(backupBytes);
+    final keyFile = archive.findFile('aegis_key.json');
+    if (keyFile == null) {
+      throw Exception("Backup is corrupted: key file not found.");
+    }
+
+    // 2. Decrypt and restore the data key (this will fail if password is wrong)
+    final keyJson = utf8.decode(keyFile.content as List<int>);
+    final keyData = jsonDecode(keyJson) as Map<String, dynamic>;
+    await _encryptionService.restoreDataKeyFromBackup(masterPassword, keyData);
+
+    // 3. Unzip the files and write them to disk in a separate isolate.
+    final walletDir = await _fileStorageService.getBaseWalletDirectory();
+    await compute(
+      _restoreBackupIsolate,
+      _RestorePayload(backupBytes, walletDir.path),
+    );
+  }
 }

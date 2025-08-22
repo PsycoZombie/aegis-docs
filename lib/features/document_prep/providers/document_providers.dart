@@ -1,6 +1,7 @@
 import 'package:aegis_docs/core/media_processing/file_picker_service.dart';
 import 'package:aegis_docs/core/media_processing/image_processor.dart';
 import 'package:aegis_docs/core/media_processing/pdf_processor.dart';
+import 'package:aegis_docs/core/services/cloud_storage_service.dart';
 import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:aegis_docs/core/services/file_storage_service.dart';
 import 'package:aegis_docs/core/services/native_compression_service.dart';
@@ -18,6 +19,11 @@ FilePickerService filePickerService(Ref ref) {
 @Riverpod(keepAlive: true)
 FileStorageService fileStorageService(Ref ref) {
   return FileStorageService();
+}
+
+@riverpod
+CloudStorageService cloudStorageService(Ref ref) {
+  return CloudStorageService();
 }
 
 @Riverpod(keepAlive: true)
@@ -55,6 +61,7 @@ Future<DocumentRepository> documentRepository(Ref ref) async {
   final encryption = await ref.watch(
     encryptionServiceControllerProvider.future,
   );
+  final cloudStorage = ref.watch(cloudStorageServiceProvider);
 
   return DocumentRepository(
     filePickerService: filePicker,
@@ -63,5 +70,6 @@ Future<DocumentRepository> documentRepository(Ref ref) async {
     nativeCompressionService: nativeCompression,
     fileStorageService: fileStorage,
     encryptionService: encryption,
+    cloudStorageService: cloudStorage,
   );
 }
