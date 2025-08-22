@@ -3,18 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppScaffold extends ConsumerWidget {
+
+  const AppScaffold({
+    required this.title, required this.body, super.key,
+    this.actions,
+    this.floatingActionButton,
+  });
   final String title;
   final Widget body;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
-
-  const AppScaffold({
-    super.key,
-    required this.title,
-    required this.body,
-    this.actions,
-    this.floatingActionButton,
-  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

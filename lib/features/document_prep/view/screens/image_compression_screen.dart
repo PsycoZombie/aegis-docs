@@ -11,8 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageCompressionScreen extends ConsumerWidget {
-  final PickedFile? initialFile;
   const ImageCompressionScreen({super.key, this.initialFile});
+  final PickedFile? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +41,7 @@ class ImageCompressionScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Compress Image',
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),

@@ -8,7 +8,8 @@ import 'package:mockito/mockito.dart';
 // Import the generated mock file.
 import 'services/auth_service_test.mocks.dart';
 
-// This annotation tells mockito to generate a mock class for LocalAuthentication.
+// This annotation tells mockito to generate a
+// mock class for LocalAuthentication.
 @GenerateMocks([LocalAuthentication])
 void main() {
   // We need a late variable because we'll initialize it in setUp.
@@ -25,7 +26,8 @@ void main() {
     test(
       'isDeviceSupported returns true when plugin call is successful',
       () async {
-        // Arrange: Tell the mock what to return when isDeviceSupported is called.
+        // Arrange: Tell the mock what to return when
+        // isDeviceSupported is called.
         when(mockLocalAuth.isDeviceSupported()).thenAnswer((_) async => true);
 
         // Act: Call the method we are testing.
@@ -37,7 +39,8 @@ void main() {
     );
 
     test('authenticate returns true when plugin call is successful', () async {
-      // Arrange: Configure the mock to return true for a successful authentication.
+      // Arrange: Configure the mock to return true for a
+      // successful authentication.
       when(
         mockLocalAuth.authenticate(
           localizedReason: anyNamed('localizedReason'),
@@ -52,8 +55,9 @@ void main() {
       expect(result, isTrue);
     });
 
-    test('authenticate returns false when plugin call is unsuccessful', () async {
-      // Arrange: Configure the mock to return false for a failed authentication.
+    test('authenticate returns false when '
+        'plugin call is unsuccessful', () async {
+      // Arrange: Configure the mock to return false for a failed authentication
       when(
         mockLocalAuth.authenticate(
           localizedReason: anyNamed('localizedReason'),

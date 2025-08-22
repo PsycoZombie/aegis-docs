@@ -3,22 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ImagesToPdfOptionsCard extends ConsumerWidget {
-  final ImagesToPdfState state;
-  final ImagesToPdfViewModel notifier;
-  final VoidCallback onSave;
-
   const ImagesToPdfOptionsCard({
-    super.key,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final ImagesToPdfState state;
+  final ImagesToPdfViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [

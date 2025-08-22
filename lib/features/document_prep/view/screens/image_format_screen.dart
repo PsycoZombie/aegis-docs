@@ -11,8 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageFormatScreen extends ConsumerWidget {
-  final PickedFile? initialFile;
   const ImageFormatScreen({super.key, this.initialFile});
+  final PickedFile? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class ImageFormatScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Change Image Format',
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),

@@ -7,16 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // THE FIX: The widget must be a ConsumerStatefulWidget to use Riverpod.
 class MasterPasswordScreen extends ConsumerStatefulWidget {
+  const MasterPasswordScreen({
+    required this.isCreating,
+    required this.onSubmit,
+    super.key,
+    this.backupBytes,
+  });
   final bool isCreating;
   final Future<void> Function(String password) onSubmit;
   final Uint8List? backupBytes;
-
-  const MasterPasswordScreen({
-    super.key,
-    required this.isCreating,
-    required this.onSubmit,
-    this.backupBytes,
-  });
 
   @override
   ConsumerState<MasterPasswordScreen> createState() =>
@@ -73,7 +72,7 @@ class _MasterPasswordScreenState extends ConsumerState<MasterPasswordScreen> {
           ? 'Create Master Password'
           : 'Enter Master Password',
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -81,7 +80,8 @@ class _MasterPasswordScreenState extends ConsumerState<MasterPasswordScreen> {
             children: [
               Text(
                 widget.isCreating
-                    ? 'Create a strong password to secure your backup key. This password cannot be recovered.'
+                    ? 'Create a strong password to secure your backup key. '
+                          'This password cannot be recovered.'
                     : 'Enter your master password to restore your backup.',
                 textAlign: TextAlign.center,
               ),

@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'image_compression_provider.g.dart';
 
@@ -12,11 +11,6 @@ enum CompressionStatus { idle, success, failure }
 
 @immutable
 class CompressionState {
-  final PickedFile? originalImage;
-  final Uint8List? compressedImage;
-  final int? compressedSize;
-  final int targetSizeKB;
-  final CompressionStatus compressionStatus;
 
   const CompressionState({
     this.originalImage,
@@ -25,6 +19,11 @@ class CompressionState {
     this.targetSizeKB = 100,
     this.compressionStatus = CompressionStatus.idle,
   });
+  final PickedFile? originalImage;
+  final Uint8List? compressedImage;
+  final int? compressedSize;
+  final int targetSizeKB;
+  final CompressionStatus compressionStatus;
 
   CompressionState copyWith({
     PickedFile? originalImage,
@@ -78,13 +77,13 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
     final originalImageBytes = state.value?.originalImage?.bytes;
     if (originalImageBytes == null) return;
 
-    state = AsyncLoading<CompressionState>().copyWithPrevious(state);
+    state = const AsyncLoading<CompressionState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final imageProcessor = ref.read(imageProcessorProvider);
       final targetBytes = state.value!.targetSizeKB * 1024;
 
-      int quality = 95;
+      var quality = 95;
       Uint8List? bestCompressedImage;
 
       while (quality > 10) {
@@ -122,13 +121,13 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
     String? folderPath,
   }) async {
     if (state.value?.compressedImage == null) {
-      throw Exception("No compressed image to save.");
+      throw Exception('No compressed image to save.');
     }
 
     final currentState = state.value!;
     final compressedBytes = currentState.compressedImage!;
 
-    state = AsyncLoading<CompressionState>().copyWithPrevious(state);
+    state = const AsyncLoading<CompressionState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);

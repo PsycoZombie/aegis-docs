@@ -54,7 +54,7 @@ class FileStorageService {
       if (await file.exists()) {
         return await file.readAsBytes();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error loading from private storage: $e');
     }
     return null;
@@ -72,7 +72,7 @@ class FileStorageService {
         await file.delete();
         debugPrint('Deleted from private wallet: $filePath');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error deleting from private storage: $e');
     }
   }
@@ -121,7 +121,7 @@ class FileStorageService {
         await directory.delete(recursive: true);
         debugPrint('Deleted folder and all contents: ${directory.path}');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error deleting folder: $e');
     }
   }
@@ -131,10 +131,10 @@ class FileStorageService {
     if (status.isGranted) {
       try {
         final directory = await _getPrivateWalletDirectory();
-        String filePath = p.join(directory.path, fileName);
-        int count = 1;
-        String baseName = p.basenameWithoutExtension(filePath);
-        String extension = p.extension(filePath);
+        var filePath = p.join(directory.path, fileName);
+        var count = 1;
+        final baseName = p.basenameWithoutExtension(filePath);
+        final extension = p.extension(filePath);
         while (await File(filePath).exists()) {
           filePath = p.join(directory.path, '$baseName ($count)$extension');
           count++;
@@ -142,7 +142,7 @@ class FileStorageService {
         final file = File(filePath);
         await file.writeAsBytes(bytes);
         return filePath;
-      } catch (e) {
+      } on Exception catch (e) {
         debugPrint('Error saving public file: $e');
         return null;
       }
@@ -164,7 +164,7 @@ class FileStorageService {
             search(entity);
           }
         }
-      } catch (e) {
+      } on Exception catch (e) {
         debugPrint('Could not list directory ${dir.path}: $e');
       }
     }
@@ -204,7 +204,7 @@ class FileStorageService {
       await file.writeAsBytes(data);
       debugPrint('File exported to public directory: $filePath');
       return filePath;
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error saving to public directory: $e');
       return null;
     }
@@ -234,7 +234,7 @@ class FileStorageService {
       }
     }
 
-    Directory? downloadsDir = await getDownloadsDirectory();
+    final downloadsDir = await getDownloadsDirectory();
 
     if (downloadsDir == null) {
       debugPrint('Could not get downloads directory.');

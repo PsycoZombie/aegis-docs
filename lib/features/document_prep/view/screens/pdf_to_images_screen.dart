@@ -10,8 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class PdfToImagesScreen extends ConsumerWidget {
-  final PickedFile? initialFile;
   const PdfToImagesScreen({super.key, this.initialFile});
+  final PickedFile? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +23,7 @@ class PdfToImagesScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'PDF to Images',
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),
@@ -128,7 +128,8 @@ class PdfToImagesScreen extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Saved ${state.selectedImageIndices.length} images!',
+                              'Saved ${state.selectedImageIndices.length}'
+                              'images!',
                             ),
                             backgroundColor: Colors.green,
                           ),

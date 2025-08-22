@@ -22,13 +22,12 @@ Future<MultiSaveResult?> showMultiSaveOptionsDialog(
 }
 
 class _MultiSaveOptionsDialog extends ConsumerStatefulWidget {
-  final String defaultBaseName;
-  final int fileCount;
-
   const _MultiSaveOptionsDialog({
     required this.defaultBaseName,
     required this.fileCount,
   });
+  final String defaultBaseName;
+  final int fileCount;
 
   @override
   ConsumerState<_MultiSaveOptionsDialog> createState() =>
@@ -96,10 +95,7 @@ class _MultiSaveOptionsDialogState
               ),
               isExpanded: true,
               items: [
-                const DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text('Wallet (Root)'),
-                ),
+                const DropdownMenuItem<String?>(child: Text('Wallet (Root)')),
                 if (allFoldersAsync.hasValue)
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
@@ -125,7 +121,8 @@ class _MultiSaveOptionsDialogState
             ),
             const SizedBox(height: 16),
             Text(
-              'This will save ${widget.fileCount} images, for example:\n"${_controller.text.trim()}_page_1.png"',
+              'This will save ${widget.fileCount} images, for example:\n"'
+              '${_controller.text.trim()}_page_1.png"',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

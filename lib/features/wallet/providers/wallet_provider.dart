@@ -10,10 +10,10 @@ part 'wallet_provider.g.dart';
 
 @immutable
 class WalletState {
-  final List<Directory> folders;
-  final List<File> files;
 
   const WalletState({this.folders = const [], this.files = const []});
+  final List<Directory> folders;
+  final List<File> files;
 }
 
 @Riverpod(keepAlive: false)
@@ -52,7 +52,7 @@ class WalletViewModel extends _$WalletViewModel {
     String? folderPath,
   }) async {
     final repository = await ref.read(documentRepositoryProvider.future);
-    return await repository.exportDecryptedDocument(
+    return repository.exportDecryptedDocument(
       fileName: fileName,
       folderPath: folderPath,
     );

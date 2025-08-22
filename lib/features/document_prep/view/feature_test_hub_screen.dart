@@ -14,7 +14,7 @@ class FeatureTestHubScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Select a Workflow',
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         children: [
           _FeatureButton(
             title: 'Resize Image',
@@ -71,22 +71,21 @@ class FeatureTestHubScreen extends ConsumerWidget {
 }
 
 class _FeatureButton extends StatelessWidget {
-  final String title;
-  final String path;
-  final WidgetRef ref;
-  final PickType pickType;
-
   const _FeatureButton({
     required this.title,
     required this.path,
     required this.ref,
     required this.pickType,
   });
+  final String title;
+  final String path;
+  final WidgetRef ref;
+  final PickType pickType;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 12),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(16),
@@ -108,9 +107,8 @@ class _FeatureButton extends StatelessWidget {
                     ),
                   );
                 }
-                context.push(path, extra: pickedFile);
+                await context.push(path, extra: pickedFile);
               }
-              break;
             case PickType.multiImage:
               final pickedFiles = await repo
                   .pickAndSanitizeMultipleImagesForPdf();
@@ -123,15 +121,13 @@ class _FeatureButton extends StatelessWidget {
                     backgroundColor: Colors.blue,
                   ),
                 );
-                context.push(path, extra: pickedFiles);
+                await context.push(path, extra: pickedFiles);
               }
-              break;
             case PickType.pdf:
               final pickedFile = await repo.pickPdf();
               if (pickedFile != null && context.mounted) {
-                context.push(path, extra: pickedFile);
+                await context.push(path, extra: pickedFile);
               }
-              break;
           }
         },
       ),

@@ -4,16 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CompressionOptionsCard extends ConsumerWidget {
-  final CompressionState state;
-  final ImageCompressionViewModel notifier;
-  final VoidCallback onSave;
-
   const CompressionOptionsCard({
-    super.key,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final CompressionState state;
+  final ImageCompressionViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +28,7 @@ class CompressionOptionsCard extends ConsumerWidget {
         child: Column(
           children: [
             Text(
-              "Compression Options",
+              'Compression Options',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 20),
@@ -62,7 +61,7 @@ class CompressionOptionsCard extends ConsumerWidget {
                   ),
                   icon: const Icon(Icons.compress),
                   label: const Text('Compress'),
-                  onPressed: () => notifier.compressImage(),
+                  onPressed: notifier.compressImage,
                 ),
                 if (state.compressedImage != null)
                   FilledButton.icon(

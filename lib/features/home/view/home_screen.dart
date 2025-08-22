@@ -20,7 +20,8 @@ class HomeScreen extends ConsumerWidget {
     final homeState = ref.watch(homeViewModelProvider);
     final homeNotifier = ref.read(homeViewModelProvider.notifier);
 
-    // Watch the WalletViewModel to get the list of files and folders for the current path.
+    // Watch the WalletViewModel to get the list of files and folders for
+    // the current path.
     final walletState = ref.watch(
       walletViewModelProvider(homeState.currentFolderPath),
     );
@@ -86,7 +87,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

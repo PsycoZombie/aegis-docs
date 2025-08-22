@@ -7,7 +7,7 @@ part of 'pdf_security_provider.dart';
 // **************************************************************************
 
 String _$pdfSecurityViewModelHash() =>
-    r'5e3f3565140204f768364f1f76ef384411580f56';
+    r'01dfe2a1a2eb0732256ff2f3ab7af6f508d43edd';
 
 /// Copied from Dart SDK
 class _SystemHash {

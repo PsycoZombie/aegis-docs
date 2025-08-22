@@ -15,17 +15,15 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class _BackupPayload {
+  _BackupPayload(this.walletPath, this.keyJson);
   final String walletPath;
   final String keyJson;
-
-  _BackupPayload(this.walletPath, this.keyJson);
 }
 
 class _RestorePayload {
+  _RestorePayload(this.zipBytes, this.walletPath);
   final Uint8List zipBytes;
   final String walletPath;
-
-  _RestorePayload(this.zipBytes, this.walletPath);
 }
 
 // --- Isolate Functions ---
@@ -33,16 +31,15 @@ class _RestorePayload {
 
 Uint8List _createBackupIsolate(_BackupPayload payload) {
   // 1. Create an in-memory archive.
-  final archive = Archive();
-
-  // 2. Add the key file to the archive.
-  archive.addFile(
-    ArchiveFile(
-      'aegis_key.json',
-      payload.keyJson.length,
-      utf8.encode(payload.keyJson),
-    ),
-  );
+  final archive = Archive()
+    // 2. Add the key file to the archive.
+    ..addFile(
+      ArchiveFile(
+        'aegis_key.json',
+        payload.keyJson.length,
+        utf8.encode(payload.keyJson),
+      ),
+    );
 
   // 3. Recursively find all files in the wallet directory and add them.
   final walletDir = Directory(payload.walletPath);
@@ -82,14 +79,6 @@ void _restoreBackupIsolate(_RestorePayload payload) {
 }
 
 class DocumentRepository {
-  final FilePickerService _filePickerService;
-  final ImageProcessor _imageProcessor;
-  final PdfProcessor _pdfProcessor;
-  final NativeCompressionService _nativeCompressionService;
-  final FileStorageService _fileStorageService;
-  final EncryptionService _encryptionService;
-  final CloudStorageService _cloudStorageService;
-
   DocumentRepository({
     required FilePickerService filePickerService,
     required ImageProcessor imageProcessor,
@@ -105,6 +94,13 @@ class DocumentRepository {
        _fileStorageService = fileStorageService,
        _encryptionService = encryptionService,
        _cloudStorageService = cloudStorageService;
+  final FilePickerService _filePickerService;
+  final ImageProcessor _imageProcessor;
+  final PdfProcessor _pdfProcessor;
+  final NativeCompressionService _nativeCompressionService;
+  final FileStorageService _fileStorageService;
+  final EncryptionService _encryptionService;
+  final CloudStorageService _cloudStorageService;
 
   Future<List<String>> listAllFolders() =>
       _fileStorageService.listAllFoldersRecursively();
@@ -172,7 +168,7 @@ class DocumentRepository {
     final encryptedDataBytes = await _fileStorageService
         .loadFromPrivateDirectory(fileName: fileName, folderPath: folderPath);
     if (encryptedDataBytes == null) return null;
-    return await _encryptionService.decrypt(encryptedDataBytes);
+    return _encryptionService.decrypt(encryptedDataBytes);
   }
 
   Future<void> deleteEncryptedDocument({
@@ -302,7 +298,7 @@ class DocumentRepository {
   }
 
   Future<Uint8List?> downloadBackupFromDrive() async {
-    return await _cloudStorageService.downloadBackup('aegis_wallet_backup.zip');
+    return _cloudStorageService.downloadBackup('aegis_wallet_backup.zip');
   }
 
   /// Step 2 of Restore: Processes the downloaded backup data.
@@ -314,7 +310,7 @@ class DocumentRepository {
     final archive = ZipDecoder().decodeBytes(backupBytes);
     final keyFile = archive.findFile('aegis_key.json');
     if (keyFile == null) {
-      throw Exception("Backup is corrupted: key file not found.");
+      throw Exception('Backup is corrupted: key file not found.');
     }
 
     // 2. Decrypt and restore the data key (this will fail if password is wrong)

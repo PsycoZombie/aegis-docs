@@ -7,25 +7,25 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 
 class _ResizePayload {
+
+  _ResizePayload(this.imageBytes, this.width, this.height, this.outputFormat);
   final Uint8List imageBytes;
   final int width;
   final int height;
   final String outputFormat;
-
-  _ResizePayload(this.imageBytes, this.width, this.height, this.outputFormat);
 }
 
 class _CompressPayload {
-  final Uint8List imageBytes;
-  final int quality;
 
   _CompressPayload(this.imageBytes, this.quality);
+  final Uint8List imageBytes;
+  final int quality;
 }
 
 Uint8List _resizeIsolate(_ResizePayload payload) {
   final image = img.decodeImage(payload.imageBytes);
   if (image == null) {
-    throw Exception("Failed to decode image for resizing.");
+    throw Exception('Failed to decode image for resizing.');
   }
   final resized = img.copyResize(
     image,
@@ -35,14 +35,14 @@ Uint8List _resizeIsolate(_ResizePayload payload) {
   if (payload.outputFormat.toLowerCase() == '.png') {
     return Uint8List.fromList(img.encodePng(resized));
   } else {
-    return Uint8List.fromList(img.encodeJpg(resized, quality: 100));
+    return Uint8List.fromList(img.encodeJpg(resized));
   }
 }
 
 Uint8List _compressIsolate(_CompressPayload payload) {
   final image = img.decodeImage(payload.imageBytes);
   if (image == null) {
-    throw Exception("Failed to decode image for compression.");
+    throw Exception('Failed to decode image for compression.');
   }
   return Uint8List.fromList(img.encodeJpg(image, quality: payload.quality));
 }
@@ -57,40 +57,30 @@ Uint8List _formatChangeIsolate(Map<String, dynamic> params) {
     case '.jpg':
     case '.jpeg':
       image = img.decodeJpg(bytes);
-      break;
     case '.png':
       image = img.decodePng(bytes);
-      break;
     case '.gif':
       image = img.decodeGif(bytes);
-      break;
     case '.bmp':
       image = img.decodeBmp(bytes);
-      break;
     case '.ico':
       image = img.decodeIco(bytes);
-      break;
     case '.tiff':
       image = img.decodeTiff(bytes);
-      break;
     case '.tga':
       image = img.decodeTga(bytes);
-      break;
     case '.pvr':
       image = img.decodePvr(bytes);
-      break;
     case '.psd':
       image = img.decodePsd(bytes);
-      break;
     case '.webp':
       image = img.decodeWebP(bytes);
-      break;
     default:
       image = img.decodeImage(bytes);
   }
 
   if (image == null) {
-    throw Exception("Failed to decode image for format conversion.");
+    throw Exception('Failed to decode image for format conversion.');
   }
   switch (targetFormat.toLowerCase()) {
     case 'png':
@@ -120,7 +110,7 @@ class ImageProcessor {
     required int height,
     required String outputFormat,
   }) async {
-    return await compute(
+    return compute(
       _resizeIsolate,
       _ResizePayload(imageBytes, width, height, outputFormat),
     );
@@ -131,7 +121,7 @@ class ImageProcessor {
     int quality = 85,
   }) async {
     final clampedQuality = quality.clamp(0, 100);
-    return await compute(
+    return compute(
       _compressIsolate,
       _CompressPayload(imageBytes, clampedQuality),
     );
@@ -142,7 +132,7 @@ class ImageProcessor {
     required String originalFormat,
     required String targetFormat,
   }) async {
-    return await compute(_formatChangeIsolate, {
+    return compute(_formatChangeIsolate, {
       'bytes': imageBytes,
       'originalFormat': originalFormat,
       'targetFormat': targetFormat,
@@ -158,7 +148,7 @@ class ImageProcessor {
     final file = await File(tempPath).writeAsBytes(imageBytes);
     final colorScheme = theme.colorScheme;
 
-    final CroppedFile? croppedFile = await ImageCropper().cropImage(
+    final croppedFile = await ImageCropper().cropImage(
       sourcePath: file.path,
       uiSettings: [
         AndroidUiSettings(
@@ -179,7 +169,7 @@ class ImageProcessor {
     await file.delete();
 
     if (croppedFile != null) {
-      return await croppedFile.readAsBytes();
+      return croppedFile.readAsBytes();
     }
 
     return null;
@@ -188,13 +178,13 @@ class ImageProcessor {
   Uint8List _grayscaleIsolate(Uint8List imageBytes) {
     final image = img.decodeImage(imageBytes);
     if (image == null) {
-      throw Exception("Failed to decode image for grayscale filter.");
+      throw Exception('Failed to decode image for grayscale filter.');
     }
     final grayscaleImage = img.grayscale(image);
     return Uint8List.fromList(img.encodeJpg(grayscaleImage));
   }
 
   Future<Uint8List> applyGrayscale({required Uint8List imageBytes}) async {
-    return await compute(_grayscaleIsolate, imageBytes);
+    return compute(_grayscaleIsolate, imageBytes);
   }
 }

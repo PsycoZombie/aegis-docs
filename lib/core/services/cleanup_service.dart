@@ -3,14 +3,13 @@ import 'package:aegis_docs/core/services/settings_service.dart';
 import 'package:flutter/foundation.dart';
 
 class CleanupService {
-  final NativeCompressionService _nativeService;
-  final SettingsService _settingsService;
-
   CleanupService({
     required NativeCompressionService nativeService,
     required SettingsService settingsService,
   }) : _nativeService = nativeService,
        _settingsService = settingsService;
+  final NativeCompressionService _nativeService;
+  final SettingsService _settingsService;
 
   Future<void> runCleanup() async {
     try {
@@ -31,7 +30,7 @@ class CleanupService {
       );
 
       debugPrint('Cleanup call to native code complete.');
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error during cleanup service: $e');
     }
   }

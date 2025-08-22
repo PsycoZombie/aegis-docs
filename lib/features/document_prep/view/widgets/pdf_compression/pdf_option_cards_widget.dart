@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PdfOptionsCard extends ConsumerWidget {
-  final PdfCompressionState state;
-  final PdfCompressionViewModel notifier;
-  final VoidCallback onSave;
-
   const PdfOptionsCard({
-    super.key,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final PdfCompressionState state;
+  final PdfCompressionViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,7 +19,7 @@ class PdfOptionsCard extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
@@ -37,7 +36,7 @@ class PdfOptionsCard extends ConsumerWidget {
             SwitchListTile(
               title: const Text('Preserve Text'),
               value: state.preserveText,
-              onChanged: notifier.setPreserveText,
+              onChanged: (val) => notifier.setPreserveText(value: val),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

@@ -11,11 +11,11 @@ part 'app_router_provider.g.dart';
 GoRouter appRouter(Ref ref) {
   final listenable = ValueNotifier<int>(0);
 
-  ref.listen(localAuthProvider, (_, __) {
-    listenable.value++;
-  });
-
-  ref.onDispose(() => listenable.dispose());
+  ref
+    ..listen(localAuthProvider, (_, _) {
+      listenable.value++;
+    })
+    ..onDispose(listenable.dispose);
 
   return GoRouter(
     initialLocation: '/login',
@@ -24,9 +24,9 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: listenable,
 
     redirect: (BuildContext context, GoRouterState state) {
-      final bool isLoggedIn = ref.read(localAuthProvider) == AuthState.success;
-      final String location = state.matchedLocation;
-      final bool isGoingToLogin = location == '/login';
+      final isLoggedIn = ref.read(localAuthProvider) == AuthState.success;
+      final location = state.matchedLocation;
+      final isGoingToLogin = location == '/login';
 
       if (!isLoggedIn && !isGoingToLogin) {
         return '/login';

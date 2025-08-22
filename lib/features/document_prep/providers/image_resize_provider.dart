@@ -2,20 +2,15 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'image_resize_provider.g.dart';
 
 @immutable
 class ResizeState {
-  final PickedFile? originalImage;
-  final Uint8List? resizedImage;
-  final Size? originalDimensions;
-  final bool isAspectRatioLocked;
 
   const ResizeState({
     this.originalImage,
@@ -23,6 +18,10 @@ class ResizeState {
     this.originalDimensions,
     this.isAspectRatioLocked = true,
   });
+  final PickedFile? originalImage;
+  final Uint8List? resizedImage;
+  final Size? originalDimensions;
+  final bool isAspectRatioLocked;
 
   ResizeState copyWith({
     PickedFile? originalImage,
@@ -64,7 +63,7 @@ class ImageResizeViewModel extends _$ImageResizeViewModel {
     final originalFileName = state.value?.originalImage?.name;
     if (originalImageBytes == null || originalFileName == null) return;
 
-    state = AsyncLoading<ResizeState>().copyWithPrevious(state);
+    state = const AsyncLoading<ResizeState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final imageProcessor = ref.read(imageProcessorProvider);
@@ -86,13 +85,13 @@ class ImageResizeViewModel extends _$ImageResizeViewModel {
     String? folderPath,
   }) async {
     if (state.value?.resizedImage == null) {
-      throw Exception("No resized image available to save.");
+      throw Exception('No resized image available to save.');
     }
 
     final currentState = state.value!;
     final resizedBytes = currentState.resizedImage!;
 
-    state = AsyncLoading<ResizeState>().copyWithPrevious(state);
+    state = const AsyncLoading<ResizeState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);

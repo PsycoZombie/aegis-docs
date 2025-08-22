@@ -5,14 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class DocumentDetailScreen extends ConsumerWidget {
-  final String fileName;
-  final String? folderPath;
 
   const DocumentDetailScreen({
-    super.key,
-    required this.fileName,
+    required this.fileName, super.key,
     this.folderPath,
   });
+  final String fileName;
+  final String? folderPath;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +23,7 @@ class DocumentDetailScreen extends ConsumerWidget {
     return AppScaffold(
       title: fileName,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: documentAsyncValue.when(
             loading: () => const CircularProgressIndicator(),

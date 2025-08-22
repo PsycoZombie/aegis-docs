@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FormatOptionsCard extends ConsumerWidget {
-  final ImageFormatState state;
-  final ImageFormatViewModel notifier;
-  final VoidCallback onSave;
-
   const FormatOptionsCard({
-    super.key,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final ImageFormatState state;
+  final ImageFormatViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,11 +28,11 @@ class FormatOptionsCard extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
-              "Conversion Options",
+              'Conversion Options',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),

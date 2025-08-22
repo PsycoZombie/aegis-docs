@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SecurityOptionsCard extends ConsumerStatefulWidget {
-  final PdfSecurityState state;
-  final PdfSecurityViewModel notifier;
-  final VoidCallback onSave;
-
   const SecurityOptionsCard({
-    super.key,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final PdfSecurityState state;
+  final PdfSecurityViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   ConsumerState<SecurityOptionsCard> createState() =>
@@ -52,7 +51,7 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
   }
 
   Future<void> _applySecurity() async {
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future<dynamic>.delayed(const Duration(milliseconds: 50));
     if (!mounted || !_formKey.currentState!.validate()) return;
 
     Future<bool> action;
@@ -84,7 +83,7 @@ class _SecurityOptionsCardState extends ConsumerState<SecurityOptionsCard> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(

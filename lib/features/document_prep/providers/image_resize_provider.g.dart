@@ -7,7 +7,7 @@ part of 'image_resize_provider.dart';
 // **************************************************************************
 
 String _$imageResizeViewModelHash() =>
-    r'2080e0f3b812f08797341132b056f000979f4866';
+    r'd98e0a475fba3d709e5995df9b2c4307f427b5ff';
 
 /// Copied from Dart SDK
 class _SystemHash {

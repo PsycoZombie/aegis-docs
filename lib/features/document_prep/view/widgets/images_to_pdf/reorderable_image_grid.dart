@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class ReorderableImageGrid extends StatelessWidget {
-  final List<PickedFile> images;
-  final void Function(int oldIndex, int newIndex) onReorder;
-  final void Function(int index) onRemove;
-
   const ReorderableImageGrid({
-    super.key,
     required this.images,
     required this.onReorder,
     required this.onRemove,
+    super.key,
   });
+  final List<PickedFile> images;
+  final void Function(int oldIndex, int newIndex) onReorder;
+  final void Function(int index) onRemove;
 
   @override
   Widget build(BuildContext context) {

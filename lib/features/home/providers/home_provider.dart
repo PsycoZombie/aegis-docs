@@ -16,11 +16,10 @@ part 'home_provider.g.dart';
 
 @immutable
 class HomeState {
+  const HomeState({this.currentFolderPath, this.infoMessage});
   final String? currentFolderPath;
   // NEW: A field to hold messages for the SnackBar
   final String? infoMessage;
-
-  const HomeState({this.currentFolderPath, this.infoMessage});
 
   HomeState copyWith({String? currentFolderPath, String? infoMessage}) {
     return HomeState(
@@ -105,9 +104,9 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> renameItem(
     BuildContext context,
-    String path,
-    bool isFolder,
-  ) async {
+    String path, {
+    required bool isFolder,
+  }) async {
     final currentName = isFolder
         ? p.basename(path)
         : p.basenameWithoutExtension(path);
@@ -137,16 +136,18 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> deleteItem(
     BuildContext context,
-    String path,
-    bool isFolder,
-  ) async {
+    String path, {
+    required bool isFolder,
+  }) async {
     final name = p.basename(path);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(isFolder ? 'Delete Folder?' : 'Delete Document?'),
         content: Text(
-          'Are you sure you want to delete "$name"?\n${isFolder ? 'This will delete all contents inside.' : ''}\nThis action cannot be undone.',
+          'Are you sure you want to delete "$name"?\n'
+          '${isFolder ? 'This will delete all contents inside.' : ''}'
+          '\nThis action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -161,7 +162,7 @@ class HomeViewModel extends _$HomeViewModel {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       final parentPath = isFolder
           ? ((path == p.basename(path)) ? null : p.dirname(path))
           : state.currentFolderPath;
@@ -192,8 +193,8 @@ class HomeViewModel extends _$HomeViewModel {
         bytes: Uint8List.fromList(decryptedBytes),
       );
       state = state.copyWith(infoMessage: 'File saved successfully!');
-    } catch (e) {
-      state = state.copyWith(infoMessage: 'Export failed: ${e.toString()}');
+    } on Exception catch (e) {
+      state = state.copyWith(infoMessage: 'Export failed: $e');
     }
   }
 
@@ -222,8 +223,8 @@ class HomeViewModel extends _$HomeViewModel {
       await SharePlus.instance.share(params);
 
       await tempFile.delete();
-    } catch (e) {
-      state = state.copyWith(infoMessage: 'Share failed: ${e.toString()}');
+    } on Exception catch (e) {
+      state = state.copyWith(infoMessage: 'Share failed: $e');
     }
   }
 }

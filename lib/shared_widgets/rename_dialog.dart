@@ -14,10 +14,10 @@ Future<String?> showRenameDialog(
 }
 
 class _RenameDialog extends StatefulWidget {
-  final String currentName;
-  final String title;
 
   const _RenameDialog({required this.currentName, required this.title});
+  final String currentName;
+  final String title;
 
   @override
   State<_RenameDialog> createState() => _RenameDialogState();

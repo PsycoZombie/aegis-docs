@@ -13,7 +13,7 @@ class CloudStorageService {
   // THE FIX: Use the singleton instance, as you correctly pointed out.
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   // Define the required scope for the private App Data Folder.
-  static const _driveScope = [drive.DriveApi.driveAppdataScope];
+  static const List<String> _driveScope = [drive.DriveApi.driveAppdataScope];
   /*
   // / Signs in the user, ensures Drive permissions are granted, and returns an
   // / authenticated DriveApi client. Returns null if the user cancels.
@@ -57,7 +57,8 @@ class CloudStorageService {
     try {
       await _googleSignIn.initialize(
         serverClientId:
-            '***REMOVED***',
+            '168730393077-s73bqsr2vj5tde5s0v7an0df78628c9d'
+            '.apps.googleusercontent.com',
       );
 
       final googleUser = await _googleSignIn.authenticate(
@@ -92,7 +93,7 @@ class CloudStorageService {
       final httpClient = auth.authenticatedClient(http.Client(), credentials);
 
       return drive.DriveApi(httpClient);
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error getting Drive API client: $e');
       await _googleSignIn.signOut();
       return null;
@@ -120,7 +121,8 @@ class CloudStorageService {
     }
   }
 
-  /// Uploads the backup file to the user's private App Data Folder on Google Drive.
+  /// Uploads the backup file to the user's private App Data Folder
+  /// on Google Drive.
   Future<void> uploadBackup(Uint8List data, String fileName) async {
     final driveApi = await _getDriveApi();
     if (driveApi == null) return;
@@ -135,7 +137,8 @@ class CloudStorageService {
     if (existingFiles.files != null && existingFiles.files!.isNotEmpty) {
       final fileId = existingFiles.files!.first.id!;
       debugPrint('Updating existing backup file...');
-      // THE FIX: When updating, create a File object without the 'parents' field.
+      // THE FIX: When updating, create a File object without the
+      // 'parents' field.
       final updateFile = drive.File()..name = fileName;
       await driveApi.files.update(updateFile, fileId, uploadMedia: media);
     } else {
@@ -177,12 +180,14 @@ class CloudStorageService {
     final completer = Completer<Uint8List>();
     final builder = BytesBuilder();
     response.stream.listen(
-      (data) => builder.add(data),
+      builder.add,
       onDone: () {
         debugPrint('Backup download complete.');
         completer.complete(builder.toBytes());
       },
-      onError: (error) => completer.completeError(error),
+      onError: (Object error, StackTrace? stackTrace) {
+        completer.completeError(error, stackTrace);
+      },
     );
     return completer.future;
   }

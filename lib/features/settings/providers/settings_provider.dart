@@ -7,15 +7,14 @@ part 'settings_provider.g.dart';
 
 @immutable
 class SettingsState {
-  final bool isProcessing;
-  final String? successMessage;
-  final String? errorMessage;
-
   const SettingsState({
     this.isProcessing = false,
     this.successMessage,
     this.errorMessage,
   });
+  final bool isProcessing;
+  final String? successMessage;
+  final String? errorMessage;
 
   SettingsState copyWith({
     bool? isProcessing,
@@ -43,19 +42,11 @@ class SettingsViewModel extends _$SettingsViewModel {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.backupWalletToDrive(masterPassword);
       state = const AsyncValue.data(
-        SettingsState(
-          isProcessing: false,
-          successMessage: 'Backup successful!',
-        ),
+        SettingsState(successMessage: 'Backup successful!'),
       );
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Backup failed: $e');
-      state = AsyncValue.data(
-        SettingsState(
-          isProcessing: false,
-          errorMessage: 'Backup failed: ${e.toString()}',
-        ),
-      );
+      state = AsyncValue.data(SettingsState(errorMessage: 'Backup failed: $e'));
     }
   }
 
@@ -70,29 +61,23 @@ class SettingsViewModel extends _$SettingsViewModel {
 
       if (backupBytes == null) {
         state = const AsyncValue.data(
-          SettingsState(
-            isProcessing: false,
-            errorMessage: 'No backup found on Google Drive.',
-          ),
+          SettingsState(errorMessage: 'No backup found on Google Drive.'),
         );
         return null;
       }
 
-      state = const AsyncValue.data(SettingsState(isProcessing: false));
+      state = const AsyncValue.data(SettingsState());
       return backupBytes;
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Download backup failed: $e');
       state = AsyncValue.data(
-        SettingsState(
-          isProcessing: false,
-          errorMessage: 'Failed to download backup: ${e.toString()}',
-        ),
+        SettingsState(errorMessage: 'Failed to download backup: $e'),
       );
       return null;
     }
   }
 
-  /// Step 2: Tries to restore the wallet using the downloaded data and password.
+  /// Step 2: Tries to restore the wallet using the downloaded data and password
   Future<bool> finishRestore(
     Uint8List backupBytes,
     String masterPassword,
@@ -109,18 +94,17 @@ class SettingsViewModel extends _$SettingsViewModel {
 
       state = const AsyncValue.data(
         SettingsState(
-          isProcessing: false,
           successMessage: 'Restore successful! Your wallet has been updated.',
         ),
       );
       return true;
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Restore failed: $e');
       state = const AsyncValue.data(
         SettingsState(
-          isProcessing: false,
           errorMessage:
-              'Restore failed. Please check your master password and try again.',
+              'Restore failed. '
+              'Please check your master password and try again.',
         ),
       );
       return false;
@@ -133,18 +117,12 @@ class SettingsViewModel extends _$SettingsViewModel {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.deleteBackupFromDrive();
       state = const AsyncValue.data(
-        SettingsState(
-          isProcessing: false,
-          successMessage: 'Cloud backup deleted successfully!',
-        ),
+        SettingsState(successMessage: 'Cloud backup deleted successfully!'),
       );
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Delete backup failed: $e');
       state = AsyncValue.data(
-        SettingsState(
-          isProcessing: false,
-          errorMessage: 'Delete backup failed: ${e.toString()}',
-        ),
+        SettingsState(errorMessage: 'Delete backup failed: $e'),
       );
     }
   }

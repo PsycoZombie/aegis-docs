@@ -7,7 +7,7 @@ part of 'image_compression_provider.dart';
 // **************************************************************************
 
 String _$imageCompressionViewModelHash() =>
-    r'9c129fb74ae48a3717bae7ae61604a8ff08be0c5';
+    r'8ec776071ba54f1b1ac5cfaa1aa981b28a6111e9';
 
 /// Copied from Dart SDK
 class _SystemHash {

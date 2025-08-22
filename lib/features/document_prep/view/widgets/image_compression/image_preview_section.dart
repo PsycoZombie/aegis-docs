@@ -5,8 +5,8 @@ import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
 
 class CompressionImagePreviewSection extends StatelessWidget {
+  const CompressionImagePreviewSection({required this.state, super.key});
   final CompressionState state;
-  const CompressionImagePreviewSection({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class CompressionImagePreviewSection extends StatelessWidget {
 
     return Column(
       children: [
-        Text("Image Preview", style: Theme.of(context).textTheme.titleLarge),
+        Text('Image Preview', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: screenHeight * 0.4),
@@ -47,15 +47,14 @@ class CompressionImagePreviewSection extends StatelessWidget {
 }
 
 class _ImagePreview extends StatelessWidget {
-  final String label;
-  final Uint8List imageBytes;
-  final int sizeInBytes;
-
   const _ImagePreview({
     required this.label,
     required this.imageBytes,
     required this.sizeInBytes,
   });
+  final String label;
+  final Uint8List imageBytes;
+  final int sizeInBytes;
 
   String _formatSize(int bytes) => '${(bytes / 1024).toStringAsFixed(2)} KB';
 
@@ -66,7 +65,7 @@ class _ImagePreview extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
+          MaterialPageRoute<dynamic>(
             builder: (_) =>
                 FullScreenImageView(imageBytes: imageBytes, heroTag: heroTag),
           ),
@@ -80,7 +79,7 @@ class _ImagePreview extends StatelessWidget {
             child: Hero(
               tag: heroTag,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(12),
                 child: Image.memory(
                   imageBytes,
                   fit: BoxFit.contain,

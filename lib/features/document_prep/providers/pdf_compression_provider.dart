@@ -3,23 +3,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'pdf_compression_provider.g.dart';
 
 @immutable
 class PdfCompressionState {
-  final PickedFile? pickedPdf;
-  final Uint8List? compressedPdfBytes;
-  final bool isProcessing;
-  final int sizeLimitKB;
-  final bool preserveText;
-  final String? successMessage;
-  final String? errorMessage;
-
   const PdfCompressionState({
     this.pickedPdf,
     this.compressedPdfBytes,
@@ -29,6 +20,13 @@ class PdfCompressionState {
     this.successMessage,
     this.errorMessage,
   });
+  final PickedFile? pickedPdf;
+  final Uint8List? compressedPdfBytes;
+  final bool isProcessing;
+  final int sizeLimitKB;
+  final bool preserveText;
+  final String? successMessage;
+  final String? errorMessage;
 
   PdfCompressionState copyWith({
     PickedFile? pickedPdf,
@@ -74,7 +72,7 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
     state = AsyncData(state.value!.copyWith(sizeLimitKB: kb));
   }
 
-  void setPreserveText(bool value) {
+  void setPreserveText({required bool value}) {
     if (state.value == null) return;
     state = AsyncData(state.value!.copyWith(preserveText: value));
   }
@@ -88,11 +86,9 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
     state = AsyncData(
       state.value!.copyWith(
         isProcessing: true,
-        successMessage: null,
-        errorMessage: null,
       ),
     );
-    bool success = false;
+    var success = false;
 
     state = await AsyncValue.guard(() async {
       final currentState = state.value!;
@@ -105,7 +101,7 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
       );
 
       if (resultPath == null) {
-        throw Exception("Compression was cancelled or failed unexpectedly.");
+        throw Exception('Compression was cancelled or failed unexpectedly.');
       }
 
       final compressedFile = File(resultPath);
@@ -126,7 +122,7 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
           successMessage: 'Successfully compressed and saved to wallet!',
         );
       } else {
-        throw Exception("Compression failed: $resultPath");
+        throw Exception('Compression failed: $resultPath');
       }
     });
 

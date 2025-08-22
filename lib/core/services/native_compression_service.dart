@@ -12,7 +12,7 @@ class NativeCompressionService {
         'expirationInMinutes': expirationInMinutes,
       });
     } on PlatformException catch (e) {
-      debugPrint("Failed to run native cleanup: ${e.message}");
+      debugPrint('Failed to run native cleanup: ${e.message}');
     }
   }
 
@@ -21,21 +21,23 @@ class NativeCompressionService {
     required Uint8List data,
   }) async {
     try {
-      final String? resultPath = await _platform.invokeMethod(
+      final result = await _platform.invokeMethod(
         'saveToDownloads',
         {'fileName': fileName, 'data': data},
       );
 
-      if (resultPath == null ||
-          resultPath.isEmpty ||
-          resultPath.startsWith("Error:")) {
+      final resultPath = result.toString();
+
+      if (resultPath.isEmpty || resultPath.startsWith('Error:')) {
         throw Exception(
-          resultPath ?? 'Native save returned an empty or null path.',
+          resultPath == ''
+              ? resultPath
+              : 'Native save returned an empty or null path.',
         );
       }
       return resultPath;
     } on PlatformException catch (e) {
-      throw Exception("Failed to save file via native code: ${e.message}");
+      throw Exception('Failed to save file via native code: ${e.message}');
     }
   }
 
@@ -49,20 +51,22 @@ class NativeCompressionService {
       final tempFileName = 'temp_compressed_${const Uuid().v4()}.pdf';
       final outputPath = '${tempDir.path}/$tempFileName';
 
-      final String? resultPath = await _platform.invokeMethod('compressPdf', {
+      final result = await _platform.invokeMethod('compressPdf', {
         'filePath': filePath,
         'outputPath': outputPath,
         'sizeLimit': sizeLimit,
         'preserveText': preserveText ? 1 : 0,
       });
 
-      if (resultPath == null || resultPath.isEmpty) {
+      final resultPath = result.toString();
+
+      if (resultPath == '' || resultPath.isEmpty) {
         throw Exception('Native compression returned an empty or null path.');
       }
 
       return resultPath;
     } on PlatformException catch (e) {
-      throw Exception("Failed to compress PDF via native code: ${e.message}");
+      throw Exception('Failed to compress PDF via native code: ${e.message}');
     }
   }
 
@@ -71,17 +75,19 @@ class NativeCompressionService {
     required int sizeLimit,
   }) async {
     try {
-      final String? resultPath = await _platform.invokeMethod('compressImage', {
+      final result = await _platform.invokeMethod('compressImage', {
         'filePath': filePath,
         'sizeLimit': sizeLimit,
       });
 
-      if (resultPath == null || resultPath.isEmpty) {
+      final resultPath = result.toString();
+
+      if (resultPath == '' || resultPath.isEmpty) {
         throw Exception('Native compression returned an empty or null path.');
       }
       return resultPath;
     } on PlatformException catch (e) {
-      throw Exception("Failed to compress image via native code: ${e.message}");
+      throw Exception('Failed to compress image via native code: ${e.message}');
     }
   }
 }

@@ -5,15 +5,15 @@ import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
 
 class ImagePreviewSection extends StatelessWidget {
+  const ImagePreviewSection({required this.state, super.key});
   final ResizeState state;
-  const ImagePreviewSection({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
     final hasResized = state.resizedImage != null;
     return Column(
       children: [
-        Text("Image Preview", style: Theme.of(context).textTheme.titleLarge),
+        Text('Image Preview', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +66,7 @@ class _ImagePreview extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
+          MaterialPageRoute<dynamic>(
             builder: (_) =>
                 FullScreenImageView(imageBytes: imageBytes, heroTag: heroTag),
           ),

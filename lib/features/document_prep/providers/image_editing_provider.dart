@@ -2,29 +2,28 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'image_editing_provider.g.dart';
 
 class ImageEdit {
-  final Uint8List bytes;
   const ImageEdit(this.bytes);
+  final Uint8List bytes;
 }
 
 @immutable
 class ImageEditingState {
-  final PickedFile? originalImage;
-  final Uint8List? currentImage;
-  final List<ImageEdit> editHistory;
 
   const ImageEditingState({
     this.originalImage,
     this.currentImage,
     this.editHistory = const [],
   });
+  final PickedFile? originalImage;
+  final Uint8List? currentImage;
+  final List<ImageEdit> editHistory;
 
   ImageEditingState copyWith({
     PickedFile? originalImage,
@@ -85,7 +84,7 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     final currentImageBytes = state.value?.currentImage;
     if (currentImageBytes == null) return;
 
-    state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
+    state = const AsyncLoading<ImageEditingState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       if (context.mounted) {
@@ -107,7 +106,7 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
     final currentImageBytes = state.value?.currentImage;
     if (currentImageBytes == null) return;
 
-    state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
+    state = const AsyncLoading<ImageEditingState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final imageProcessor = ref.read(imageProcessorProvider);
       final grayscaleBytes = await imageProcessor.applyGrayscale(
@@ -121,13 +120,13 @@ class ImageEditingViewModel extends _$ImageEditingViewModel {
 
   Future<void> saveImage({required String fileName, String? folderPath}) async {
     if (state.value?.currentImage == null) {
-      throw Exception("No image to save.");
+      throw Exception('No image to save.');
     }
 
     final currentState = state.value!;
     final editedBytes = currentState.currentImage!;
 
-    state = AsyncLoading<ImageEditingState>().copyWithPrevious(state);
+    state = const AsyncLoading<ImageEditingState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);

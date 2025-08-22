@@ -2,24 +2,22 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'images_to_pdf_provider.g.dart';
 
 @immutable
 class ImagesToPdfState {
-  final List<PickedFile> selectedImages;
-  final Uint8List? generatedPdf;
-  final bool isProcessing;
-
   const ImagesToPdfState({
     this.selectedImages = const [],
     this.generatedPdf,
     this.isProcessing = false,
   });
+  final List<PickedFile> selectedImages;
+  final Uint8List? generatedPdf;
+  final bool isProcessing;
 
   ImagesToPdfState copyWith({
     List<PickedFile>? selectedImages,
@@ -51,8 +49,8 @@ class ImagesToPdfViewModel extends _$ImagesToPdfViewModel {
 
   void removeImage(int index) {
     if (state.value == null) return;
-    final images = List<PickedFile>.from(state.value!.selectedImages);
-    images.removeAt(index);
+    final images = List<PickedFile>.from(state.value!.selectedImages)
+      ..removeAt(index);
     state = AsyncData(state.value!.copyWith(selectedImages: images));
   }
 
@@ -75,7 +73,7 @@ class ImagesToPdfViewModel extends _$ImagesToPdfViewModel {
 
   Future<void> savePdf({required String fileName, String? folderPath}) async {
     if (state.value?.generatedPdf == null) {
-      throw Exception("No PDF to save.");
+      throw Exception('No PDF to save.');
     }
     final currentState = state.value!;
     state = AsyncData(currentState.copyWith(isProcessing: true));

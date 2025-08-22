@@ -2,19 +2,14 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'pdf_to_images_provider.g.dart';
 
 @immutable
 class PdfToImagesState {
-  final PickedFile? originalPdf;
-  final List<Uint8List> generatedImages;
-  final Set<int> selectedImageIndices;
-  final bool isProcessing;
 
   const PdfToImagesState({
     this.originalPdf,
@@ -22,6 +17,10 @@ class PdfToImagesState {
     this.selectedImageIndices = const {},
     this.isProcessing = false,
   });
+  final PickedFile? originalPdf;
+  final List<Uint8List> generatedImages;
+  final Set<int> selectedImageIndices;
+  final bool isProcessing;
 
   PdfToImagesState copyWith({
     PickedFile? originalPdf,

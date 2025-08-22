@@ -5,13 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 void showContextMenu(
   BuildContext context,
   WidgetRef ref,
-  String path,
-  bool isFolder,
-) {
+  String path, {
+  required bool isFolder,
+}) {
   final homeNotifier = ref.read(homeViewModelProvider.notifier);
-  final RenderBox overlay =
-      Overlay.of(context).context.findRenderObject() as RenderBox;
-  final RenderBox button = context.findRenderObject() as RenderBox;
+  final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
+  final button = context.findRenderObject()! as RenderBox;
   final position = RelativeRect.fromRect(
     Rect.fromPoints(
       button.localToGlobal(Offset.zero, ancestor: overlay),
@@ -58,20 +57,16 @@ void showContextMenu(
     switch (value) {
       case 'rename':
         if (context.mounted) {
-          homeNotifier.renameItem(context, path, isFolder);
+          homeNotifier.renameItem(context, path, isFolder: isFolder);
         }
-        break;
       case 'delete':
         if (context.mounted) {
-          homeNotifier.deleteItem(context, path, isFolder);
+          homeNotifier.deleteItem(context, path, isFolder: isFolder);
         }
-        break;
       case 'export':
         homeNotifier.exportDocument(path);
-        break;
       case 'share':
         homeNotifier.shareDocument(path);
-        break;
     }
   });
 }

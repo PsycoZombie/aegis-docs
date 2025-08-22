@@ -22,13 +22,12 @@ Future<SaveResult?> showSaveOptionsDialog(
 }
 
 class _SaveOptionsDialog extends ConsumerStatefulWidget {
-  final String defaultFileName;
-  final String fileExtension;
-
   const _SaveOptionsDialog({
     required this.defaultFileName,
     required this.fileExtension,
   });
+  final String defaultFileName;
+  final String fileExtension;
 
   @override
   ConsumerState<_SaveOptionsDialog> createState() => _SaveOptionsDialogState();
@@ -91,7 +90,7 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                 ),
                 const SizedBox(width: 8),
                 Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
+                  padding: const EdgeInsets.only(top: 16),
                   child: Text(
                     widget.fileExtension,
                     style: Theme.of(context).textTheme.titleMedium,
@@ -108,13 +107,9 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
               ),
               isExpanded: true,
               items: [
-                const DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text('Wallet (Root)'),
-                ),
+                const DropdownMenuItem<String?>(child: Text('Wallet (Root)')),
                 if (allFoldersAsync.isLoading)
                   const DropdownMenuItem<String?>(
-                    value: null,
                     child: Center(
                       child: SizedBox.square(
                         dimension: 20,
@@ -126,7 +121,8 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
                       value: folderPath,
-                      // THE FIX: Wrap the Text in a Row with Flexible to allow wrapping.
+                      // THE FIX: Wrap the Text in a Row with Flexible to
+                      //allow wrapping.
                       child: Row(
                         children: [
                           Flexible(

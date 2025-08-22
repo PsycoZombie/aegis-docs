@@ -9,27 +9,27 @@ import 'package:pointycastle/key_derivators/pbkdf2.dart';
 import 'package:pointycastle/macs/hmac.dart';
 
 class _EncryptIsolatePayload {
+  _EncryptIsolatePayload(this.keyBytes, this.data);
   final Uint8List keyBytes;
   final Uint8List data;
-  _EncryptIsolatePayload(this.keyBytes, this.data);
 }
 
 class _DecryptIsolatePayload {
+  _DecryptIsolatePayload(this.keyBytes, this.data);
   final Uint8List keyBytes;
   final Uint8List data;
-  _DecryptIsolatePayload(this.keyBytes, this.data);
 }
 
 class _KeyWrapPayload {
+  _KeyWrapPayload(this.masterPassword, this.dataKeyBytes);
   final String masterPassword;
   final Uint8List dataKeyBytes;
-  _KeyWrapPayload(this.masterPassword, this.dataKeyBytes);
 }
 
 class _KeyUnwrapPayload {
+  _KeyUnwrapPayload(this.masterPassword, this.backupData);
   final String masterPassword;
   final Map<String, dynamic> backupData;
-  _KeyUnwrapPayload(this.masterPassword, this.backupData);
 }
 
 Uint8List _encryptIsolate(_EncryptIsolatePayload params) {
@@ -107,7 +107,7 @@ class EncryptionService {
   }
 
   Future<enc.Key> _getOrCreateKey() async {
-    String? base64Key = await _secureStorage.read(key: _keyStorageIdentifier);
+    final base64Key = await _secureStorage.read(key: _keyStorageIdentifier);
 
     if (base64Key == null) {
       final newKey = enc.Key.fromSecureRandom(32);
@@ -135,7 +135,7 @@ class EncryptionService {
     String masterPassword,
   ) async {
     if (_dataKey == null) await init();
-    return await compute(
+    return compute(
       _wrapKeyIsolate,
       _KeyWrapPayload(masterPassword, _dataKey!.bytes),
     );
@@ -160,7 +160,7 @@ class EncryptionService {
 
   Future<Uint8List> encrypt(Uint8List data) async {
     if (_dataKey == null) await init();
-    return await compute(
+    return compute(
       _encryptIsolate,
       _EncryptIsolatePayload(_dataKey!.bytes, data),
     );
@@ -168,14 +168,15 @@ class EncryptionService {
 
   Future<Uint8List> decrypt(Uint8List combinedData) async {
     if (_dataKey == null) await init();
-    return await compute(
+    return compute(
       _decryptIsolate,
       _DecryptIsolatePayload(_dataKey!.bytes, combinedData),
     );
   }
 
   // Future<enc.Key> _getOrCreateDataKey() async {
-  //   String? base64Key = await _secureStorage.read(key: _keyStorageIdentifier);
+  //   String? base64Key = await _secureStorage.read(
+  //key: _keyStorageIdentifier);
   //   if (base64Key == null) {
   //     final newKey = enc.Key.fromSecureRandom(32);
   //     await _secureStorage.write(

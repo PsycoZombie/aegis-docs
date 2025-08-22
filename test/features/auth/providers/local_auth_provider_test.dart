@@ -73,35 +73,33 @@ void main() {
     },
   );
 
-  test(
-    'authenticateWithDeviceCredentials transitions state: loading -> error on auth fail',
-    () async {
-      // Arrange
-      when(mockAuthService.isDeviceSupported()).thenAnswer((_) async => true);
-      // Simulate a failed authentication
-      when(mockAuthService.authenticate()).thenAnswer((_) async => false);
+  test('authenticateWithDeviceCredentials transitions state: '
+      'loading -> error on auth fail', () async {
+    // Arrange
+    when(mockAuthService.isDeviceSupported()).thenAnswer((_) async => true);
+    // Simulate a failed authentication
+    when(mockAuthService.authenticate()).thenAnswer((_) async => false);
 
-      final container = createContainer();
-      final listener = Listener<AuthState>();
-      container.listen<AuthState>(
-        localAuthProvider,
-        listener.call,
-        fireImmediately: true,
-      );
+    final container = createContainer();
+    final listener = Listener<AuthState>();
+    container.listen<AuthState>(
+      localAuthProvider,
+      listener.call,
+      fireImmediately: true,
+    );
 
-      // Act
-      await container
-          .read(localAuthProvider.notifier)
-          .authenticateWithDeviceCredentials();
+    // Act
+    await container
+        .read(localAuthProvider.notifier)
+        .authenticateWithDeviceCredentials();
 
-      // Assert
-      expect(listener.states, [
-        AuthState.initial,
-        AuthState.loading,
-        AuthState.error,
-      ]);
-    },
-  );
+    // Assert
+    expect(listener.states, [
+      AuthState.initial,
+      AuthState.loading,
+      AuthState.error,
+    ]);
+  });
 }
 
 // A helper class to listen to provider state changes.

@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 
 class DimensionTextField extends StatelessWidget {
   const DimensionTextField({
-    super.key,
-    required this.controller,
-    required this.label,
+    required this.controller, required this.label, super.key,
   });
   final TextEditingController controller;
   final String label;

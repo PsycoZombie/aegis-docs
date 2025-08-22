@@ -2,8 +2,8 @@ import 'package:aegis_docs/features/document_prep/providers/image_resize_provide
 import 'package:flutter/material.dart';
 
 class SizeReductionInfo extends StatelessWidget {
+  const SizeReductionInfo({required this.state, super.key});
   final ResizeState state;
-  const SizeReductionInfo({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class SizeReductionInfo extends StatelessWidget {
 
     final originalSize = state.originalImage!.bytes.lengthInBytes;
     final resizedSize = state.resizedImage!.lengthInBytes;
-    final reduction = ((originalSize - resizedSize) / originalSize * 100);
+    final reduction = (originalSize - resizedSize) / originalSize * 100;
 
     return Text(
       reduction > 0

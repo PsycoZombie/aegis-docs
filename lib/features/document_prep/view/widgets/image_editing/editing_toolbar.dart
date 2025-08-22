@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
 class EditingToolbar extends StatelessWidget {
-  final VoidCallback onCrop;
-  final VoidCallback? onUndo;
-  final VoidCallback? onGrayscale;
 
   const EditingToolbar({
-    super.key,
-    required this.onCrop,
+    required this.onCrop, super.key,
     this.onUndo,
     this.onGrayscale,
   });
+  final VoidCallback onCrop;
+  final VoidCallback? onUndo;
+  final VoidCallback? onGrayscale;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +35,11 @@ class EditingToolbar extends StatelessWidget {
 }
 
 class _ToolButton extends StatelessWidget {
+
+  const _ToolButton({required this.icon, required this.label, this.onPressed});
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
-
-  const _ToolButton({required this.icon, required this.label, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +47,7 @@ class _ToolButton extends StatelessWidget {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

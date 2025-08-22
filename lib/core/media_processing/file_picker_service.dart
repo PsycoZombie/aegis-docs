@@ -18,8 +18,8 @@ class FilePickerService {
     try {
       final fileExtension = p.extension(file.path).toLowerCase();
       Uint8List imageBytes;
-      String finalFileName = file.name;
-      bool wasConverted = false;
+      var finalFileName = file.name;
+      var wasConverted = false;
 
       const decodableFormats = [
         '.jpg',
@@ -45,7 +45,6 @@ class FilePickerService {
         final originalBytes = await file.readAsBytes();
         imageBytes = await FlutterImageCompress.compressWithList(
           originalBytes,
-          format: CompressFormat.jpeg,
           quality: 100,
         );
         finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
@@ -56,7 +55,7 @@ class FilePickerService {
         PickedFile(bytes: imageBytes, name: finalFileName, path: file.path),
         wasConverted,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint(
         'Failed to process or convert image format for ${file.name}: $e',
       );
@@ -69,8 +68,6 @@ class FilePickerService {
       final originalBytes = await file.readAsBytes();
       final sanitizedBytes = await FlutterImageCompress.compressWithList(
         originalBytes,
-        format: CompressFormat.jpeg,
-        quality: 95,
       );
       final finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
       return PickedFile(
@@ -78,7 +75,7 @@ class FilePickerService {
         name: finalFileName,
         path: file.path,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Failed to sanitize image for PDF: $e');
       return null;
     }
@@ -86,14 +83,14 @@ class FilePickerService {
 
   Future<ProcessedFileResult> pickImage() async {
     try {
-      final XFile? pickedFile = await _imagePicker.pickImage(
+      final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
       );
 
       if (pickedFile != null) {
         return await _processPickedFile(pickedFile);
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error picking image: $e');
     }
     return (null, false);
@@ -101,11 +98,11 @@ class FilePickerService {
 
   Future<List<ProcessedFileResult>> pickMultipleImages() async {
     try {
-      final List<XFile> pickedFiles = await _imagePicker.pickMultiImage();
+      final pickedFiles = await _imagePicker.pickMultiImage();
       if (pickedFiles.isNotEmpty) {
         return await Future.wait(pickedFiles.map(_processPickedFile));
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error picking multiple images: $e');
     }
     return [];
@@ -113,7 +110,7 @@ class FilePickerService {
 
   Future<PickedFile?> pickPdf() async {
     try {
-      final FilePickerResult? result = await _filePicker.pickFiles(
+      final result = await _filePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
         withData: true,
@@ -130,12 +127,12 @@ class FilePickerService {
           path: platformFile.path,
         );
       }
-    } catch (_) {}
+    } on Exception catch (_) {}
     return null;
   }
 
   Future<List<PickedFile>> pickAndSanitizeMultipleImagesForPdf() async {
-    final List<XFile> pickedFiles = await _imagePicker.pickMultiImage();
+    final pickedFiles = await _imagePicker.pickMultiImage();
     if (pickedFiles.isNotEmpty) {
       final results = await Future.wait(
         pickedFiles.map(_processAndSanitizeFileForPdf),

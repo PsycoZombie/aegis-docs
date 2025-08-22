@@ -11,8 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImagesToPdfScreen extends ConsumerWidget {
+  const ImagesToPdfScreen({required this.initialFiles, super.key});
   final List<PickedFile> initialFiles;
-  const ImagesToPdfScreen({super.key, required this.initialFiles});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Images to PDF',
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),

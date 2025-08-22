@@ -12,8 +12,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageResizeScreen extends ConsumerStatefulWidget {
-  final PickedFile? initialFile;
   const ImageResizeScreen({super.key, this.initialFile});
+  final PickedFile? initialFile;
 
   @override
   ConsumerState<ImageResizeScreen> createState() => _ImageResizeScreenState();

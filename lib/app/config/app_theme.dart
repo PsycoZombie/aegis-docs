@@ -8,13 +8,8 @@ final ThemeData lightTheme = ThemeData(
 
   colorScheme: const ColorScheme.light(
     primary: Color(0xFF0065FF),
-    onPrimary: Color(0xFFFFFFFF),
     secondary: Color(0xFF00A8E8),
-    onSecondary: Color(0xFF000000),
-    surface: Color(0xFFFFFFFF),
     onSurface: Color(0xFF1B1B1B),
-    error: Color(0xFFB00020),
-    onError: Color(0xFFFFFFFF),
   ),
 
   scaffoldBackgroundColor: const Color(0xFFF7F7F7),
@@ -65,23 +60,23 @@ final ThemeData lightTheme = ThemeData(
     elevation: 1,
     shadowColor: const Color(0xFFF5F5F5),
     color: const Color(0xFFFFFFFF),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   ),
 
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: const Color(0xFFF5F5F5),
     contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16.0,
-      vertical: 12.0,
+      horizontal: 16,
+      vertical: 12,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
-      borderSide: const BorderSide(color: Color(0xFF0065FF), width: 2.0),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFF0065FF), width: 2),
     ),
   ),
 
@@ -89,7 +84,7 @@ final ThemeData lightTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF0065FF),
       foregroundColor: const Color(0xFFFFFFFF),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       textStyle: const TextStyle(fontWeight: FontWeight.bold),
     ),
@@ -99,7 +94,7 @@ final ThemeData lightTheme = ThemeData(
     style: OutlinedButton.styleFrom(
       foregroundColor: const Color(0xFF3A86FF),
       side: const BorderSide(color: Color(0xFF3A86FF), width: 1.5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       textStyle: const TextStyle(fontWeight: FontWeight.bold),
     ),
@@ -183,12 +178,12 @@ final ThemeData darkTheme = ThemeData(
     labelSmall: TextStyle(color: Color(0xFFBDBDBD)),
   ),
 
-  appBarTheme: AppBarTheme(
-    backgroundColor: const Color(0xFF181818),
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Color(0xFF181818),
     elevation: 0,
     centerTitle: true,
-    iconTheme: const IconThemeData(color: Color(0xFFFFFFFF)),
-    titleTextStyle: const TextStyle(
+    iconTheme: IconThemeData(color: Color(0xFFFFFFFF)),
+    titleTextStyle: TextStyle(
       color: Color.fromRGBO(255, 255, 255, 0.9),
       fontSize: 20,
       fontFamily: 'Inter',
@@ -199,31 +194,31 @@ final ThemeData darkTheme = ThemeData(
   cardTheme: CardThemeData(
     elevation: 2,
     color: const Color(0xFF1E1E1E),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   ),
 
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: const Color(0xFF2A2A2A),
     contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16.0,
-      vertical: 12.0,
+      horizontal: 16,
+      vertical: 12,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Colors.transparent),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
-      borderSide: const BorderSide(color: Color(0xFF3A86FF), width: 2.0),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFF3A86FF), width: 2),
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
+      borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Color(0xFFD32F2F)),
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
-      borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 2.0),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 2),
     ),
     labelStyle: const TextStyle(color: Color(0xFFBDBDBD)),
     hintStyle: const TextStyle(color: Color(0xFF757575)),
@@ -233,7 +228,7 @@ final ThemeData darkTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF3A86FF),
       foregroundColor: const Color(0xFFFFFFFF),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       textStyle: const TextStyle(fontWeight: FontWeight.bold),
     ),
@@ -243,7 +238,7 @@ final ThemeData darkTheme = ThemeData(
     style: OutlinedButton.styleFrom(
       foregroundColor: const Color(0xFF3A86FF),
       side: const BorderSide(color: Color(0xFF3A86FF), width: 1.5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       textStyle: const TextStyle(fontWeight: FontWeight.bold),
     ),
@@ -262,12 +257,12 @@ final ThemeData darkTheme = ThemeData(
     elevation: 4,
   ),
 
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: const Color(0xFF1E1E1E),
-    selectedItemColor: const Color(0xFF3A86FF),
-    unselectedItemColor: const Color(0xFF9E9E9E),
-    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: Color(0xFF1E1E1E),
+    selectedItemColor: Color(0xFF3A86FF),
+    unselectedItemColor: Color(0xFF9E9E9E),
+    selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+    unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
     type: BottomNavigationBarType.fixed,
     elevation: 0,
   ),

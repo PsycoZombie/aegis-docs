@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class FormatImagePreviewSection extends StatelessWidget {
+  const FormatImagePreviewSection({required this.state, super.key});
   final ImageFormatState state;
-  const FormatImagePreviewSection({super.key, required this.state});
 
   String _formatSize(int bytes) => '${(bytes / 1024).toStringAsFixed(2)} KB';
 
@@ -13,7 +13,7 @@ class FormatImagePreviewSection extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     return Column(
       children: [
-        Text("Image Preview", style: Theme.of(context).textTheme.titleLarge),
+        Text('Image Preview', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: screenHeight * 0.4),

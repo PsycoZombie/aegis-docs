@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 class FolderCard extends ConsumerWidget {
+  const FolderCard({required this.folder, super.key});
   final Directory folder;
-  const FolderCard({super.key, required this.folder});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +21,8 @@ class FolderCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => homeNotifier.navigateToFolder(folderName),
-      onLongPress: () => showContextMenu(context, ref, folderPath, true),
+      onLongPress: () =>
+          showContextMenu(context, ref, folderPath, isFolder: true),
       child: Card(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -29,7 +30,7 @@ class FolderCard extends ConsumerWidget {
             const Icon(Icons.folder, size: 50, color: Colors.amber),
             const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 folderName,
                 textAlign: TextAlign.center,

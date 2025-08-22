@@ -58,14 +58,14 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/edit',
         builder: (context, state) {
-          final pickedFile = state.extra as PickedFile;
+          final pickedFile = state.extra! as PickedFile;
           return ImageEditingScreen(initialFile: pickedFile);
         },
       ),
       GoRoute(
         path: '/hub/image-format',
         builder: (context, state) {
-          final pickedFile = state.extra as PickedFile;
+          final pickedFile = state.extra! as PickedFile;
           return ImageFormatScreen(initialFile: pickedFile);
         },
       ),
@@ -79,7 +79,7 @@ final List<RouteBase> appRoutes = [
       GoRoute(
         path: '/hub/pdf-to-images',
         builder: (context, state) {
-          final pickedFile = state.extra as PickedFile;
+          final pickedFile = state.extra! as PickedFile;
           return PdfToImagesScreen(initialFile: pickedFile);
         },
       ),

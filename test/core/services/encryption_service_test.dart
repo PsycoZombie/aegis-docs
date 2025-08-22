@@ -12,7 +12,8 @@ void main() {
 
     // This setup code runs before each test.
     setUpAll(() async {
-      // We must mock the platform-specific implementation of flutter_secure_storage
+      // We must mock the platform-specific implementation of
+      // flutter_secure_storage
       // for tests to run in a pure Dart environment.
       FlutterSecureStorage.setMockInitialValues({});
 
@@ -25,26 +26,20 @@ void main() {
       'should encrypt and decrypt data successfully (round-trip test)',
       () async {
         // 1. Arrange: Define the original data we want to protect.
-        const String originalString = 'This is a top secret document!';
-        final Uint8List originalData = Uint8List.fromList(
-          utf8.encode(originalString),
-        );
+        const originalString = 'This is a top secret document!';
+        final originalData = Uint8List.fromList(utf8.encode(originalString));
 
         // 2. Act: Perform the encryption and decryption.
-        final Uint8List encryptedBase64 = await encryptionService.encrypt(
-          originalData,
-        );
-        final Uint8List decryptedData = await encryptionService.decrypt(
-          encryptedBase64,
-        );
+        final encryptedBase64 = await encryptionService.encrypt(originalData);
+        final decryptedData = await encryptionService.decrypt(encryptedBase64);
 
-        // 3. Assert: Check that the decrypted data is identical to the original.
-        // We also check that the encrypted data is not the same as the original.
+        // 3. Assert: Check that the decrypted data is identical to the original
+        // We also check that the encrypted data is not the same as the original
         expect(decryptedData, equals(originalData));
         expect(encryptedBase64, isNot(equals(originalString)));
 
         // You can also decode it back to a string to be sure.
-        final String finalString = utf8.decode(decryptedData);
+        final finalString = utf8.decode(decryptedData);
         expect(finalString, equals(originalString));
 
         debugPrint('Original data: "$originalString"');

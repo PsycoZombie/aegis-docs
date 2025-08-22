@@ -6,18 +6,17 @@ import 'package:pdfx/pdfx.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart' as sync_pdf;
 
 class _PdfToImageRequest {
+  _PdfToImageRequest(this.pdfBytes, this.sendPort, this.rootIsolateToken);
   final Uint8List pdfBytes;
   final SendPort sendPort;
   final RootIsolateToken rootIsolateToken;
-
-  _PdfToImageRequest(this.pdfBytes, this.sendPort, this.rootIsolateToken);
 }
 
 class _PdfSecurityPayload {
+  _PdfSecurityPayload(this.pdfBytes, {this.oldPassword, this.newPassword});
   final Uint8List pdfBytes;
   final String? oldPassword;
   final String? newPassword;
-  _PdfSecurityPayload(this.pdfBytes, {this.oldPassword, this.newPassword});
 }
 
 bool _isPdfEncryptedIsolate(Uint8List pdfBytes) {
@@ -25,7 +24,7 @@ bool _isPdfEncryptedIsolate(Uint8List pdfBytes) {
   try {
     doc = sync_pdf.PdfDocument(inputBytes: pdfBytes);
     return false;
-  } catch (e) {
+  } on Exception catch (_) {
     return true;
   } finally {
     doc?.dispose();
@@ -61,13 +60,13 @@ Uint8List _changePasswordIsolate(_PdfSecurityPayload payload) {
   return Uint8List.fromList(bytes);
 }
 
-void _pdfToImageIsolate(_PdfToImageRequest req) async {
+Future<void> _pdfToImageIsolate(_PdfToImageRequest req) async {
   BackgroundIsolateBinaryMessenger.ensureInitialized(req.rootIsolateToken);
 
   final images = <Uint8List>[];
   try {
     final doc = await PdfDocument.openData(req.pdfBytes);
-    for (int i = 1; i <= doc.pagesCount; i++) {
+    for (var i = 1; i <= doc.pagesCount; i++) {
       final page = await doc.getPage(i);
       final pageImage = await page.render(
         width: page.width * 2,
@@ -81,7 +80,7 @@ void _pdfToImageIsolate(_PdfToImageRequest req) async {
     }
     await doc.close();
     req.sendPort.send(images);
-  } catch (e) {
+  } on Exception catch (_) {
     req.sendPort.send(<Uint8List>[]);
   }
 }
@@ -120,7 +119,7 @@ Uint8List _imagesToPdfIsolate(List<Uint8List> imageBytesList) {
 
     Rect drawRect;
     if (imageAspectRatio > pageAspectRatio) {
-      final double scaledHeight = pageSize.width / imageAspectRatio;
+      final scaledHeight = pageSize.width / imageAspectRatio;
       drawRect = Rect.fromLTWH(
         0,
         (pageSize.height - scaledHeight) / 2,
@@ -128,7 +127,7 @@ Uint8List _imagesToPdfIsolate(List<Uint8List> imageBytesList) {
         scaledHeight,
       );
     } else {
-      final double scaledWidth = pageSize.height * imageAspectRatio;
+      final scaledWidth = pageSize.height * imageAspectRatio;
       drawRect = Rect.fromLTWH(
         (pageSize.width - scaledWidth) / 2,
         0,
@@ -153,7 +152,7 @@ class PdfProcessor {
     final token = RootIsolateToken.instance;
 
     if (token == null) {
-      throw Exception("RootIsolateToken is null. Cannot spawn isolate.");
+      throw Exception('RootIsolateToken is null. Cannot spawn isolate.');
     }
 
     await Isolate.spawn(
@@ -169,24 +168,24 @@ class PdfProcessor {
   }
 
   Future<Uint8List> convertImageToPdf({required Uint8List imageBytes}) async {
-    return await compute(_imageToPdfIsolate, imageBytes);
+    return compute(_imageToPdfIsolate, imageBytes);
   }
 
   Future<Uint8List> convertImagesToPdf({
     required List<Uint8List> imageBytesList,
   }) async {
-    return await compute(_imagesToPdfIsolate, imageBytesList);
+    return compute(_imagesToPdfIsolate, imageBytesList);
   }
 
   Future<bool> isPdfEncrypted({required Uint8List pdfBytes}) async {
-    return await compute(_isPdfEncryptedIsolate, pdfBytes);
+    return compute(_isPdfEncryptedIsolate, pdfBytes);
   }
 
   Future<Uint8List> lockPdf({
     required Uint8List pdfBytes,
     required String password,
   }) async {
-    return await compute(
+    return compute(
       _lockPdfIsolate,
       _PdfSecurityPayload(pdfBytes, newPassword: password),
     );
@@ -196,7 +195,7 @@ class PdfProcessor {
     required Uint8List pdfBytes,
     required String password,
   }) async {
-    return await compute(
+    return compute(
       _unlockPdfIsolate,
       _PdfSecurityPayload(pdfBytes, oldPassword: password),
     );
@@ -207,7 +206,7 @@ class PdfProcessor {
     required String oldPassword,
     required String newPassword,
   }) async {
-    return await compute(
+    return compute(
       _changePasswordIsolate,
       _PdfSecurityPayload(
         pdfBytes,

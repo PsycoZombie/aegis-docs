@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class DocumentCard extends ConsumerWidget {
+  const DocumentCard({required this.file, super.key});
   final File file;
-  const DocumentCard({super.key, required this.file});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +19,8 @@ class DocumentCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => context.push('/document/$fileName', extra: folderPath),
-      onLongPress: () => showContextMenu(context, ref, fileName, false),
+      onLongPress: () =>
+          showContextMenu(context, ref, fileName, isFolder: false),
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: GridTile(

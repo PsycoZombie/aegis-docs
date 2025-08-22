@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class BreadcrumbNavigation extends StatelessWidget {
-  final String? path;
-  final ValueChanged<String?> onPathChanged;
 
   const BreadcrumbNavigation({
-    super.key,
-    required this.path,
-    required this.onPathChanged,
+    required this.path, required this.onPathChanged, super.key,
   });
+  final String? path;
+  final ValueChanged<String?> onPathChanged;
 
   @override
   Widget build(BuildContext context) {

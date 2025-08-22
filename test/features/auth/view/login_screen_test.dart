@@ -17,10 +17,6 @@ class MockLocalAuthProvider extends AutoDisposeNotifier<AuthState>
     // No implementation needed for tests.
   }
 
-  void setState(AuthState newState) {
-    state = newState;
-  }
-
   @override
   void logout() {
     // No implementation needed for tests.
@@ -59,7 +55,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(mockProvider));
 
       // Act: Change the provider's state to loading.
-      mockProvider.setState(AuthState.loading);
+      mockProvider.state = AuthState.loading;
       await tester.pump();
 
       // Assert
@@ -74,7 +70,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(mockProvider));
 
       // Act
-      mockProvider.setState(AuthState.loading);
+      mockProvider.state = AuthState.loading;
       await tester.pump();
 
       // Assert
@@ -90,7 +86,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(mockProvider));
 
       // Act: Change the provider's state to error.
-      mockProvider.setState(AuthState.error);
+      mockProvider.state = AuthState.error;
       // pump() is needed to process the state change and rebuild the listener.
       await tester.pump();
       // pump() again to allow the SnackBar animation to start.

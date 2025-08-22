@@ -4,16 +4,15 @@ import 'package:aegis_docs/shared_widgets/full_screen_image_view.dart';
 import 'package:flutter/material.dart';
 
 class SelectableImageGrid extends StatelessWidget {
-  final List<Uint8List> images;
-  final Set<int> selectedIndices;
-  final void Function(int index) onImageTap;
-
   const SelectableImageGrid({
-    super.key,
     required this.images,
     required this.selectedIndices,
     required this.onImageTap,
+    super.key,
   });
+  final List<Uint8List> images;
+  final Set<int> selectedIndices;
+  final void Function(int index) onImageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +93,7 @@ class SelectableImageGrid extends StatelessWidget {
                         icon: const Icon(Icons.fullscreen, color: Colors.white),
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
+                            MaterialPageRoute<dynamic>(
                               builder: (_) => FullScreenImageView(
                                 imageBytes: imageBytes,
                                 heroTag: heroTag,

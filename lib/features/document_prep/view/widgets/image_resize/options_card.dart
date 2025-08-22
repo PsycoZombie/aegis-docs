@@ -3,22 +3,21 @@ import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/dime
 import 'package:flutter/material.dart';
 
 class OptionsCard extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController widthController;
-  final TextEditingController heightController;
-  final ResizeState state;
-  final ImageResizeViewModel notifier;
-  final VoidCallback onSave;
-
   const OptionsCard({
-    super.key,
     required this.formKey,
     required this.widthController,
     required this.heightController,
     required this.state,
     required this.notifier,
     required this.onSave,
+    super.key,
   });
+  final GlobalKey<FormState> formKey;
+  final TextEditingController widthController;
+  final TextEditingController heightController;
+  final ResizeState state;
+  final ImageResizeViewModel notifier;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +31,7 @@ class OptionsCard extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                "Resize Options",
+                'Resize Options',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 20),
@@ -57,12 +56,12 @@ class OptionsCard extends StatelessWidget {
                     label: 'Width',
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: IconButton(
                       icon: Icon(
                         state.isAspectRatioLocked ? Icons.link : Icons.link_off,
                       ),
-                      onPressed: () => notifier.toggleAspectRatioLock(),
+                      onPressed: notifier.toggleAspectRatioLock,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),

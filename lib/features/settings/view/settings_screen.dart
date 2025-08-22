@@ -5,7 +5,9 @@ import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final settingsServiceProvider = Provider((ref) => SettingsService());
+final Provider<SettingsService> settingsServiceProvider = Provider(
+  (ref) => SettingsService(),
+);
 
 final cleanupDurationProvider = StateProvider<CleanupDuration>((ref) {
   return CleanupDuration.oneDay;
@@ -64,14 +66,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return AppScaffold(
       title: 'Settings',
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         children: [
           // ... (Your existing Card for Export Settings is unchanged) ...
           const SizedBox(height: 16),
 
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -81,7 +83,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Securely back up your encrypted wallet to Google Drive. A master password is required.',
+                    'Securely back up your encrypted wallet to Google Drive. '
+                    'A master password is required.',
                     style: TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
@@ -105,7 +108,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ? null
                               : () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(
+                                    MaterialPageRoute<dynamic>(
                                       builder: (_) => MasterPasswordScreen(
                                         isCreating: true,
                                         onSubmit: (password) async {
@@ -133,7 +136,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onPressed: state.isProcessing
                               ? null
                               : () async {
-                                  // THE FIX: Call the new download method first.
+                                  // THE FIX: Call the new download method first
                                   final backupBytes = await ref
                                       .read(settingsViewModelProvider.notifier)
                                       .downloadBackup();
@@ -141,19 +144,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          'Backup found! Please enter your password.',
+                                          'Backup found! '
+                                          'Please enter your password.',
                                         ),
                                         backgroundColor: Colors.blue,
                                       ),
                                     );
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute<dynamic>(
                                         builder: (_) => MasterPasswordScreen(
                                           isCreating: false,
-                                          // Pass the downloaded bytes to the next screen
+                                          // Pass the downloaded bytes to
+                                          //the next screen
                                           backupBytes: backupBytes,
                                           onSubmit: (password) async {
-                                            // The master password screen now calls the finishRestore method
+                                            // The master password screen now
+                                            // calls the finishRestore method
                                           },
                                         ),
                                       ),
@@ -183,8 +189,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  // Show a linear progress indicator at the bottom of the card while processing
-                  if (settingsState.valueOrNull?.isProcessing == true) ...[
+                  // Show a linear progress indicator at the bottom of the
+                  // card while processing
+                  if (settingsState.valueOrNull?.isProcessing ?? false) ...[
                     const SizedBox(height: 16),
                     const LinearProgressIndicator(),
                   ],
@@ -199,12 +206,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 }
 
 void _showDeleteConfirmationDialog(BuildContext context, WidgetRef ref) {
-  showDialog(
+  showDialog<dynamic>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text('Delete Cloud Backup?'),
       content: const Text(
-        'Are you sure you want to permanently delete your backup from Google Drive? This action cannot be undone.',
+        'Are you sure you want to permanently delete your backup from '
+        'Google Drive? This action cannot be undone.',
       ),
       actions: [
         TextButton(

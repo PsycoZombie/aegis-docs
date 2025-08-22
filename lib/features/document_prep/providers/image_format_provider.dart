@@ -1,21 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'image_format_provider.g.dart';
 
 @immutable
 class ImageFormatState {
-  final PickedFile? originalImage;
-  final Uint8List? convertedImage;
-  final String? originalFormat;
-  final String targetFormat;
-  final bool isProcessing;
 
   const ImageFormatState({
     this.originalImage,
@@ -24,6 +18,11 @@ class ImageFormatState {
     this.targetFormat = 'png',
     this.isProcessing = false,
   });
+  final PickedFile? originalImage;
+  final Uint8List? convertedImage;
+  final String? originalFormat;
+  final String targetFormat;
+  final bool isProcessing;
 
   ImageFormatState copyWith({
     PickedFile? originalImage,
@@ -71,7 +70,7 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
 
       if (currentState.originalFormat == null ||
           currentState.originalFormat!.isEmpty) {
-        throw Exception("Original image format is unknown.");
+        throw Exception('Original image format is unknown.');
       }
 
       final convertedBytes = await repo.changeImageFormat(
@@ -89,7 +88,7 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
 
   Future<void> saveImage({required String fileName, String? folderPath}) async {
     if (state.value?.convertedImage == null) {
-      throw Exception("No converted image to save.");
+      throw Exception('No converted image to save.');
     }
     final currentState = state.value!;
     state = AsyncData(currentState.copyWith(isProcessing: true));

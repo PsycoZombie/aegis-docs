@@ -10,8 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 class ImageEditingScreen extends ConsumerWidget {
-  final PickedFile? initialFile;
   const ImageEditingScreen({super.key, this.initialFile});
+  final PickedFile? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

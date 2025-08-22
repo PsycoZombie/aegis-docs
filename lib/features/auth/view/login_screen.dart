@@ -59,7 +59,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: AppScaffold(
         title: 'Approve Sign in',
         body: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,9 +96,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 24,
                         child: CircularProgressIndicator(strokeWidth: 3),
                       )
-                    : Row(
+                    : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.fingerprint),
                           SizedBox(width: 8),
                           Text('Unlock App'),

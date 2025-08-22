@@ -3,23 +3,14 @@
 import 'dart:async';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
+import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'document_providers.dart';
 
 part 'pdf_security_provider.g.dart';
 
 @immutable
 class PdfSecurityState {
-  final PickedFile? pickedPdf;
-  final Uint8List? processedPdfBytes;
-  final bool? isEncrypted;
-  final bool isProcessing;
-  // THE FIX: Add the missing successMessage and errorMessage fields.
-  final String? successMessage;
-  final String? errorMessage;
-
   const PdfSecurityState({
     this.pickedPdf,
     this.processedPdfBytes,
@@ -28,6 +19,13 @@ class PdfSecurityState {
     this.successMessage,
     this.errorMessage,
   });
+  final PickedFile? pickedPdf;
+  final Uint8List? processedPdfBytes;
+  final bool? isEncrypted;
+  final bool isProcessing;
+  // THE FIX: Add the missing successMessage and errorMessage fields.
+  final String? successMessage;
+  final String? errorMessage;
 
   PdfSecurityState copyWith({
     PickedFile? pickedPdf,
@@ -65,13 +63,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
 
   Future<bool> lockPdf(String password) async {
     if (state.value?.pickedPdf == null) return false;
-    state = AsyncData(
-      state.value!.copyWith(
-        isProcessing: true,
-        errorMessage: null,
-        successMessage: null,
-      ),
-    );
+    state = AsyncData(state.value!.copyWith(isProcessing: true));
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.lockPdf(
@@ -85,7 +77,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         ),
       );
       return true;
-    } catch (e) {
+    } on Exception catch (_) {
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
@@ -98,13 +90,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
 
   Future<bool> unlockPdf(String password) async {
     if (state.value?.pickedPdf == null) return false;
-    state = AsyncData(
-      state.value!.copyWith(
-        isProcessing: true,
-        errorMessage: null,
-        successMessage: null,
-      ),
-    );
+    state = AsyncData(state.value!.copyWith(isProcessing: true));
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.unlockPdf(
@@ -118,8 +104,8 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         ),
       );
       return true;
-    } catch (e) {
-      debugPrint("Unlock PDF failed: $e");
+    } on Exception catch (e) {
+      debugPrint('Unlock PDF failed: $e');
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
@@ -132,13 +118,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
 
   Future<bool> changePassword(String oldPassword, String newPassword) async {
     if (state.value?.pickedPdf == null) return false;
-    state = AsyncData(
-      state.value!.copyWith(
-        isProcessing: true,
-        errorMessage: null,
-        successMessage: null,
-      ),
-    );
+    state = AsyncData(state.value!.copyWith(isProcessing: true));
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final newBytes = await repo.changePdfPassword(
@@ -153,8 +133,8 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         ),
       );
       return true;
-    } catch (e) {
-      debugPrint("Change Password failed: $e");
+    } on Exception catch (e) {
+      debugPrint('Change Password failed: $e');
       state = AsyncData(
         state.value!.copyWith(
           isProcessing: false,
@@ -167,7 +147,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
 
   Future<void> savePdf({required String fileName, String? folderPath}) async {
     if (state.value?.processedPdfBytes == null) {
-      throw Exception("No processed PDF to save.");
+      throw Exception('No processed PDF to save.');
     }
     final currentState = state.value!;
     state = AsyncData(currentState.copyWith(isProcessing: true));

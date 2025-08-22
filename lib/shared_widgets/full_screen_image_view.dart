@@ -3,14 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class FullScreenImageView extends StatelessWidget {
-  final Uint8List imageBytes;
-  final String heroTag;
 
   const FullScreenImageView({
-    super.key,
-    required this.imageBytes,
-    required this.heroTag,
+    required this.imageBytes, required this.heroTag, super.key,
   });
+  final Uint8List imageBytes;
+  final String heroTag;
 
   @override
   Widget build(BuildContext context) {
