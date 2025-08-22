@@ -1,5 +1,3 @@
-// file: features/document_prep/providers/pdf_security_provider.dart
-
 import 'dart:async';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
@@ -23,7 +21,7 @@ class PdfSecurityState {
   final Uint8List? processedPdfBytes;
   final bool? isEncrypted;
   final bool isProcessing;
-  // THE FIX: Add the missing successMessage and errorMessage fields.
+
   final String? successMessage;
   final String? errorMessage;
 
@@ -42,7 +40,7 @@ class PdfSecurityState {
           : this.processedPdfBytes,
       isEncrypted: isEncrypted ?? this.isEncrypted,
       isProcessing: isProcessing ?? this.isProcessing,
-      // Use null-aware assignment to allow clearing the messages.
+
       successMessage: successMessage,
       errorMessage: errorMessage,
     );
@@ -158,7 +156,7 @@ class PdfSecurityViewModel extends _$PdfSecurityViewModel {
         data: currentState.processedPdfBytes!,
         folderPath: folderPath,
       );
-      // THE FIX: Set the success message here, after a successful save.
+
       return currentState.copyWith(
         isProcessing: false,
         successMessage: 'PDF security updated and saved!',

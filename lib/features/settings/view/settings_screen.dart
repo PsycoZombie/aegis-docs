@@ -37,10 +37,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // THE FIX: Watch the new view model provider.
     final settingsState = ref.watch(settingsViewModelProvider);
 
-    // THE FIX: Listen for success/error messages from the provider.
     ref.listen(settingsViewModelProvider, (_, next) {
       if (next is AsyncData) {
         final state = next.value;
@@ -68,7 +66,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ... (Your existing Card for Export Settings is unchanged) ...
           const SizedBox(height: 16),
 
           Card(
@@ -103,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           icon: const Icon(Icons.cloud_upload_outlined),
                           label: const Text('Backup'),
-                          // Disable button while processing
+
                           onPressed: state.isProcessing
                               ? null
                               : () {
@@ -112,7 +109,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       builder: (_) => MasterPasswordScreen(
                                         isCreating: true,
                                         onSubmit: (password) async {
-                                          // Call the provider method
                                           await ref
                                               .read(
                                                 settingsViewModelProvider
@@ -136,7 +132,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onPressed: state.isProcessing
                               ? null
                               : () async {
-                                  // THE FIX: Call the new download method first
                                   final backupBytes = await ref
                                       .read(settingsViewModelProvider.notifier)
                                       .downloadBackup();
@@ -154,13 +149,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       MaterialPageRoute<dynamic>(
                                         builder: (_) => MasterPasswordScreen(
                                           isCreating: false,
-                                          // Pass the downloaded bytes to
-                                          //the next screen
+
                                           backupBytes: backupBytes,
-                                          onSubmit: (password) async {
-                                            // The master password screen now
-                                            // calls the finishRestore method
-                                          },
+                                          onSubmit: (password) async {},
                                         ),
                                       ),
                                     );
@@ -168,13 +159,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 },
                         ),
                         const SizedBox(height: 12),
-                        // NEW: Delete Backup Button
+
                         TextButton.icon(
                           style: TextButton.styleFrom(
                             foregroundColor: Theme.of(
                               context,
                             ).colorScheme.error,
-                            // THE FIX: Add an explicit text style.
+
                             textStyle: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
@@ -189,8 +180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  // Show a linear progress indicator at the bottom of the
-                  // card while processing
+
                   if (settingsState.valueOrNull?.isProcessing ?? false) ...[
                     const SizedBox(height: 16),
                     const LinearProgressIndicator(),

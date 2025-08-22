@@ -51,18 +51,15 @@ Uint8List _decryptIsolate(_DecryptIsolatePayload params) {
   return Uint8List.fromList(encrypter.decryptBytes(encrypted, iv: iv));
 }
 
-// THE FIX: This heavy cryptographic work now runs in an isolate.
 Map<String, String> _wrapKeyIsolate(_KeyWrapPayload payload) {
   final salt = enc.IV.fromSecureRandom(16).bytes;
 
-  // 1. Derive master key from password (slow part)
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, 100000, 32));
   final masterKey = enc.Key(
     derivator.process(Uint8List.fromList(utf8.encode(payload.masterPassword))),
   );
 
-  // 2. Encrypt the data key
   final encrypter = enc.Encrypter(enc.AES(masterKey));
   final iv = enc.IV.fromSecureRandom(16);
   final encryptedDataKey = encrypter.encryptBytes(payload.dataKeyBytes, iv: iv);
@@ -74,7 +71,6 @@ Map<String, String> _wrapKeyIsolate(_KeyWrapPayload payload) {
   };
 }
 
-// THE FIX: This also runs in an isolate.
 Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
   final salt = base64Decode(payload.backupData['salt'] as String);
   final iv = enc.IV.fromBase64(payload.backupData['iv'] as String);
@@ -82,14 +78,12 @@ Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
     payload.backupData['key'] as String,
   );
 
-  // 1. Derive master key from password (slow part)
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, 100000, 32));
   final masterKey = enc.Key(
     derivator.process(Uint8List.fromList(utf8.encode(payload.masterPassword))),
   );
 
-  // 2. Decrypt the data key
   final encrypter = enc.Encrypter(enc.AES(masterKey));
   return Uint8List.fromList(encrypter.decryptBytes(encryptedKey, iv: iv));
 }
@@ -97,7 +91,6 @@ Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
 class EncryptionService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   static const _keyStorageIdentifier = 'aegis_docs_encryption_key';
-  // static const _saltStorageIdentifier = 'aegis_docs_salt';
 
   enc.Key? _dataKey;
 
@@ -122,15 +115,6 @@ class EncryptionService {
     }
   }
 
-  // enc.Key _deriveKeyFromPassword(String password, Uint8List salt) {
-  //   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-  //     ..init(Pbkdf2Parameters(salt, 100000, 32)); // 100,000 iterations
-  //   return enc.Key(
-  //     derivator.process(Uint8List.fromList(utf8.encode(password))),
-  //   );
-  // }
-
-  /// Encrypts the main data key using a key derived from the master password.
   Future<Map<String, String>> getEncryptedDataKeyForBackup(
     String masterPassword,
   ) async {
@@ -156,8 +140,6 @@ class EncryptionService {
     );
   }
 
-  // --- Standard Encryption/Decryption ---
-
   Future<Uint8List> encrypt(Uint8List data) async {
     if (_dataKey == null) await init();
     return compute(
@@ -173,19 +155,4 @@ class EncryptionService {
       _DecryptIsolatePayload(_dataKey!.bytes, combinedData),
     );
   }
-
-  // Future<enc.Key> _getOrCreateDataKey() async {
-  //   String? base64Key = await _secureStorage.read(
-  //key: _keyStorageIdentifier);
-  //   if (base64Key == null) {
-  //     final newKey = enc.Key.fromSecureRandom(32);
-  //     await _secureStorage.write(
-  //       key: _keyStorageIdentifier,
-  //       value: newKey.base64,
-  //     );
-  //     return newKey;
-  //   } else {
-  //     return enc.Key(base64Decode(base64Key));
-  //   }
-  // }
 }

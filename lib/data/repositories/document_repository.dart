@@ -26,13 +26,8 @@ class _RestorePayload {
   final String walletPath;
 }
 
-// --- Isolate Functions ---
-// These top-level functions run in a separate isolate to prevent UI freezes.
-
 Uint8List _createBackupIsolate(_BackupPayload payload) {
-  // 1. Create an in-memory archive.
   final archive = Archive()
-    // 2. Add the key file to the archive.
     ..addFile(
       ArchiveFile(
         'aegis_key.json',
@@ -41,7 +36,6 @@ Uint8List _createBackupIsolate(_BackupPayload payload) {
       ),
     );
 
-  // 3. Recursively find all files in the wallet directory and add them.
   final walletDir = Directory(payload.walletPath);
   final files = walletDir.listSync(recursive: true);
   for (final file in files) {
@@ -52,7 +46,6 @@ Uint8List _createBackupIsolate(_BackupPayload payload) {
     }
   }
 
-  // 4. Encode the entire in-memory archive into a zip file.
   final zipEncoder = ZipEncoder();
   return Uint8List.fromList(zipEncoder.encode(archive));
 }
@@ -61,14 +54,12 @@ void _restoreBackupIsolate(_RestorePayload payload) {
   final archive = ZipDecoder().decodeBytes(payload.zipBytes);
   final walletDir = Directory(payload.walletPath);
 
-  // Clear the existing wallet and restore the files.
   if (walletDir.existsSync()) {
     walletDir.deleteSync(recursive: true);
   }
   walletDir.createSync(recursive: true);
 
   for (final file in archive) {
-    // Correctly handle ArchiveFile objects.
     if (file.isFile && file.name != 'aegis_key.json') {
       final filePath = p.join(walletDir.path, file.name);
       final outFile = File(filePath);
@@ -285,7 +276,6 @@ class DocumentRepository {
     final keyJson = jsonEncode(keyData);
     final walletDir = await _fileStorageService.getBaseWalletDirectory();
 
-    // Create the zip archive in a separate isolate to prevent UI freezes.
     final zipBytes = await compute(
       _createBackupIsolate,
       _BackupPayload(walletDir.path, keyJson),
@@ -301,24 +291,20 @@ class DocumentRepository {
     return _cloudStorageService.downloadBackup('aegis_wallet_backup.zip');
   }
 
-  /// Step 2 of Restore: Processes the downloaded backup data.
   Future<void> restoreWalletFromBackupData({
     required Uint8List backupBytes,
     required String masterPassword,
   }) async {
-    // 1. Unzip the archive in memory to find the key file
     final archive = ZipDecoder().decodeBytes(backupBytes);
     final keyFile = archive.findFile('aegis_key.json');
     if (keyFile == null) {
       throw Exception('Backup is corrupted: key file not found.');
     }
 
-    // 2. Decrypt and restore the data key (this will fail if password is wrong)
     final keyJson = utf8.decode(keyFile.content as List<int>);
     final keyData = jsonDecode(keyJson) as Map<String, dynamic>;
     await _encryptionService.restoreDataKeyFromBackup(masterPassword, keyData);
 
-    // 3. Unzip the files and write them to disk in a separate isolate.
     final walletDir = await _fileStorageService.getBaseWalletDirectory();
     await compute(
       _restoreBackupIsolate,

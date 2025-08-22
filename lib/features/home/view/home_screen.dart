@@ -1,5 +1,3 @@
-// file: features/home/view/home_screen.dart
-
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/features/home/widgets/breadcrumb_navigation.dart';
@@ -16,17 +14,13 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the new HomeViewModel for UI state like the current path.
     final homeState = ref.watch(homeViewModelProvider);
     final homeNotifier = ref.read(homeViewModelProvider.notifier);
 
-    // Watch the WalletViewModel to get the list of files and folders for
-    // the current path.
     final walletState = ref.watch(
       walletViewModelProvider(homeState.currentFolderPath),
     );
 
-    // Listen for info messages from the provider to show SnackBars
     ref.listen(homeViewModelProvider, (previous, next) {
       if (next.infoMessage != null &&
           previous?.infoMessage != next.infoMessage) {
@@ -47,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
       canPop: homeState.currentFolderPath == null,
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop) return;
-        // Navigation logic is now cleanly handled by the provider.
+
         homeNotifier.navigateUp();
       },
       child: AppScaffold(

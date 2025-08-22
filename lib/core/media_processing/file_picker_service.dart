@@ -137,7 +137,6 @@ class FilePickerService {
       final results = await Future.wait(
         pickedFiles.map(_processAndSanitizeFileForPdf),
       );
-      // Filter out any files that failed to process
       return results.whereType<PickedFile>().toList();
     }
     return [];

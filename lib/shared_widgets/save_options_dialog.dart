@@ -121,8 +121,7 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
                       value: folderPath,
-                      // THE FIX: Wrap the Text in a Row with Flexible to
-                      //allow wrapping.
+
                       child: Row(
                         children: [
                           Flexible(

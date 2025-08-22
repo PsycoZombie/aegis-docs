@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ai generated themes
-
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,

@@ -50,9 +50,6 @@ class SettingsViewModel extends _$SettingsViewModel {
     }
   }
 
-  // THE FIX: The restore logic is now split into two methods.
-
-  /// Step 1: Tries to download the backup and returns the data.
   Future<Uint8List?> downloadBackup() async {
     state = const AsyncValue.data(SettingsState(isProcessing: true));
     try {
@@ -77,7 +74,6 @@ class SettingsViewModel extends _$SettingsViewModel {
     }
   }
 
-  /// Step 2: Tries to restore the wallet using the downloaded data and password
   Future<bool> finishRestore(
     Uint8List backupBytes,
     String masterPassword,

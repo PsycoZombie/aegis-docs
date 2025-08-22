@@ -1,5 +1,3 @@
-// file: features/home/providers/home_provider.dart
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -18,7 +16,7 @@ part 'home_provider.g.dart';
 class HomeState {
   const HomeState({this.currentFolderPath, this.infoMessage});
   final String? currentFolderPath;
-  // NEW: A field to hold messages for the SnackBar
+
   final String? infoMessage;
 
   HomeState copyWith({String? currentFolderPath, String? infoMessage}) {
@@ -35,8 +33,6 @@ class HomeViewModel extends _$HomeViewModel {
   HomeState build() {
     return const HomeState();
   }
-
-  // --- Navigation Logic ---
 
   void navigateToFolder(String folderName) {
     final newPath = state.currentFolderPath == null
@@ -57,8 +53,6 @@ class HomeViewModel extends _$HomeViewModel {
       );
     }
   }
-
-  // --- Business Logic (now includes showing dialogs) ---
 
   Future<void> createFolder(BuildContext context) async {
     final folderName = await showDialog<String>(

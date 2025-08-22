@@ -23,7 +23,7 @@ class PdfPreviewSection extends StatelessWidget {
                 fileSize: _formatSize(state.pickedPdf!.bytes.lengthInBytes),
               ),
             ),
-            // This check now works correctly with the updated state.
+
             if (state.compressedPdfBytes != null) ...[
               const SizedBox(width: 16),
               Expanded(
@@ -44,7 +44,6 @@ class PdfPreviewSection extends StatelessWidget {
 }
 
 class _PdfInfoCard extends StatelessWidget {
-
   const _PdfInfoCard({
     required this.label,
     required this.fileName,
