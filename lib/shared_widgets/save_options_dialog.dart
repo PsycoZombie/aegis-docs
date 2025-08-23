@@ -3,8 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+/// A type definition for the result returned by the [showSaveOptionsDialog].
+/// It contains the final file name and the optional folder path.
 typedef SaveResult = ({String fileName, String? folderPath});
 
+/// Displays a dialog for saving a single file with
+/// a specified name and location.
+///
+/// [context]: The build context from which to show the dialog.
+/// [defaultFileName]: The initial text to populate the file name field with.
+/// [fileExtension]: The file extension to be appended to the final file name.
+///
+/// Returns a [SaveResult] record if the user taps
+/// "Save", otherwise returns null.
 Future<SaveResult?> showSaveOptionsDialog(
   BuildContext context, {
   required String defaultFileName,
@@ -21,6 +32,7 @@ Future<SaveResult?> showSaveOptionsDialog(
   );
 }
 
+/// The internal stateful widget that builds the content of the save dialog.
 class _SaveOptionsDialog extends ConsumerStatefulWidget {
   const _SaveOptionsDialog({
     required this.defaultFileName,
@@ -50,6 +62,7 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
     super.dispose();
   }
 
+  /// Validates the form and pops the dialog, returning the save result.
   void _save() {
     if (_formKey.currentState!.validate()) {
       final finalName = '${_controller.text.trim()}${widget.fileExtension}';
@@ -61,6 +74,7 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch the provider that lists all folders in the wallet.
     final allFoldersAsync = ref.watch(allFoldersProvider);
 
     return AlertDialog(
@@ -106,31 +120,18 @@ class _SaveOptionsDialogState extends ConsumerState<_SaveOptionsDialog> {
                 border: OutlineInputBorder(),
               ),
               isExpanded: true,
+              // Build the list of folder options for the dropdown.
               items: [
+                // The first item is always the root of the wallet.
                 const DropdownMenuItem<String?>(child: Text('Wallet (Root)')),
-                if (allFoldersAsync.isLoading)
-                  const DropdownMenuItem<String?>(
-                    child: Center(
-                      child: SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                  ),
                 if (allFoldersAsync.hasValue)
                   ...allFoldersAsync.value!.map((folderPath) {
                     return DropdownMenuItem<String?>(
                       value: folderPath,
-
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              folderPath.replaceAll(p.separator, ' / '),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        // Display nested paths with slashes for clarity.
+                        folderPath.replaceAll(p.separator, ' / '),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     );
                   }),

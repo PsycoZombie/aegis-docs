@@ -6,9 +6,14 @@ part of 'settings_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$settingsViewModelHash() => r'08290626b52b30b8aa46fad1c5e9b82507e1afb0';
+String _$settingsViewModelHash() => r'f63b7da172b622080ef2d0b97acc05a755e0838d';
 
-/// See also [SettingsViewModel].
+/// A ViewModel for the settings screen.
+///
+/// Manages the business logic for high-level operations like cloud backup,
+/// restore, and deleting backups.
+///
+/// Copied from [SettingsViewModel].
 @ProviderFor(SettingsViewModel)
 final settingsViewModelProvider =
     AutoDisposeAsyncNotifierProvider<SettingsViewModel, SettingsState>.internal(

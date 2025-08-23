@@ -9,12 +9,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for converting a selected PDF document into a series of images.
 class PdfToImagesScreen extends ConsumerWidget {
+  /// Creates an instance of [PdfToImagesScreen].
   const PdfToImagesScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial PDF file to be processed, passed from the previous screen.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the ViewModel provider, passing in the initial file.
     final viewModel = ref.watch(pdfToImagesViewModelProvider(initialFile));
     final notifier = ref.read(
       pdfToImagesViewModelProvider(initialFile).notifier,
@@ -24,6 +29,7 @@ class PdfToImagesScreen extends ConsumerWidget {
       title: 'PDF to Images',
       body: Padding(
         padding: const EdgeInsets.all(16),
+        // Use .when to handle loading, error, and data states of the provider.
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('An error occurred: $err')),
@@ -33,19 +39,26 @@ class PdfToImagesScreen extends ConsumerWidget {
                 child: Text('No PDF was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier, ref);
+            // Pass the provider's state and notifier to the content widget.
+            return _buildContent(context, state, notifier, viewModel, ref);
           },
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     PdfToImagesState state,
     PdfToImagesViewModel notifier,
+    AsyncValue<PdfToImagesState> viewModel, // Pass the full AsyncValue
     WidgetRef ref,
   ) {
+    // Determine if any operation is in progress by
+    // checking the provider's state.
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -64,7 +77,7 @@ class PdfToImagesScreen extends ConsumerWidget {
           child: state.generatedImages.isEmpty
               ? Center(
                   child: FilledButton.icon(
-                    icon: state.isProcessing
+                    icon: isProcessing
                         ? const SizedBox.square(
                             dimension: 20,
                             child: CircularProgressIndicator(
@@ -74,13 +87,9 @@ class PdfToImagesScreen extends ConsumerWidget {
                           )
                         : const Icon(Icons.transform),
                     label: Text(
-                      state.isProcessing
-                          ? 'Converting...'
-                          : 'Convert to Images',
+                      isProcessing ? 'Converting...' : 'Convert to Images',
                     ),
-                    onPressed: state.isProcessing
-                        ? null
-                        : notifier.convertToImages,
+                    onPressed: isProcessing ? null : notifier.convertToImages,
                   ),
                 )
               : SelectableImageGrid(
@@ -92,7 +101,7 @@ class PdfToImagesScreen extends ConsumerWidget {
         if (state.generatedImages.isNotEmpty) ...[
           const SizedBox(height: 16),
           FilledButton.icon(
-            icon: state.isProcessing
+            icon: isProcessing
                 ? const SizedBox.square(
                     dimension: 20,
                     child: CircularProgressIndicator(
@@ -102,11 +111,11 @@ class PdfToImagesScreen extends ConsumerWidget {
                   )
                 : const Icon(Icons.save_alt_outlined),
             label: Text(
-              state.isProcessing
+              isProcessing
                   ? 'Saving...'
                   : 'Save Selected (${state.selectedImageIndices.length})',
             ),
-            onPressed: state.isProcessing || state.selectedImageIndices.isEmpty
+            onPressed: isProcessing || state.selectedImageIndices.isEmpty
                 ? null
                 : () async {
                     final defaultName = p.basenameWithoutExtension(
@@ -119,7 +128,7 @@ class PdfToImagesScreen extends ConsumerWidget {
                       fileCount: state.selectedImageIndices.length,
                     );
 
-                    if (saveResult != null) {
+                    if (saveResult != null && context.mounted) {
                       await notifier.saveSelectedImages(
                         baseName: saveResult.baseName,
                         folderPath: saveResult.folderPath,
@@ -129,7 +138,7 @@ class PdfToImagesScreen extends ConsumerWidget {
                           SnackBar(
                             content: Text(
                               'Saved ${state.selectedImageIndices.length}'
-                              'images!',
+                              ' images!',
                             ),
                             backgroundColor: Colors.green,
                           ),

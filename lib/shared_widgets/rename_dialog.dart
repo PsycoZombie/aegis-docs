@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// Displays a dialog for renaming a file or folder.
+///
+/// [context]: The build context from which to show the dialog.
+/// [currentName]: The initial text to populate the text field with.
+/// [title]: The title to display on the dialog.
+///
+/// Returns the new name as a [String] if the user taps
+/// "Rename", otherwise returns null.
 Future<String?> showRenameDialog(
   BuildContext context, {
   required String currentName,
@@ -13,8 +21,9 @@ Future<String?> showRenameDialog(
   );
 }
 
+/// The internal stateful widget that builds the content of the rename dialog.
 class _RenameDialog extends StatefulWidget {
-
+  /// Creates an instance of [_RenameDialog].
   const _RenameDialog({required this.currentName, required this.title});
   final String currentName;
   final String title;
@@ -39,6 +48,7 @@ class _RenameDialogState extends State<_RenameDialog> {
     super.dispose();
   }
 
+  /// Validates the form and pops the dialog, returning the new name.
   void _submit() {
     if (_formKey.currentState!.validate()) {
       Navigator.of(context).pop(_controller.text.trim());

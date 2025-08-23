@@ -1,35 +1,41 @@
-import 'dart:typed_data';
-
 import 'package:aegis_docs/data/models/picked_file_model.dart';
-import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
-import 'package:flutter/material.dart';
+import 'package:aegis_docs/data/repositories/document_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'image_format_provider.g.dart';
 
+/// Represents the state for the image format conversion feature.
 @immutable
-class ImageFormatState {
-
+class ImageFormatState extends Equatable {
+  /// Creates an instance of the image format state.
   const ImageFormatState({
     this.originalImage,
     this.convertedImage,
     this.originalFormat,
     this.targetFormat = 'png',
-    this.isProcessing = false,
   });
-  final PickedFile? originalImage;
-  final Uint8List? convertedImage;
-  final String? originalFormat;
-  final String targetFormat;
-  final bool isProcessing;
 
+  /// The original image file loaded by the user.
+  final PickedFileModel? originalImage;
+
+  /// The image data after being converted to the [targetFormat].
+  final Uint8List? convertedImage;
+
+  /// The file extension of the original image (e.g., ".jpg").
+  final String? originalFormat;
+
+  /// The desired output format for the conversion (e.g., "png").
+  final String targetFormat;
+
+  /// Creates a copy of the state with updated values.
   ImageFormatState copyWith({
-    PickedFile? originalImage,
+    PickedFileModel? originalImage,
     ValueGetter<Uint8List?>? convertedImage,
     String? originalFormat,
     String? targetFormat,
-    bool? isProcessing,
   }) {
     return ImageFormatState(
       originalImage: originalImage ?? this.originalImage,
@@ -38,31 +44,47 @@ class ImageFormatState {
           : this.convertedImage,
       originalFormat: originalFormat ?? this.originalFormat,
       targetFormat: targetFormat ?? this.targetFormat,
-      isProcessing: isProcessing ?? this.isProcessing,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    originalImage,
+    convertedImage,
+    originalFormat,
+    targetFormat,
+  ];
 }
 
+/// A ViewModel for the image format conversion feature.
+///
+/// Manages the state and business logic for changing an image's file type
+/// (e.g., from JPG to PNG).
 @Riverpod(keepAlive: false)
 class ImageFormatViewModel extends _$ImageFormatViewModel {
+  /// Initializes the state with an optional
+  /// initial file, extracting its format.
   @override
-  Future<ImageFormatState> build(PickedFile? initialFile) async {
+  Future<ImageFormatState> build(PickedFileModel? initialFile) async {
     if (initialFile == null) {
       return const ImageFormatState();
     }
-    final format = p.extension(initialFile.name);
+    final format = p.extension(initialFile.name).replaceAll('.', '');
     return ImageFormatState(originalImage: initialFile, originalFormat: format);
   }
 
+  /// Updates the target format for the next conversion.
   void setTargetFormat(String format) {
     if (state.value == null) return;
     state = AsyncData(state.value!.copyWith(targetFormat: format));
   }
 
+  /// Performs the image format conversion.
   Future<void> convertImage() async {
-    if (state.value?.originalImage == null) return;
+    if (state.value?.originalImage?.bytes == null) return;
 
-    state = AsyncData(state.value!.copyWith(isProcessing: true));
+    // Set the state to loading while preserving the previous data for the UI.
+    state = const AsyncLoading<ImageFormatState>().copyWithPrevious(state);
 
     state = await AsyncValue.guard(() async {
       final currentState = state.value!;
@@ -74,24 +96,26 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
       }
 
       final convertedBytes = await repo.changeImageFormat(
-        currentState.originalImage!.bytes,
+        currentState.originalImage!.bytes!,
         originalFormat: currentState.originalFormat!,
         targetFormat: currentState.targetFormat,
       );
 
       return currentState.copyWith(
-        isProcessing: false,
         convertedImage: () => convertedBytes,
       );
     });
   }
 
+  /// Saves the converted image to the secure wallet.
   Future<void> saveImage({required String fileName, String? folderPath}) async {
     if (state.value?.convertedImage == null) {
       throw Exception('No converted image to save.');
     }
     final currentState = state.value!;
-    state = AsyncData(currentState.copyWith(isProcessing: true));
+
+    state = const AsyncLoading<ImageFormatState>().copyWithPrevious(state);
+
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.saveEncryptedDocument(
@@ -99,7 +123,8 @@ class ImageFormatViewModel extends _$ImageFormatViewModel {
         data: currentState.convertedImage!,
         folderPath: folderPath,
       );
-      return currentState.copyWith(isProcessing: false);
+      // Return the current state to keep the UI showing the result.
+      return currentState;
     });
   }
 }

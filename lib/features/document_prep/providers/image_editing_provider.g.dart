@@ -7,7 +7,7 @@ part of 'image_editing_provider.dart';
 // **************************************************************************
 
 String _$imageEditingViewModelHash() =>
-    r'34f28718dcbac8d6da2b0f5d25fc0af1f063f04b';
+    r'bad271faea43d78907e0d143065e1bc704dbd78f';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,23 +32,47 @@ class _SystemHash {
 
 abstract class _$ImageEditingViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ImageEditingState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<ImageEditingState> build(PickedFile? initialFile);
+  FutureOr<ImageEditingState> build(PickedFileModel? initialFile);
 }
 
-/// See also [ImageEditingViewModel].
+/// A ViewModel for the image editing feature.
+///
+/// Manages the state of an image being edited, including an undo history,
+/// and orchestrates services to apply transformations
+/// like cropping and filters.
+///
+/// Copied from [ImageEditingViewModel].
 @ProviderFor(ImageEditingViewModel)
 const imageEditingViewModelProvider = ImageEditingViewModelFamily();
 
-/// See also [ImageEditingViewModel].
+/// A ViewModel for the image editing feature.
+///
+/// Manages the state of an image being edited, including an undo history,
+/// and orchestrates services to apply transformations
+/// like cropping and filters.
+///
+/// Copied from [ImageEditingViewModel].
 class ImageEditingViewModelFamily
     extends Family<AsyncValue<ImageEditingState>> {
-  /// See also [ImageEditingViewModel].
+  /// A ViewModel for the image editing feature.
+  ///
+  /// Manages the state of an image being edited, including an undo history,
+  /// and orchestrates services to apply transformations
+  /// like cropping and filters.
+  ///
+  /// Copied from [ImageEditingViewModel].
   const ImageEditingViewModelFamily();
 
-  /// See also [ImageEditingViewModel].
-  ImageEditingViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the image editing feature.
+  ///
+  /// Manages the state of an image being edited, including an undo history,
+  /// and orchestrates services to apply transformations
+  /// like cropping and filters.
+  ///
+  /// Copied from [ImageEditingViewModel].
+  ImageEditingViewModelProvider call(PickedFileModel? initialFile) {
     return ImageEditingViewModelProvider(initialFile);
   }
 
@@ -74,15 +98,27 @@ class ImageEditingViewModelFamily
   String? get name => r'imageEditingViewModelProvider';
 }
 
-/// See also [ImageEditingViewModel].
+/// A ViewModel for the image editing feature.
+///
+/// Manages the state of an image being edited, including an undo history,
+/// and orchestrates services to apply transformations
+/// like cropping and filters.
+///
+/// Copied from [ImageEditingViewModel].
 class ImageEditingViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           ImageEditingViewModel,
           ImageEditingState
         > {
-  /// See also [ImageEditingViewModel].
-  ImageEditingViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the image editing feature.
+  ///
+  /// Manages the state of an image being edited, including an undo history,
+  /// and orchestrates services to apply transformations
+  /// like cropping and filters.
+  ///
+  /// Copied from [ImageEditingViewModel].
+  ImageEditingViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => ImageEditingViewModel()..initialFile = initialFile,
         from: imageEditingViewModelProvider,
@@ -106,7 +142,7 @@ class ImageEditingViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<ImageEditingState> runNotifierBuild(
@@ -160,7 +196,7 @@ class ImageEditingViewModelProvider
 mixin ImageEditingViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<ImageEditingState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _ImageEditingViewModelProviderElement
@@ -173,7 +209,7 @@ class _ImageEditingViewModelProviderElement
   _ImageEditingViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as ImageEditingViewModelProvider).initialFile;
 }
 

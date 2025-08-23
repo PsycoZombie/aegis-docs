@@ -9,9 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for managing the password protection of a PDF document.
 class PdfSecurityScreen extends ConsumerWidget {
+  /// Creates an instance of [PdfSecurityScreen].
   const PdfSecurityScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial PDF file to be processed, passed from the previous screen.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,52 +24,56 @@ class PdfSecurityScreen extends ConsumerWidget {
       pdfSecurityViewModelProvider(initialFile).notifier,
     );
 
-    ref.listen(pdfSecurityViewModelProvider(initialFile), (previous, next) {
-      if (next is AsyncData) {
-        final state = next.value;
-        if (state!.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    });
-
     return AppScaffold(
       title: 'PDF Security',
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) =>
-              _buildData(context, viewModel.asData!.value, notifier, ref),
-          data: (state) => _buildData(context, state, notifier, ref),
+          error: (err, stack) {
+            // On error, show a SnackBar and display the
+            // last valid data if available.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('An error occurred: $err'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            });
+            // Show the previous data to avoid a blank screen on error.
+            if (viewModel.value == null) {
+              return Center(child: Text('Failed to load PDF: $err'));
+            }
+            return _buildContent(
+              context,
+              viewModel.value!,
+              notifier,
+              viewModel,
+              ref,
+            );
+          },
+          data: (state) =>
+              _buildContent(context, state, notifier, viewModel, ref),
         ),
       ),
     );
   }
 
-  Widget _buildData(
+  /// Builds the main content of the screen based on the current state.
+  Widget _buildContent(
     BuildContext context,
     PdfSecurityState state,
     PdfSecurityViewModel notifier,
+    AsyncValue<PdfSecurityState> viewModel,
     WidgetRef ref,
   ) {
     if (state.pickedPdf == null) {
       return const Center(child: Text('No PDF was selected. Please go back.'));
     }
-    return _buildContent(context, state, notifier, ref);
-  }
 
-  Widget _buildContent(
-    BuildContext context,
-    PdfSecurityState state,
-    PdfSecurityViewModel notifier,
-    WidgetRef ref,
-  ) {
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       children: [
         Expanded(
@@ -100,6 +108,7 @@ class PdfSecurityScreen extends ConsumerWidget {
         SecurityOptionsCard(
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.pickedPdf!.name,
@@ -112,7 +121,7 @@ class PdfSecurityScreen extends ConsumerWidget {
               fileExtension: '.pdf',
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               await notifier.savePdf(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,

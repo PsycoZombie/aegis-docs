@@ -7,7 +7,7 @@ part of 'pdf_to_images_provider.dart';
 // **************************************************************************
 
 String _$pdfToImagesViewModelHash() =>
-    r'5e19ca8b1990387458e397e8662d5a81f140b222';
+    r'5b8777698fb725f86e889a82d250fcc8ce4b9b6d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,22 +32,42 @@ class _SystemHash {
 
 abstract class _$PdfToImagesViewModel
     extends BuildlessAutoDisposeAsyncNotifier<PdfToImagesState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<PdfToImagesState> build(PickedFile? initialFile);
+  FutureOr<PdfToImagesState> build(PickedFileModel? initialFile);
 }
 
-/// See also [PdfToImagesViewModel].
+/// A ViewModel for the "PDF to Images" conversion feature.
+///
+/// Manages the state and business logic for extracting pages from a PDF
+/// into a list of selectable images.
+///
+/// Copied from [PdfToImagesViewModel].
 @ProviderFor(PdfToImagesViewModel)
 const pdfToImagesViewModelProvider = PdfToImagesViewModelFamily();
 
-/// See also [PdfToImagesViewModel].
+/// A ViewModel for the "PDF to Images" conversion feature.
+///
+/// Manages the state and business logic for extracting pages from a PDF
+/// into a list of selectable images.
+///
+/// Copied from [PdfToImagesViewModel].
 class PdfToImagesViewModelFamily extends Family<AsyncValue<PdfToImagesState>> {
-  /// See also [PdfToImagesViewModel].
+  /// A ViewModel for the "PDF to Images" conversion feature.
+  ///
+  /// Manages the state and business logic for extracting pages from a PDF
+  /// into a list of selectable images.
+  ///
+  /// Copied from [PdfToImagesViewModel].
   const PdfToImagesViewModelFamily();
 
-  /// See also [PdfToImagesViewModel].
-  PdfToImagesViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the "PDF to Images" conversion feature.
+  ///
+  /// Manages the state and business logic for extracting pages from a PDF
+  /// into a list of selectable images.
+  ///
+  /// Copied from [PdfToImagesViewModel].
+  PdfToImagesViewModelProvider call(PickedFileModel? initialFile) {
     return PdfToImagesViewModelProvider(initialFile);
   }
 
@@ -73,15 +93,25 @@ class PdfToImagesViewModelFamily extends Family<AsyncValue<PdfToImagesState>> {
   String? get name => r'pdfToImagesViewModelProvider';
 }
 
-/// See also [PdfToImagesViewModel].
+/// A ViewModel for the "PDF to Images" conversion feature.
+///
+/// Manages the state and business logic for extracting pages from a PDF
+/// into a list of selectable images.
+///
+/// Copied from [PdfToImagesViewModel].
 class PdfToImagesViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           PdfToImagesViewModel,
           PdfToImagesState
         > {
-  /// See also [PdfToImagesViewModel].
-  PdfToImagesViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the "PDF to Images" conversion feature.
+  ///
+  /// Manages the state and business logic for extracting pages from a PDF
+  /// into a list of selectable images.
+  ///
+  /// Copied from [PdfToImagesViewModel].
+  PdfToImagesViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => PdfToImagesViewModel()..initialFile = initialFile,
         from: pdfToImagesViewModelProvider,
@@ -105,7 +135,7 @@ class PdfToImagesViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<PdfToImagesState> runNotifierBuild(
@@ -159,7 +189,7 @@ class PdfToImagesViewModelProvider
 mixin PdfToImagesViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<PdfToImagesState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _PdfToImagesViewModelProviderElement
@@ -172,7 +202,7 @@ class _PdfToImagesViewModelProviderElement
   _PdfToImagesViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as PdfToImagesViewModelProvider).initialFile;
 }
 

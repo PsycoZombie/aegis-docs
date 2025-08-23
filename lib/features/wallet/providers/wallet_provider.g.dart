@@ -8,7 +8,12 @@ part of 'wallet_provider.dart';
 
 String _$allFoldersHash() => r'd9ad430657262cbc7f0316248cac93c605d581aa';
 
-/// See also [allFolders].
+/// A provider that fetches a list of all
+/// folder paths in the wallet recursively.
+///
+/// This is useful for UI elements like a "move to folder" dialog.
+///
+/// Copied from [allFolders].
 @ProviderFor(allFolders)
 final allFoldersProvider = AutoDisposeFutureProvider<List<String>>.internal(
   allFolders,
@@ -46,16 +51,32 @@ class _SystemHash {
   }
 }
 
-/// See also [documentDetail].
+/// A provider that fetches and decrypts the content of a single document.
+///
+/// This is used by the document detail screen to display the file.
+///
+/// Copied from [documentDetail].
 @ProviderFor(documentDetail)
 const documentDetailProvider = DocumentDetailFamily();
 
-/// See also [documentDetail].
+/// A provider that fetches and decrypts the content of a single document.
+///
+/// This is used by the document detail screen to display the file.
+///
+/// Copied from [documentDetail].
 class DocumentDetailFamily extends Family<AsyncValue<Uint8List?>> {
-  /// See also [documentDetail].
+  /// A provider that fetches and decrypts the content of a single document.
+  ///
+  /// This is used by the document detail screen to display the file.
+  ///
+  /// Copied from [documentDetail].
   const DocumentDetailFamily();
 
-  /// See also [documentDetail].
+  /// A provider that fetches and decrypts the content of a single document.
+  ///
+  /// This is used by the document detail screen to display the file.
+  ///
+  /// Copied from [documentDetail].
   DocumentDetailProvider call({
     required String fileName,
     required String? folderPath,
@@ -85,9 +106,17 @@ class DocumentDetailFamily extends Family<AsyncValue<Uint8List?>> {
   String? get name => r'documentDetailProvider';
 }
 
-/// See also [documentDetail].
+/// A provider that fetches and decrypts the content of a single document.
+///
+/// This is used by the document detail screen to display the file.
+///
+/// Copied from [documentDetail].
 class DocumentDetailProvider extends AutoDisposeFutureProvider<Uint8List?> {
-  /// See also [documentDetail].
+  /// A provider that fetches and decrypts the content of a single document.
+  ///
+  /// This is used by the document detail screen to display the file.
+  ///
+  /// Copied from [documentDetail].
   DocumentDetailProvider({
     required String fileName,
     required String? folderPath,
@@ -185,7 +214,7 @@ class _DocumentDetailProviderElement
   String? get folderPath => (origin as DocumentDetailProvider).folderPath;
 }
 
-String _$walletViewModelHash() => r'7de538b49c171225176cf707c39fc2f9e9406403';
+String _$walletViewModelHash() => r'e6452d3796e5923e51d5f66809c2ec82689b04ae';
 
 abstract class _$WalletViewModel
     extends BuildlessAutoDisposeAsyncNotifier<WalletState> {
@@ -194,16 +223,28 @@ abstract class _$WalletViewModel
   FutureOr<WalletState> build(String? folderPath);
 }
 
-/// See also [WalletViewModel].
+/// A ViewModel that provides the contents (folders and files) for a specific
+/// directory within the secure wallet.
+///
+/// Copied from [WalletViewModel].
 @ProviderFor(WalletViewModel)
 const walletViewModelProvider = WalletViewModelFamily();
 
-/// See also [WalletViewModel].
+/// A ViewModel that provides the contents (folders and files) for a specific
+/// directory within the secure wallet.
+///
+/// Copied from [WalletViewModel].
 class WalletViewModelFamily extends Family<AsyncValue<WalletState>> {
-  /// See also [WalletViewModel].
+  /// A ViewModel that provides the contents (folders and files) for a specific
+  /// directory within the secure wallet.
+  ///
+  /// Copied from [WalletViewModel].
   const WalletViewModelFamily();
 
-  /// See also [WalletViewModel].
+  /// A ViewModel that provides the contents (folders and files) for a specific
+  /// directory within the secure wallet.
+  ///
+  /// Copied from [WalletViewModel].
   WalletViewModelProvider call(String? folderPath) {
     return WalletViewModelProvider(folderPath);
   }
@@ -230,10 +271,16 @@ class WalletViewModelFamily extends Family<AsyncValue<WalletState>> {
   String? get name => r'walletViewModelProvider';
 }
 
-/// See also [WalletViewModel].
+/// A ViewModel that provides the contents (folders and files) for a specific
+/// directory within the secure wallet.
+///
+/// Copied from [WalletViewModel].
 class WalletViewModelProvider
     extends AutoDisposeAsyncNotifierProviderImpl<WalletViewModel, WalletState> {
-  /// See also [WalletViewModel].
+  /// A ViewModel that provides the contents (folders and files) for a specific
+  /// directory within the secure wallet.
+  ///
+  /// Copied from [WalletViewModel].
   WalletViewModelProvider(String? folderPath)
     : this._internal(
         () => WalletViewModel()..folderPath = folderPath,

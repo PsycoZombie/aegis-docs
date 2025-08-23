@@ -2,15 +2,29 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
+/// A widget that displays a grid of images that
+/// can be reordered via drag-and-drop
+/// and allows for individual items to be removed.
 class ReorderableImageGrid extends StatelessWidget {
+  /// Creates an instance of [ReorderableImageGrid].
   const ReorderableImageGrid({
     required this.images,
     required this.onReorder,
     required this.onRemove,
     super.key,
   });
-  final List<PickedFile> images;
+
+  /// The list of image models to display in the grid.
+  final List<PickedFileModel> images;
+
+  /// A callback function that is invoked when
+  /// the user finishes reordering an item.
+  /// It provides the old and new indices of the moved item.
   final void Function(int oldIndex, int newIndex) onReorder;
+
+  /// A callback function that is invoked when the
+  /// user taps the remove button on an item.
+  /// It provides the index of the item to be removed.
   final void Function(int index) onRemove;
 
   @override
@@ -26,12 +40,15 @@ class ReorderableImageGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final image = images[index];
         return Card(
+          // A ValueKey is crucial for reorderable lists
+          // to correctly identify widgets.
           key: ValueKey(image.hashCode),
           clipBehavior: Clip.antiAlias,
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.memory(image.bytes, fit: BoxFit.contain),
+              Image.memory(image.bytes!, fit: BoxFit.contain),
+              // Close button to remove the image from the list.
               Positioned(
                 top: 4,
                 right: 4,
@@ -46,6 +63,7 @@ class ReorderableImageGrid extends StatelessWidget {
                   ),
                 ),
               ),
+              // A label showing the image's current position in the order.
               Positioned(
                 bottom: 4,
                 left: 4,

@@ -10,9 +10,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for compressing a PDF document using the native implementation.
 class PdfCompressionScreen extends ConsumerWidget {
+  /// Creates an instance of [PdfCompressionScreen].
   const PdfCompressionScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial PDF file to be processed, passed from the previous screen.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,46 +25,54 @@ class PdfCompressionScreen extends ConsumerWidget {
       pdfCompressionViewModelProvider(initialFile).notifier,
     );
 
-    ref.listen(pdfCompressionViewModelProvider(initialFile), (previous, next) {
-      if (next is AsyncData) {
-        final state = next.value;
-        if (state!.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    });
-
     return AppScaffold(
       title: 'Compress PDF',
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text('An error occurred: $err')),
-          data: (state) {
-            if (state.pickedPdf == null) {
-              return const Center(
-                child: Text('No PDF was selected. Please go back.'),
+          error: (err, stack) {
+            // On error, show a SnackBar and display the last valid data.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('An error occurred: $err'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
               );
+            });
+            if (viewModel.value == null) {
+              return Center(child: Text('Failed to load PDF: $err'));
             }
-            return _buildContent(context, state, notifier, ref);
+            return _buildContent(
+              context,
+              viewModel.value!,
+              notifier,
+              viewModel,
+              ref,
+            );
           },
+          data: (state) =>
+              _buildContent(context, state, notifier, viewModel, ref),
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     PdfCompressionState state,
     PdfCompressionViewModel notifier,
+    AsyncValue<PdfCompressionState> viewModel,
     WidgetRef ref,
   ) {
+    if (state.pickedPdf == null) {
+      return const Center(child: Text('No PDF was selected. Please go back.'));
+    }
+
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       children: [
         Expanded(
@@ -70,6 +82,7 @@ class PdfCompressionScreen extends ConsumerWidget {
         PdfOptionsCard(
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.pickedPdf!.name,
@@ -82,14 +95,26 @@ class PdfCompressionScreen extends ConsumerWidget {
               fileExtension: '.pdf',
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               final success = await notifier.compressAndSavePdf(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,
               );
-              if (success && context.mounted) {
-                ref.invalidate(walletViewModelProvider);
-                context.pop();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Successfully compressed and saved!'
+                          : 'Compression failed. Please try again.',
+                    ),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+                if (success) {
+                  ref.invalidate(walletViewModelProvider);
+                  context.pop();
+                }
               }
             }
           },

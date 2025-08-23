@@ -1,34 +1,28 @@
-import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
+import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'settings_provider.g.dart';
 
+/// Represents the state for the settings screen.
+/// Note: This class is currently empty because loading and error states are
+/// handled by the AsyncValue wrapper from Riverpod. It can be extended later
+/// if more specific state properties are needed.
 @immutable
-class SettingsState {
-  const SettingsState({
-    this.isProcessing = false,
-    this.successMessage,
-    this.errorMessage,
-  });
-  final bool isProcessing;
-  final String? successMessage;
-  final String? errorMessage;
+class SettingsState extends Equatable {
+  /// Creates an instance of the settings state.
+  const SettingsState();
 
-  SettingsState copyWith({
-    bool? isProcessing,
-    String? successMessage,
-    String? errorMessage,
-  }) {
-    return SettingsState(
-      isProcessing: isProcessing ?? this.isProcessing,
-      successMessage: successMessage,
-      errorMessage: errorMessage,
-    );
-  }
+  @override
+  List<Object?> get props => [];
 }
 
+/// A ViewModel for the settings screen.
+///
+/// Manages the business logic for high-level operations like cloud backup,
+/// restore, and deleting backups.
 @riverpod
 class SettingsViewModel extends _$SettingsViewModel {
   @override
@@ -36,90 +30,65 @@ class SettingsViewModel extends _$SettingsViewModel {
     return const SettingsState();
   }
 
-  Future<void> backupWallet(String masterPassword) async {
-    state = const AsyncValue.data(SettingsState(isProcessing: true));
-    try {
+  /// Backs up the entire user wallet to the cloud.
+  /// Returns `true` on success, `false` on failure.
+  Future<bool> backupWallet(String masterPassword) async {
+    state = const AsyncLoading<SettingsState>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.backupWalletToDrive(masterPassword);
-      state = const AsyncValue.data(
-        SettingsState(successMessage: 'Backup successful!'),
-      );
-    } on Exception catch (e) {
-      debugPrint('Backup failed: $e');
-      state = AsyncValue.data(SettingsState(errorMessage: 'Backup failed: $e'));
-    }
+      return const SettingsState();
+    });
+    return !state.hasError;
   }
 
+  /// Downloads the latest wallet backup from the cloud.
+  /// Returns the backup data as bytes, or `null` if
+  /// no backup is found or an error occurs.
   Future<Uint8List?> downloadBackup() async {
-    state = const AsyncValue.data(SettingsState(isProcessing: true));
+    state = const AsyncLoading<SettingsState>().copyWithPrevious(state);
     try {
       final repo = await ref.read(documentRepositoryProvider.future);
       final backupBytes = await repo.downloadBackupFromDrive();
-
-      if (backupBytes == null) {
-        state = const AsyncValue.data(
-          SettingsState(errorMessage: 'No backup found on Google Drive.'),
-        );
-        return null;
-      }
-
-      state = const AsyncValue.data(SettingsState());
+      // Reset to a non-loading, non-error state after completion.
+      state = const AsyncData(SettingsState());
       return backupBytes;
     } on Exception catch (e) {
-      debugPrint('Download backup failed: $e');
-      state = AsyncValue.data(
-        SettingsState(errorMessage: 'Failed to download backup: $e'),
-      );
+      state = AsyncError(e, StackTrace.current);
       return null;
     }
   }
 
+  /// Completes the restore process using the
+  /// downloaded backup data and master password.
+  /// Returns `true` on success, `false` on failure (e.g., wrong password).
   Future<bool> finishRestore(
     Uint8List backupBytes,
     String masterPassword,
   ) async {
-    state = const AsyncValue.data(SettingsState(isProcessing: true));
-    try {
+    state = const AsyncLoading<SettingsState>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.restoreWalletFromBackupData(
         backupBytes: backupBytes,
         masterPassword: masterPassword,
       );
-
+      // Invalidate all wallet providers to force a full refresh of the UI.
       ref.invalidate(walletViewModelProvider);
-
-      state = const AsyncValue.data(
-        SettingsState(
-          successMessage: 'Restore successful! Your wallet has been updated.',
-        ),
-      );
-      return true;
-    } on Exception catch (e) {
-      debugPrint('Restore failed: $e');
-      state = const AsyncValue.data(
-        SettingsState(
-          errorMessage:
-              'Restore failed. '
-              'Please check your master password and try again.',
-        ),
-      );
-      return false;
-    }
+      return const SettingsState();
+    });
+    return !state.hasError;
   }
 
-  Future<void> deleteBackup() async {
-    state = const AsyncValue.data(SettingsState(isProcessing: true));
-    try {
+  /// Deletes the wallet backup from the cloud.
+  /// Returns `true` on success, `false` on failure.
+  Future<bool> deleteBackup() async {
+    state = const AsyncLoading<SettingsState>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.deleteBackupFromDrive();
-      state = const AsyncValue.data(
-        SettingsState(successMessage: 'Cloud backup deleted successfully!'),
-      );
-    } on Exception catch (e) {
-      debugPrint('Delete backup failed: $e');
-      state = AsyncValue.data(
-        SettingsState(errorMessage: 'Delete backup failed: $e'),
-      );
-    }
+      return const SettingsState();
+    });
+    return !state.hasError;
   }
 }

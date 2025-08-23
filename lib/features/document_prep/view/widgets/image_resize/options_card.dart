@@ -2,21 +2,39 @@ import 'package:aegis_docs/features/document_prep/providers/image_resize_provide
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/dimension_textfield.dart';
 import 'package:flutter/material.dart';
 
+/// A card containing the user-configurable options for resizing an image.
 class OptionsCard extends StatelessWidget {
+  /// Creates an instance of [OptionsCard].
   const OptionsCard({
     required this.formKey,
     required this.widthController,
     required this.heightController,
     required this.state,
     required this.notifier,
+    required this.isProcessing,
     required this.onSave,
     super.key,
   });
+
+  /// A global key for the form to handle validation.
   final GlobalKey<FormState> formKey;
+
+  /// The controller for the width text field.
   final TextEditingController widthController;
+
+  /// The controller for the height text field.
   final TextEditingController heightController;
+
+  /// The current state from the [ImageResizeViewModel].
   final ResizeState state;
+
+  /// The notifier for the [ImageResizeViewModel].
   final ImageResizeViewModel notifier;
+
+  /// A flag indicating if a resize or save operation is in progress.
+  final bool isProcessing;
+
+  /// A callback function to be invoked when the "Save" button is tapped.
   final VoidCallback onSave;
 
   @override
@@ -35,6 +53,7 @@ class OptionsCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 20),
+              // Preset buttons for common resize scales.
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -43,7 +62,10 @@ class OptionsCard extends StatelessWidget {
                   for (final scale in [0.75, 0.50, 0.25])
                     FilterChip(
                       label: Text('${(scale * 100).toInt()}%'),
-                      onSelected: (_) => notifier.applyPreset(scale: scale),
+                      // Disable presets while processing.
+                      onSelected: isProcessing
+                          ? null
+                          : (_) => notifier.applyPreset(scale: scale),
                     ),
                 ],
               ),
@@ -54,6 +76,7 @@ class OptionsCard extends StatelessWidget {
                   DimensionTextField(
                     controller: widthController,
                     label: 'Width',
+                    enabled: !isProcessing,
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -61,13 +84,16 @@ class OptionsCard extends StatelessWidget {
                       icon: Icon(
                         state.isAspectRatioLocked ? Icons.link : Icons.link_off,
                       ),
-                      onPressed: notifier.toggleAspectRatioLock,
+                      onPressed: isProcessing
+                          ? null
+                          : notifier.toggleAspectRatioLock,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   DimensionTextField(
                     controller: heightController,
                     label: 'Height',
+                    enabled: !isProcessing,
                   ),
                 ],
               ),
@@ -79,22 +105,30 @@ class OptionsCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       textStyle: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    icon: const Icon(Icons.aspect_ratio),
+                    icon: isProcessing
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.aspect_ratio),
                     label: const Text('Resize'),
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        notifier.resizeImage(
-                          width: int.parse(widthController.text),
-                          height: int.parse(heightController.text),
-                        );
-                      }
-                    },
+                    onPressed: isProcessing
+                        ? null
+                        : () {
+                            if (formKey.currentState!.validate()) {
+                              notifier.resizeImage(
+                                width: int.parse(widthController.text),
+                                height: int.parse(heightController.text),
+                              );
+                            }
+                          },
                   ),
+                  // Only show the save button after a resize has occurred.
                   if (state.resizedImage != null)
                     FilledButton.icon(
                       icon: const Icon(Icons.save_alt_outlined),
                       label: const Text('Save'),
-                      onPressed: onSave,
+                      onPressed: isProcessing ? null : onSave,
                     ),
                 ],
               ),

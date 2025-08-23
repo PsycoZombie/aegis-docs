@@ -3,8 +3,19 @@ import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// A widget that listens to the [localAuthProvider] for state changes
+/// and shows a [SnackBar] when an error occurs.
+///
+/// This separates side-effect logic (like showing dialogs or snackbars)
+/// from the main UI layout.
 class AuthStateListener extends ConsumerWidget {
+  /// Creates an [AuthStateListener].
   const AuthStateListener({required this.child, super.key});
+
+  /// The child widget that will be rendered by this listener.
+  ///
+  /// This allows the listener to be wrapped around any part of the widget tree
+  /// without affecting the layout.
   final Widget child;
 
   @override
@@ -12,13 +23,14 @@ class AuthStateListener extends ConsumerWidget {
     ref.listen<AuthState>(localAuthProvider, (previous, next) {
       if (next == AuthState.error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
+          SnackBar(
+            backgroundColor: Theme.of(context).colorScheme.errorContainer,
             content: Text(
               'Authentication Failed. Please try again.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
             ),
           ),
         );
@@ -28,7 +40,9 @@ class AuthStateListener extends ConsumerWidget {
   }
 }
 
+/// The main screen for handling user authentication to unlock the app.
 class LoginScreen extends ConsumerStatefulWidget {
+  /// Creates the [LoginScreen].
   const LoginScreen({super.key});
 
   @override
@@ -36,10 +50,15 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  /// When the screen is first built, automatically
+  /// trigger the authentication prompt.
   @override
   void initState() {
     super.initState();
+    // We use a post-frame callback to ensure the widget tree is fully built
+    // before we try to read from a provider.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Only trigger auth if it hasn't already been attempted.
       if (ref.read(localAuthProvider) == AuthState.initial) {
         ref
             .read(localAuthProvider.notifier)
@@ -83,6 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 40),
               ElevatedButton(
+                // Disable the button while authentication is in progress.
                 onPressed: isLoading
                     ? null
                     : () {

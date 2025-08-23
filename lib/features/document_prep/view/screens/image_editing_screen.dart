@@ -9,9 +9,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for performing basic edits on an image,
+/// like cropping and applying filters.
 class ImageEditingScreen extends ConsumerWidget {
+  /// Creates an instance of [ImageEditingScreen].
   const ImageEditingScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial image file to be edited.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,46 +25,54 @@ class ImageEditingScreen extends ConsumerWidget {
       imageEditingViewModelProvider(initialFile).notifier,
     );
 
+    // Determine if any operation is in progress by
+    // checking the provider's state.
+    final isProcessing = viewModel.isLoading;
+
     return AppScaffold(
       title: 'Edit Image',
       actions: [
+        // Show the save button only when there is an image to save.
         if (viewModel.value?.currentImage != null)
           IconButton(
             icon: const Icon(Icons.check),
             tooltip: 'Save Image',
-            onPressed: () async {
-              final state = viewModel.value;
-              if (state?.originalImage == null) return;
+            // Disable the button while an operation is in progress.
+            onPressed: isProcessing
+                ? null
+                : () async {
+                    final state = viewModel.value;
+                    if (state?.originalImage == null) return;
 
-              final originalName = p.basenameWithoutExtension(
-                state!.originalImage!.name,
-              );
-              final extension = p.extension(state.originalImage!.name);
-              final defaultName = 'edited_$originalName';
+                    final originalName = p.basenameWithoutExtension(
+                      state!.originalImage!.name,
+                    );
+                    final extension = p.extension(state.originalImage!.name);
+                    final defaultName = 'edited_$originalName';
 
-              final saveResult = await showSaveOptionsDialog(
-                context,
-                defaultFileName: defaultName,
-                fileExtension: extension.isNotEmpty ? extension : '.jpg',
-              );
+                    final saveResult = await showSaveOptionsDialog(
+                      context,
+                      defaultFileName: defaultName,
+                      fileExtension: extension.isNotEmpty ? extension : '.jpg',
+                    );
 
-              if (saveResult != null) {
-                await notifier.saveImage(
-                  fileName: saveResult.fileName,
-                  folderPath: saveResult.folderPath,
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Image saved successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  ref.invalidate(walletViewModelProvider);
-                  context.pop();
-                }
-              }
-            },
+                    if (saveResult != null && context.mounted) {
+                      await notifier.saveImage(
+                        fileName: saveResult.fileName,
+                        folderPath: saveResult.folderPath,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Image saved successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        ref.invalidate(walletViewModelProvider);
+                        context.pop();
+                      }
+                    }
+                  },
           ),
       ],
       body: viewModel.when(
@@ -71,26 +84,31 @@ class ImageEditingScreen extends ConsumerWidget {
               child: Text('No image was selected. Please go back.'),
             );
           }
-          return _buildContent(context, state, notifier);
+          return _buildContent(context, state, notifier, isProcessing);
         },
       ),
     );
   }
 
+  /// Builds the main content of the screen,
+  /// including the image viewer and toolbar.
   Widget _buildContent(
     BuildContext context,
     ImageEditingState state,
     ImageEditingViewModel notifier,
+    bool isProcessing,
   ) {
     return Column(
       children: [
         Expanded(
           child: Center(
+            // InteractiveViewer allows for pan and zoom functionality.
             child: InteractiveViewer(child: Image.memory(state.currentImage!)),
           ),
         ),
         EditingToolbar(
-          onCrop: () => notifier.cropImage(context: context),
+          isProcessing: isProcessing,
+          onCrop: () => notifier.cropImage(theme: Theme.of(context)),
           onUndo: state.editHistory.isNotEmpty ? () => notifier.undo() : null,
           onGrayscale: () => notifier.applyGrayscaleFilter(),
         ),

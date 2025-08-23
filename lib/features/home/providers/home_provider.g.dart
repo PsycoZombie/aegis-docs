@@ -6,9 +6,15 @@ part of 'home_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$homeViewModelHash() => r'5da03a83d20f0c693fa09efcd0a42ea3d30240ce';
+String _$homeViewModelHash() => r'd0a499855e8b8f075461d2b4c789df6294bf7d73';
 
-/// See also [HomeViewModel].
+/// A ViewModel for the home screen.
+///
+/// Manages the navigation state within the wallet's folder structure and
+/// orchestrates user actions like creating, renaming,
+/// deleting, and sharing items.
+///
+/// Copied from [HomeViewModel].
 @ProviderFor(HomeViewModel)
 final homeViewModelProvider =
     AutoDisposeNotifierProvider<HomeViewModel, HomeState>.internal(

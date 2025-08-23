@@ -10,9 +10,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for changing the file format of an image (e.g., from PNG to JPG).
 class ImageFormatScreen extends ConsumerWidget {
+  /// Creates an instance of [ImageFormatScreen].
   const ImageFormatScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial image file to be processed.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,19 +38,25 @@ class ImageFormatScreen extends ConsumerWidget {
                 child: Text('No image was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier, ref);
+            return _buildContent(context, state, notifier, viewModel, ref);
           },
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     ImageFormatState state,
     ImageFormatViewModel notifier,
+    AsyncValue<ImageFormatState> viewModel,
     WidgetRef ref,
   ) {
+    // Determine if any operation is in progress by
+    // checking the provider's state.
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       children: [
         Expanded(
@@ -58,6 +68,7 @@ class ImageFormatScreen extends ConsumerWidget {
         FormatOptionsCard(
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.originalImage!.name,
@@ -71,7 +82,7 @@ class ImageFormatScreen extends ConsumerWidget {
               fileExtension: extension,
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               await notifier.saveImage(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,

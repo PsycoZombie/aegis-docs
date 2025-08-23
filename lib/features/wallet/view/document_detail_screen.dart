@@ -4,17 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
+/// A screen that displays the content of a single decrypted document.
+///
+/// It determines whether to show a PDF viewer or an image viewer based on the
+/// file extension.
 class DocumentDetailScreen extends ConsumerWidget {
-
+  /// Creates an instance of [DocumentDetailScreen].
   const DocumentDetailScreen({
-    required this.fileName, super.key,
+    required this.fileName,
     this.folderPath,
+    super.key,
   });
+
+  /// The name of the document to display.
   final String fileName;
+
+  /// The path of the folder containing the document.
   final String? folderPath;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the provider that fetches and
+    // decrypts the specific document's content.
     final documentAsyncValue = ref.watch(
       documentDetailProvider(fileName: fileName, folderPath: folderPath),
     );
@@ -33,6 +44,7 @@ class DocumentDetailScreen extends ConsumerWidget {
                 return const Text('Could not load or decrypt the document.');
               }
 
+              // Choose the appropriate viewer based on the file type.
               final Widget documentView = isPdf
                   ? SfPdfViewer.memory(decryptedData)
                   : InteractiveViewer(

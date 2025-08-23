@@ -6,9 +6,15 @@ part of 'theme_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$themeNotifierHash() => r'd1fe1a3148317e6153486a6470013a240b811917';
+String _$themeNotifierHash() => r'225f2bb5bd506fc150a34495fe5e8dfadbc9eba3';
 
-/// See also [ThemeNotifier].
+/// Manages the application's theme, persisting the user's choice.
+///
+/// This provider determines the initial theme based on system settings or
+/// the user's last saved preference. It allows toggling between light and
+/// dark themes and saves the choice to local storage.
+///
+/// Copied from [ThemeNotifier].
 @ProviderFor(ThemeNotifier)
 final themeNotifierProvider =
     AsyncNotifierProvider<ThemeNotifier, ThemeMode>.internal(

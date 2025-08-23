@@ -7,7 +7,7 @@ part of 'images_to_pdf_provider.dart';
 // **************************************************************************
 
 String _$imagesToPdfViewModelHash() =>
-    r'571da921a99cba98abec63f36677b686f9e3d227';
+    r'd1d432bde1de8a466a1bc5466833bbcb588ad307';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,22 +32,42 @@ class _SystemHash {
 
 abstract class _$ImagesToPdfViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ImagesToPdfState> {
-  late final List<PickedFile> initialFiles;
+  late final List<PickedFileModel> initialFiles;
 
-  FutureOr<ImagesToPdfState> build(List<PickedFile> initialFiles);
+  FutureOr<ImagesToPdfState> build(List<PickedFileModel> initialFiles);
 }
 
-/// See also [ImagesToPdfViewModel].
+/// A ViewModel for the "Images to PDF" conversion feature.
+///
+/// Manages the list of selected images, their order, and the business logic
+/// for converting them into a single PDF document.
+///
+/// Copied from [ImagesToPdfViewModel].
 @ProviderFor(ImagesToPdfViewModel)
 const imagesToPdfViewModelProvider = ImagesToPdfViewModelFamily();
 
-/// See also [ImagesToPdfViewModel].
+/// A ViewModel for the "Images to PDF" conversion feature.
+///
+/// Manages the list of selected images, their order, and the business logic
+/// for converting them into a single PDF document.
+///
+/// Copied from [ImagesToPdfViewModel].
 class ImagesToPdfViewModelFamily extends Family<AsyncValue<ImagesToPdfState>> {
-  /// See also [ImagesToPdfViewModel].
+  /// A ViewModel for the "Images to PDF" conversion feature.
+  ///
+  /// Manages the list of selected images, their order, and the business logic
+  /// for converting them into a single PDF document.
+  ///
+  /// Copied from [ImagesToPdfViewModel].
   const ImagesToPdfViewModelFamily();
 
-  /// See also [ImagesToPdfViewModel].
-  ImagesToPdfViewModelProvider call(List<PickedFile> initialFiles) {
+  /// A ViewModel for the "Images to PDF" conversion feature.
+  ///
+  /// Manages the list of selected images, their order, and the business logic
+  /// for converting them into a single PDF document.
+  ///
+  /// Copied from [ImagesToPdfViewModel].
+  ImagesToPdfViewModelProvider call(List<PickedFileModel> initialFiles) {
     return ImagesToPdfViewModelProvider(initialFiles);
   }
 
@@ -73,15 +93,25 @@ class ImagesToPdfViewModelFamily extends Family<AsyncValue<ImagesToPdfState>> {
   String? get name => r'imagesToPdfViewModelProvider';
 }
 
-/// See also [ImagesToPdfViewModel].
+/// A ViewModel for the "Images to PDF" conversion feature.
+///
+/// Manages the list of selected images, their order, and the business logic
+/// for converting them into a single PDF document.
+///
+/// Copied from [ImagesToPdfViewModel].
 class ImagesToPdfViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           ImagesToPdfViewModel,
           ImagesToPdfState
         > {
-  /// See also [ImagesToPdfViewModel].
-  ImagesToPdfViewModelProvider(List<PickedFile> initialFiles)
+  /// A ViewModel for the "Images to PDF" conversion feature.
+  ///
+  /// Manages the list of selected images, their order, and the business logic
+  /// for converting them into a single PDF document.
+  ///
+  /// Copied from [ImagesToPdfViewModel].
+  ImagesToPdfViewModelProvider(List<PickedFileModel> initialFiles)
     : this._internal(
         () => ImagesToPdfViewModel()..initialFiles = initialFiles,
         from: imagesToPdfViewModelProvider,
@@ -105,7 +135,7 @@ class ImagesToPdfViewModelProvider
     required this.initialFiles,
   }) : super.internal();
 
-  final List<PickedFile> initialFiles;
+  final List<PickedFileModel> initialFiles;
 
   @override
   FutureOr<ImagesToPdfState> runNotifierBuild(
@@ -159,7 +189,7 @@ class ImagesToPdfViewModelProvider
 mixin ImagesToPdfViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<ImagesToPdfState> {
   /// The parameter `initialFiles` of this provider.
-  List<PickedFile> get initialFiles;
+  List<PickedFileModel> get initialFiles;
 }
 
 class _ImagesToPdfViewModelProviderElement
@@ -172,7 +202,7 @@ class _ImagesToPdfViewModelProviderElement
   _ImagesToPdfViewModelProviderElement(super.provider);
 
   @override
-  List<PickedFile> get initialFiles =>
+  List<PickedFileModel> get initialFiles =>
       (origin as ImagesToPdfViewModelProvider).initialFiles;
 }
 

@@ -1,10 +1,9 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
-import 'package:aegis_docs/shared_widgets/rename_dialog.dart';
-import 'package:file_saver/file_saver.dart';
-import 'package:flutter/material.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,21 +11,34 @@ import 'package:share_plus/share_plus.dart';
 
 part 'home_provider.g.dart';
 
+/// Represents the state for the home screen, primarily tracking the current
+/// navigation path within the wallet.
 @immutable
-class HomeState {
-  const HomeState({this.currentFolderPath, this.infoMessage});
+class HomeState extends Equatable {
+  /// Creates an instance of the home state.
+  const HomeState({this.currentFolderPath});
+
+  /// The relative path of the folder the user is currently viewing.
+  /// A `null` value represents the root of the wallet.
   final String? currentFolderPath;
 
-  final String? infoMessage;
-
-  HomeState copyWith({String? currentFolderPath, String? infoMessage}) {
+  /// Creates a copy of the state with updated values.
+  HomeState copyWith({String? currentFolderPath}) {
+    // This allows setting the path back to null.
     return HomeState(
       currentFolderPath: currentFolderPath,
-      infoMessage: infoMessage,
     );
   }
+
+  @override
+  List<Object?> get props => [currentFolderPath];
 }
 
+/// A ViewModel for the home screen.
+///
+/// Manages the navigation state within the wallet's folder structure and
+/// orchestrates user actions like creating, renaming,
+/// deleting, and sharing items.
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
   @override
@@ -34,6 +46,7 @@ class HomeViewModel extends _$HomeViewModel {
     return const HomeState();
   }
 
+  /// Navigates into a subfolder.
   void navigateToFolder(String folderName) {
     final newPath = state.currentFolderPath == null
         ? folderName
@@ -41,163 +54,104 @@ class HomeViewModel extends _$HomeViewModel {
     state = state.copyWith(currentFolderPath: newPath);
   }
 
+  /// Navigates to a specific, absolute path within the wallet.
   void navigateToPath(String? path) {
     state = state.copyWith(currentFolderPath: path);
   }
 
+  /// Navigates one level up in the folder hierarchy.
   void navigateUp() {
     if (state.currentFolderPath != null) {
       final parent = p.dirname(state.currentFolderPath!);
+      // p.dirname of a root folder returns '.', so we
+      // check for that to navigate to null (root).
       state = state.copyWith(
         currentFolderPath: (parent == '.') ? null : parent,
       );
     }
   }
 
-  Future<void> createFolder(BuildContext context) async {
-    final folderName = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController();
-        return AlertDialog(
-          title: const Text('Create New Folder'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(labelText: 'Folder Name'),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Create'),
-            ),
-          ],
-        );
-      },
+  /// Creates a new folder in the current directory.
+  /// Returns `true` on success, `false` if a folder
+  /// with the same name already exists.
+  Future<bool> createFolder(String folderName) async {
+    final notifier = ref.read(
+      walletViewModelProvider(state.currentFolderPath).notifier,
     );
-
-    if (folderName != null && folderName.isNotEmpty) {
-      final notifier = ref.read(
-        walletViewModelProvider(state.currentFolderPath).notifier,
-      );
-      final success = await notifier.createFolder(
-        folderName: folderName,
-        parentFolderPath: state.currentFolderPath,
-      );
-      if (!success) {
-        state = state.copyWith(
-          infoMessage: 'A folder named "$folderName" already exists.',
-        );
-      }
+    final success = await notifier.createFolder(
+      folderName: folderName,
+      parentFolderPath: state.currentFolderPath,
+    );
+    if (success) {
+      ref.invalidate(walletViewModelProvider(state.currentFolderPath));
     }
+    return success;
   }
 
+  /// Renames a file or folder.
   Future<void> renameItem(
-    BuildContext context,
-    String path, {
+    String oldPath,
+    String newName, {
     required bool isFolder,
   }) async {
-    final currentName = isFolder
-        ? p.basename(path)
-        : p.basenameWithoutExtension(path);
-    final newName = await showRenameDialog(
-      context,
-      currentName: currentName,
-      title: isFolder ? 'Rename Folder' : 'Rename File',
-    );
+    final parentPath = state.currentFolderPath;
+    final notifier = ref.read(walletViewModelProvider(parentPath).notifier);
 
-    if (newName != null && newName.isNotEmpty && newName != currentName) {
-      final parentPath = isFolder
-          ? ((path == p.basename(path)) ? null : p.dirname(path))
-          : state.currentFolderPath;
-      final notifier = ref.read(walletViewModelProvider(parentPath).notifier);
-      if (isFolder) {
-        await notifier.renameFolder(oldPath: path, newName: newName);
-      } else {
-        final extension = p.extension(path);
-        await notifier.renameFile(
-          oldName: path,
-          newName: '$newName$extension',
-          folderPath: state.currentFolderPath,
-        );
-      }
-    }
-  }
-
-  Future<void> deleteItem(
-    BuildContext context,
-    String path, {
-    required bool isFolder,
-  }) async {
-    final name = p.basename(path);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isFolder ? 'Delete Folder?' : 'Delete Document?'),
-        content: Text(
-          'Are you sure you want to delete "$name"?\n'
-          '${isFolder ? 'This will delete all contents inside.' : ''}'
-          '\nThis action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed ?? false) {
-      final parentPath = isFolder
-          ? ((path == p.basename(path)) ? null : p.dirname(path))
-          : state.currentFolderPath;
-      final notifier = ref.read(walletViewModelProvider(parentPath).notifier);
-      if (isFolder) {
-        await notifier.deleteFolder(folderPathToDelete: path);
-      } else {
-        await notifier.deleteDocument(
-          fileName: name,
-          folderPath: state.currentFolderPath,
-        );
-      }
-    }
-  }
-
-  Future<void> exportDocument(String fileName) async {
-    try {
-      final notifier = ref.read(
-        walletViewModelProvider(state.currentFolderPath).notifier,
+    if (isFolder) {
+      // For folders, the `oldPath` from the context menu is the full path.
+      await notifier.renameFolder(oldPath: oldPath, newName: newName);
+    } else {
+      final extension = p.extension(oldPath);
+      // For files, the `oldName` is just the basename.
+      await notifier.renameFile(
+        oldName: p.basename(oldPath),
+        newName: '$newName$extension',
+        folderPath: state.currentFolderPath,
       );
-      final decryptedBytes = await notifier.exportDocument(
+    }
+    ref.invalidate(walletViewModelProvider(parentPath));
+  }
+
+  /// Deletes a file or folder.
+  Future<void> deleteItem(String path, {required bool isFolder}) async {
+    final parentPath = state.currentFolderPath;
+    final notifier = ref.read(walletViewModelProvider(parentPath).notifier);
+
+    if (isFolder) {
+      await notifier.deleteFolder(folderPathToDelete: path);
+    } else {
+      await notifier.deleteDocument(
+        fileName: p.basename(path),
+        folderPath: state.currentFolderPath,
+      );
+    }
+    ref.invalidate(walletViewModelProvider(parentPath));
+  }
+
+  /// Exports a decrypted document to the device's public downloads folder.
+  /// Returns an error message on failure, or `null` on success.
+  Future<String?> exportDocument(String fileName) async {
+    try {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final decryptedBytes = await repo.exportDecryptedDocument(
         fileName: fileName,
         folderPath: state.currentFolderPath,
       );
-      if (decryptedBytes == null) throw Exception('Failed to load document.');
-      await FileSaver.instance.saveFile(
-        name: fileName,
-        bytes: Uint8List.fromList(decryptedBytes),
-      );
-      state = state.copyWith(infoMessage: 'File saved successfully!');
+      if (decryptedBytes == null) {
+        throw Exception('Failed to export the document.');
+      }
+      return null; // Success
     } on Exception catch (e) {
-      state = state.copyWith(infoMessage: 'Export failed: $e');
+      return 'Export failed: $e'; // Failure
     }
   }
 
-  Future<void> shareDocument(String fileName) async {
+  /// Shares a decrypted document using the native OS share sheet.
+  /// Returns an error message on failure, or `null` on success.
+  Future<String?> shareDocument(String fileName) async {
     try {
-      final notifier = ref.read(
-        walletViewModelProvider(state.currentFolderPath).notifier,
-      );
-      final decryptedBytes = await notifier.exportDocument(
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final decryptedBytes = await repo.loadDecryptedDocument(
         fileName: fileName,
         folderPath: state.currentFolderPath,
       );
@@ -205,6 +159,7 @@ class HomeViewModel extends _$HomeViewModel {
         throw Exception('Failed to load document for sharing.');
       }
 
+      // Write the decrypted data to a temporary file for sharing.
       final tempDir = await getTemporaryDirectory();
       final tempFile = await File(
         '${tempDir.path}/$fileName',
@@ -216,9 +171,11 @@ class HomeViewModel extends _$HomeViewModel {
       );
       await SharePlus.instance.share(params);
 
+      // Clean up the temporary file.
       await tempFile.delete();
+      return null; // Success
     } on Exception catch (e) {
-      state = state.copyWith(infoMessage: 'Share failed: $e');
+      return 'Share failed: $e'; // Failure
     }
   }
 }

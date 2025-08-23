@@ -10,9 +10,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for compressing an image to a target file size.
 class ImageCompressionScreen extends ConsumerWidget {
+  /// Creates an instance of [ImageCompressionScreen].
   const ImageCompressionScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial image file to be processed.
+  final PickedFileModel? initialFile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,6 +25,7 @@ class ImageCompressionScreen extends ConsumerWidget {
       imageCompressionViewModelProvider(initialFile).notifier,
     );
 
+    // Listen for specific state changes to show non-blocking feedback.
     ref.listen(imageCompressionViewModelProvider(initialFile), (
       previous,
       next,
@@ -51,19 +56,25 @@ class ImageCompressionScreen extends ConsumerWidget {
                 child: Text('No image was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier, ref);
+            return _buildContent(context, state, notifier, viewModel, ref);
           },
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     CompressionState state,
     ImageCompressionViewModel notifier,
+    AsyncValue<CompressionState> viewModel,
     WidgetRef ref,
   ) {
+    // Determine if any operation is in progress by
+    // checking the provider's state.
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       children: [
         Expanded(
@@ -75,6 +86,7 @@ class ImageCompressionScreen extends ConsumerWidget {
         CompressionOptionsCard(
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.originalImage!.name,
@@ -88,7 +100,7 @@ class ImageCompressionScreen extends ConsumerWidget {
               fileExtension: extension.isNotEmpty ? extension : '.jpg',
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               await notifier.saveCompressedImage(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,

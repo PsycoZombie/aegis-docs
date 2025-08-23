@@ -7,7 +7,7 @@ part of 'image_compression_provider.dart';
 // **************************************************************************
 
 String _$imageCompressionViewModelHash() =>
-    r'8ec776071ba54f1b1ac5cfaa1aa981b28a6111e9';
+    r'e2e112483879062f9dee8a8dae17fed8a3a841dc';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,23 +32,43 @@ class _SystemHash {
 
 abstract class _$ImageCompressionViewModel
     extends BuildlessAutoDisposeAsyncNotifier<CompressionState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<CompressionState> build(PickedFile? initialFile);
+  FutureOr<CompressionState> build(PickedFileModel? initialFile);
 }
 
-/// See also [ImageCompressionViewModel].
+/// A ViewModel (using Riverpod) for the image compression feature.
+///
+/// This provider manages the state ([CompressionState]) and business logic for
+/// compressing an image to a target size.
+///
+/// Copied from [ImageCompressionViewModel].
 @ProviderFor(ImageCompressionViewModel)
 const imageCompressionViewModelProvider = ImageCompressionViewModelFamily();
 
-/// See also [ImageCompressionViewModel].
+/// A ViewModel (using Riverpod) for the image compression feature.
+///
+/// This provider manages the state ([CompressionState]) and business logic for
+/// compressing an image to a target size.
+///
+/// Copied from [ImageCompressionViewModel].
 class ImageCompressionViewModelFamily
     extends Family<AsyncValue<CompressionState>> {
-  /// See also [ImageCompressionViewModel].
+  /// A ViewModel (using Riverpod) for the image compression feature.
+  ///
+  /// This provider manages the state ([CompressionState]) and business logic for
+  /// compressing an image to a target size.
+  ///
+  /// Copied from [ImageCompressionViewModel].
   const ImageCompressionViewModelFamily();
 
-  /// See also [ImageCompressionViewModel].
-  ImageCompressionViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel (using Riverpod) for the image compression feature.
+  ///
+  /// This provider manages the state ([CompressionState]) and business logic for
+  /// compressing an image to a target size.
+  ///
+  /// Copied from [ImageCompressionViewModel].
+  ImageCompressionViewModelProvider call(PickedFileModel? initialFile) {
     return ImageCompressionViewModelProvider(initialFile);
   }
 
@@ -74,15 +94,25 @@ class ImageCompressionViewModelFamily
   String? get name => r'imageCompressionViewModelProvider';
 }
 
-/// See also [ImageCompressionViewModel].
+/// A ViewModel (using Riverpod) for the image compression feature.
+///
+/// This provider manages the state ([CompressionState]) and business logic for
+/// compressing an image to a target size.
+///
+/// Copied from [ImageCompressionViewModel].
 class ImageCompressionViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           ImageCompressionViewModel,
           CompressionState
         > {
-  /// See also [ImageCompressionViewModel].
-  ImageCompressionViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel (using Riverpod) for the image compression feature.
+  ///
+  /// This provider manages the state ([CompressionState]) and business logic for
+  /// compressing an image to a target size.
+  ///
+  /// Copied from [ImageCompressionViewModel].
+  ImageCompressionViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => ImageCompressionViewModel()..initialFile = initialFile,
         from: imageCompressionViewModelProvider,
@@ -106,7 +136,7 @@ class ImageCompressionViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<CompressionState> runNotifierBuild(
@@ -160,7 +190,7 @@ class ImageCompressionViewModelProvider
 mixin ImageCompressionViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<CompressionState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _ImageCompressionViewModelProviderElement
@@ -173,7 +203,7 @@ class _ImageCompressionViewModelProviderElement
   _ImageCompressionViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as ImageCompressionViewModelProvider).initialFile;
 }
 

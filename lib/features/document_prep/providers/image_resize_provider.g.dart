@@ -7,7 +7,7 @@ part of 'image_resize_provider.dart';
 // **************************************************************************
 
 String _$imageResizeViewModelHash() =>
-    r'd98e0a475fba3d709e5995df9b2c4307f427b5ff';
+    r'8bf04814a46edfa3f40a1adffe006add466c8cbd';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,22 +32,46 @@ class _SystemHash {
 
 abstract class _$ImageResizeViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ResizeState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<ResizeState> build(PickedFile? initialFile);
+  FutureOr<ResizeState> build(PickedFileModel? initialFile);
 }
 
-/// See also [ImageResizeViewModel].
+/// A ViewModel for the image resizing feature.
+///
+/// Manages the state and business logic for resizing
+/// an image to new dimensions,
+/// with support for aspect ratio locking and presets.
+///
+/// Copied from [ImageResizeViewModel].
 @ProviderFor(ImageResizeViewModel)
 const imageResizeViewModelProvider = ImageResizeViewModelFamily();
 
-/// See also [ImageResizeViewModel].
+/// A ViewModel for the image resizing feature.
+///
+/// Manages the state and business logic for resizing
+/// an image to new dimensions,
+/// with support for aspect ratio locking and presets.
+///
+/// Copied from [ImageResizeViewModel].
 class ImageResizeViewModelFamily extends Family<AsyncValue<ResizeState>> {
-  /// See also [ImageResizeViewModel].
+  /// A ViewModel for the image resizing feature.
+  ///
+  /// Manages the state and business logic for resizing
+  /// an image to new dimensions,
+  /// with support for aspect ratio locking and presets.
+  ///
+  /// Copied from [ImageResizeViewModel].
   const ImageResizeViewModelFamily();
 
-  /// See also [ImageResizeViewModel].
-  ImageResizeViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the image resizing feature.
+  ///
+  /// Manages the state and business logic for resizing
+  /// an image to new dimensions,
+  /// with support for aspect ratio locking and presets.
+  ///
+  /// Copied from [ImageResizeViewModel].
+  ImageResizeViewModelProvider call(PickedFileModel? initialFile) {
     return ImageResizeViewModelProvider(initialFile);
   }
 
@@ -73,15 +97,27 @@ class ImageResizeViewModelFamily extends Family<AsyncValue<ResizeState>> {
   String? get name => r'imageResizeViewModelProvider';
 }
 
-/// See also [ImageResizeViewModel].
+/// A ViewModel for the image resizing feature.
+///
+/// Manages the state and business logic for resizing
+/// an image to new dimensions,
+/// with support for aspect ratio locking and presets.
+///
+/// Copied from [ImageResizeViewModel].
 class ImageResizeViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           ImageResizeViewModel,
           ResizeState
         > {
-  /// See also [ImageResizeViewModel].
-  ImageResizeViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the image resizing feature.
+  ///
+  /// Manages the state and business logic for resizing
+  /// an image to new dimensions,
+  /// with support for aspect ratio locking and presets.
+  ///
+  /// Copied from [ImageResizeViewModel].
+  ImageResizeViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => ImageResizeViewModel()..initialFile = initialFile,
         from: imageResizeViewModelProvider,
@@ -105,7 +141,7 @@ class ImageResizeViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<ResizeState> runNotifierBuild(
@@ -156,7 +192,7 @@ class ImageResizeViewModelProvider
 mixin ImageResizeViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<ResizeState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _ImageResizeViewModelProviderElement
@@ -169,7 +205,7 @@ class _ImageResizeViewModelProviderElement
   _ImageResizeViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as ImageResizeViewModelProvider).initialFile;
 }
 

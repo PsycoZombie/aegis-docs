@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
+/// Defines the light theme for the application.
+///
+/// This theme is characterized by a light color scheme, primarily using blue
+/// and white, with the 'Inter' font family.
+/// It's designed for optimal readability
+/// and a clean, modern look in well-lit environments.
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
+  fontFamily: 'Inter',
 
   colorScheme: const ColorScheme.light(
     primary: Color(0xFF0065FF),
@@ -15,7 +22,6 @@ final ThemeData lightTheme = ThemeData(
   dividerColor: const Color(0xFFDDDDDD),
   hintColor: const Color(0xFF757575),
 
-  fontFamily: 'Inter',
   textTheme: const TextTheme(
     displayLarge: TextStyle(
       color: Color(0xFF212121),
@@ -107,9 +113,15 @@ final ThemeData lightTheme = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
 
+/// Defines the dark theme for the application.
+///
+/// This theme uses a dark color palette with shades of grey and blue accents
+/// to reduce eye strain in low-light conditions. It maintains the 'Inter' font
+/// family for consistency with the light theme.
 final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
+  fontFamily: 'Inter',
 
   colorScheme: const ColorScheme.dark(
     primary: Color(0xFF3A86FF),
@@ -127,7 +139,6 @@ final ThemeData darkTheme = ThemeData(
   dividerColor: const Color(0xFF424242),
   hintColor: const Color(0xFF9E9E9E),
 
-  fontFamily: 'Inter',
   textTheme: const TextTheme(
     displayLarge: TextStyle(
       color: Color.fromRGBO(255, 255, 255, 0.9),

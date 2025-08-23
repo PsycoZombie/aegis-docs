@@ -2,15 +2,28 @@ import 'package:aegis_docs/features/document_prep/providers/images_to_pdf_provid
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// A card that displays the action buttons for the "Images to PDF" feature,
+/// such as "Convert to PDF" and "Save".
 class ImagesToPdfOptionsCard extends ConsumerWidget {
+  /// Creates an instance of [ImagesToPdfOptionsCard].
   const ImagesToPdfOptionsCard({
     required this.state,
     required this.notifier,
+    required this.isProcessing,
     required this.onSave,
     super.key,
   });
+
+  /// The current state from the [ImagesToPdfViewModel].
   final ImagesToPdfState state;
+
+  /// The notifier for the [ImagesToPdfViewModel].
   final ImagesToPdfViewModel notifier;
+
+  /// A flag indicating if a conversion or save operation is in progress.
+  final bool isProcessing;
+
+  /// A callback function to be invoked when the "Save" button is tapped.
   final VoidCallback onSave;
 
   @override
@@ -22,20 +35,22 @@ class ImagesToPdfOptionsCard extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             OutlinedButton.icon(
-              icon: state.isProcessing
+              icon: isProcessing
                   ? const SizedBox.square(
                       dimension: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.transform),
               label: Text(
-                state.isProcessing ? 'Converting...' : 'Convert to PDF',
+                isProcessing ? 'Converting...' : 'Convert to PDF',
               ),
-              onPressed: state.isProcessing ? null : notifier.convertToPdf,
+              // Disable the button while an operation is in progress.
+              onPressed: isProcessing ? null : notifier.convertToPdf,
             ),
+            // Only show the save button after a PDF has been generated.
             if (state.generatedPdf != null)
               FilledButton.icon(
-                icon: state.isProcessing
+                icon: isProcessing
                     ? const SizedBox.square(
                         dimension: 20,
                         child: CircularProgressIndicator(
@@ -44,8 +59,9 @@ class ImagesToPdfOptionsCard extends ConsumerWidget {
                         ),
                       )
                     : const Icon(Icons.save_alt_outlined),
-                label: Text(state.isProcessing ? 'Saving...' : 'Save'),
-                onPressed: state.isProcessing ? null : onSave,
+                label: Text(isProcessing ? 'Saving...' : 'Save'),
+                // Disable the button while an operation is in progress.
+                onPressed: isProcessing ? null : onSave,
               ),
           ],
         ),

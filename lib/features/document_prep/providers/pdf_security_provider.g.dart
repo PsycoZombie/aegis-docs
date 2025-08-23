@@ -7,7 +7,7 @@ part of 'pdf_security_provider.dart';
 // **************************************************************************
 
 String _$pdfSecurityViewModelHash() =>
-    r'01dfe2a1a2eb0732256ff2f3ab7af6f508d43edd';
+    r'415d42fa3ea3e49e01e8b26fd806be7f3271d9e5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,22 +32,42 @@ class _SystemHash {
 
 abstract class _$PdfSecurityViewModel
     extends BuildlessAutoDisposeAsyncNotifier<PdfSecurityState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<PdfSecurityState> build(PickedFile? initialFile);
+  FutureOr<PdfSecurityState> build(PickedFileModel? initialFile);
 }
 
-/// See also [PdfSecurityViewModel].
+/// A ViewModel for the PDF security feature.
+///
+/// Manages the state and business logic for adding, removing, or changing
+/// a PDF's password protection.
+///
+/// Copied from [PdfSecurityViewModel].
 @ProviderFor(PdfSecurityViewModel)
 const pdfSecurityViewModelProvider = PdfSecurityViewModelFamily();
 
-/// See also [PdfSecurityViewModel].
+/// A ViewModel for the PDF security feature.
+///
+/// Manages the state and business logic for adding, removing, or changing
+/// a PDF's password protection.
+///
+/// Copied from [PdfSecurityViewModel].
 class PdfSecurityViewModelFamily extends Family<AsyncValue<PdfSecurityState>> {
-  /// See also [PdfSecurityViewModel].
+  /// A ViewModel for the PDF security feature.
+  ///
+  /// Manages the state and business logic for adding, removing, or changing
+  /// a PDF's password protection.
+  ///
+  /// Copied from [PdfSecurityViewModel].
   const PdfSecurityViewModelFamily();
 
-  /// See also [PdfSecurityViewModel].
-  PdfSecurityViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the PDF security feature.
+  ///
+  /// Manages the state and business logic for adding, removing, or changing
+  /// a PDF's password protection.
+  ///
+  /// Copied from [PdfSecurityViewModel].
+  PdfSecurityViewModelProvider call(PickedFileModel? initialFile) {
     return PdfSecurityViewModelProvider(initialFile);
   }
 
@@ -73,15 +93,25 @@ class PdfSecurityViewModelFamily extends Family<AsyncValue<PdfSecurityState>> {
   String? get name => r'pdfSecurityViewModelProvider';
 }
 
-/// See also [PdfSecurityViewModel].
+/// A ViewModel for the PDF security feature.
+///
+/// Manages the state and business logic for adding, removing, or changing
+/// a PDF's password protection.
+///
+/// Copied from [PdfSecurityViewModel].
 class PdfSecurityViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           PdfSecurityViewModel,
           PdfSecurityState
         > {
-  /// See also [PdfSecurityViewModel].
-  PdfSecurityViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the PDF security feature.
+  ///
+  /// Manages the state and business logic for adding, removing, or changing
+  /// a PDF's password protection.
+  ///
+  /// Copied from [PdfSecurityViewModel].
+  PdfSecurityViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => PdfSecurityViewModel()..initialFile = initialFile,
         from: pdfSecurityViewModelProvider,
@@ -105,7 +135,7 @@ class PdfSecurityViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<PdfSecurityState> runNotifierBuild(
@@ -159,7 +189,7 @@ class PdfSecurityViewModelProvider
 mixin PdfSecurityViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<PdfSecurityState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _PdfSecurityViewModelProviderElement
@@ -172,7 +202,7 @@ class _PdfSecurityViewModelProviderElement
   _PdfSecurityViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as PdfSecurityViewModelProvider).initialFile;
 }
 

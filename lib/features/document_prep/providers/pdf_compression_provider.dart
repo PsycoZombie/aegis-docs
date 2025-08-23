@@ -1,64 +1,78 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:aegis_docs/data/models/picked_file_model.dart';
-import 'package:aegis_docs/features/document_prep/providers/document_providers.dart';
-import 'package:flutter/material.dart';
+import 'package:aegis_docs/data/repositories/document_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'pdf_compression_provider.g.dart';
 
+/// Represents the state for the PDF compression feature.
 @immutable
-class PdfCompressionState {
+class PdfCompressionState extends Equatable {
+  /// Creates an instance of the PDF compression state.
   const PdfCompressionState({
     this.pickedPdf,
     this.compressedPdfBytes,
-    this.isProcessing = false,
     this.sizeLimitKB = 500,
     this.preserveText = true,
-    this.successMessage,
-    this.errorMessage,
   });
-  final PickedFile? pickedPdf;
-  final Uint8List? compressedPdfBytes;
-  final bool isProcessing;
-  final int sizeLimitKB;
-  final bool preserveText;
-  final String? successMessage;
-  final String? errorMessage;
 
+  /// The original PDF file selected by the user.
+  final PickedFileModel? pickedPdf;
+
+  /// The resulting compressed PDF data.
+  final Uint8List? compressedPdfBytes;
+
+  /// The user-defined target size limit in kilobytes.
+  final int sizeLimitKB;
+
+  /// A flag to determine if the native compressor
+  /// should preserve selectable text.
+  final bool preserveText;
+
+  /// Creates a copy of the state with updated values.
   PdfCompressionState copyWith({
-    PickedFile? pickedPdf,
+    PickedFileModel? pickedPdf,
     ValueGetter<Uint8List?>? compressedPdfBytes,
-    bool? isProcessing,
     int? sizeLimitKB,
     bool? preserveText,
-    String? successMessage,
-    String? errorMessage,
   }) {
     return PdfCompressionState(
       pickedPdf: pickedPdf ?? this.pickedPdf,
       compressedPdfBytes: compressedPdfBytes != null
           ? compressedPdfBytes()
           : this.compressedPdfBytes,
-      isProcessing: isProcessing ?? this.isProcessing,
       sizeLimitKB: sizeLimitKB ?? this.sizeLimitKB,
       preserveText: preserveText ?? this.preserveText,
-      successMessage: successMessage,
-      errorMessage: errorMessage,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    pickedPdf,
+    compressedPdfBytes,
+    sizeLimitKB,
+    preserveText,
+  ];
 }
 
+/// A ViewModel for the native PDF compression feature.
+///
+/// Manages the state and business logic for compressing a PDF to a target
+/// size using a high-performance native implementation.
 @Riverpod(keepAlive: false)
 class PdfCompressionViewModel extends _$PdfCompressionViewModel {
+  /// Initializes the state with an optional initial file.
   @override
-  Future<PdfCompressionState> build(PickedFile? initialFile) async {
-    if (initialFile == null) {
+  Future<PdfCompressionState> build(PickedFileModel? initialFile) async {
+    if (initialFile == null || initialFile.bytes == null) {
       return const PdfCompressionState();
     }
-    final initialSizeLimit = (initialFile.bytes.lengthInBytes / 1024 / 2)
+    // Set a reasonable initial target size, e.g., 50% of the original size.
+    final initialSizeLimit = (initialFile.bytes!.lengthInBytes / 1024 / 2)
         .clamp(50, 5000)
         .toInt();
     return PdfCompressionState(
@@ -67,27 +81,34 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
     );
   }
 
+  /// Updates the target size limit for the compression.
   void setSizeLimit(int kb) {
     if (state.value == null) return;
     state = AsyncData(state.value!.copyWith(sizeLimitKB: kb));
   }
 
+  /// Updates the "preserve text" option for the compression.
   void setPreserveText({required bool value}) {
     if (state.value == null) return;
     state = AsyncData(state.value!.copyWith(preserveText: value));
   }
 
+  /// Compresses the PDF and saves the result to the secure wallet.
+  ///
+  /// This method orchestrates the entire flow:
+  /// 1. Calls the native compression service.
+  /// 2. Reads the temporary compressed file.
+  /// 3. Saves the compressed data to the wallet via the repository.
+  /// 4. Deletes the temporary file.
+  ///
+  /// Returns `true` on success and `false` on failure.
   Future<bool> compressAndSavePdf({
     required String fileName,
     String? folderPath,
   }) async {
-    if (state.value?.pickedPdf == null) return false;
+    if (state.value?.pickedPdf?.path == null) return false;
 
-    state = AsyncData(
-      state.value!.copyWith(
-        isProcessing: true,
-      ),
-    );
+    state = const AsyncLoading<PdfCompressionState>().copyWithPrevious(state);
     var success = false;
 
     state = await AsyncValue.guard(() async {
@@ -106,31 +127,31 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
 
       final compressedFile = File(resultPath);
       if (await compressedFile.exists()) {
-        final bytes = await compressedFile.readAsBytes();
+        try {
+          final bytes = await compressedFile.readAsBytes();
 
-        await repo.saveEncryptedDocument(
-          fileName: fileName,
-          data: bytes,
-          folderPath: folderPath,
-        );
-        await compressedFile.delete();
-        success = true;
+          await repo.saveEncryptedDocument(
+            fileName: fileName,
+            data: bytes,
+            folderPath: folderPath,
+          );
+          success = true;
 
-        return currentState.copyWith(
-          isProcessing: false,
-          compressedPdfBytes: () => bytes,
-          successMessage: 'Successfully compressed and saved to wallet!',
-        );
+          return currentState.copyWith(
+            compressedPdfBytes: () => bytes,
+          );
+        } finally {
+          // Ensure the temporary file is always deleted.
+          await compressedFile.delete();
+        }
       } else {
-        throw Exception('Compression failed: $resultPath');
+        throw Exception('Native compression failed to produce an output file.');
       }
     });
 
+    // If an error occurred, reset to the previous valid data state.
     if (state.hasError) {
-      final previousData = state.asError!.value;
-      if (previousData != null) {
-        state = AsyncData(previousData.copyWith(isProcessing: false));
-      }
+      state = AsyncData(state.asError!.value!);
     }
 
     return success;

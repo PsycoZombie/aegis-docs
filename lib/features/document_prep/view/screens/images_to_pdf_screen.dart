@@ -10,9 +10,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for arranging and converting a list of
+/// images into a single PDF document.
 class ImagesToPdfScreen extends ConsumerWidget {
+  /// Creates an instance of [ImagesToPdfScreen].
   const ImagesToPdfScreen({required this.initialFiles, super.key});
-  final List<PickedFile> initialFiles;
+
+  /// The list of initial image files to be processed.
+  final List<PickedFileModel> initialFiles;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,19 +39,25 @@ class ImagesToPdfScreen extends ConsumerWidget {
                 child: Text('No images were selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier, ref);
+            return _buildContent(context, state, notifier, viewModel, ref);
           },
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     ImagesToPdfState state,
     ImagesToPdfViewModel notifier,
+    AsyncValue<ImagesToPdfState> viewModel,
     WidgetRef ref,
   ) {
+    // Determine if any operation is in progress by
+    // checking the provider's state.
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -61,6 +72,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
         ImagesToPdfOptionsCard(
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.selectedImages.first.name,
@@ -73,7 +85,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
               fileExtension: '.pdf',
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               await notifier.savePdf(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,

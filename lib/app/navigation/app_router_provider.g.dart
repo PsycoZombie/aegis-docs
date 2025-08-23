@@ -6,9 +6,16 @@ part of 'app_router_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appRouterHash() => r'28114671c5527f18272a8030a2df2c79c1dac962';
+String _$appRouterHash() => r'26861eedf4811b3ee4ca205f94bb2990d9fdf0b1';
 
-/// See also [appRouter].
+/// Provides the [GoRouter] instance for the application.
+///
+/// This provider is responsible for creating and configuring the router.
+/// It listens to the authentication state and automatically redirects users
+/// between the login screen and the home screen, ensuring that only
+/// authenticated users can access protected areas.
+///
+/// Copied from [appRouter].
 @ProviderFor(appRouter)
 final appRouterProvider = AutoDisposeProvider<GoRouter>.internal(
   appRouter,

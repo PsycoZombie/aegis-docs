@@ -11,9 +11,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
+/// A screen for resizing an image to new dimensions.
 class ImageResizeScreen extends ConsumerStatefulWidget {
+  /// Creates an instance of [ImageResizeScreen].
   const ImageResizeScreen({super.key, this.initialFile});
-  final PickedFile? initialFile;
+
+  /// The initial image file to be processed.
+  final PickedFileModel? initialFile;
 
   @override
   ConsumerState<ImageResizeScreen> createState() => _ImageResizeScreenState();
@@ -24,7 +28,12 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
   final _heightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  /// A flag to prevent infinite loops between the width and height listeners
+  /// when the aspect ratio is locked.
   bool _isUpdatingFromListener = false;
+
+  /// A flag to ensure the initial dimensions are only set once.
+  bool _initialValuesSet = false;
 
   @override
   void initState() {
@@ -42,6 +51,9 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
     super.dispose();
   }
 
+  /// Listener that triggers when the width text field changes.
+  /// If the aspect ratio is locked, it
+  /// calculates and sets the corresponding height.
   void _onWidthChanged() {
     final state = ref
         .read(imageResizeViewModelProvider(widget.initialFile))
@@ -65,6 +77,9 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
     }
   }
 
+  /// Listener that triggers when the height text field changes.
+  /// If the aspect ratio is locked, it
+  /// calculates and sets the corresponding width.
   void _onHeightChanged() {
     final state = ref
         .read(imageResizeViewModelProvider(widget.initialFile))
@@ -97,20 +112,18 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
       imageResizeViewModelProvider(widget.initialFile).notifier,
     );
 
+    // Listen to the provider to set the initial text field values once.
     ref.listen(imageResizeViewModelProvider(widget.initialFile), (_, next) {
-      if (next.isLoading) return;
-      final state = next.value;
-      if (state != null) {
-        final currentWidth =
-            state.originalDimensions?.width.toInt().toString() ?? '';
-        final currentHeight =
-            state.originalDimensions?.height.toInt().toString() ?? '';
-
-        if (_widthController.text != currentWidth) {
-          _widthController.text = currentWidth;
-        }
-        if (_heightController.text != currentHeight) {
-          _heightController.text = currentHeight;
+      if (next.hasValue && !_initialValuesSet) {
+        final state = next.value!;
+        if (state.originalDimensions != null) {
+          _widthController.text = state.originalDimensions!.width
+              .toInt()
+              .toString();
+          _heightController.text = state.originalDimensions!.height
+              .toInt()
+              .toString();
+          _initialValuesSet = true;
         }
       }
     });
@@ -128,18 +141,22 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
                 child: Text('No image was selected. Please go back.'),
               );
             }
-            return _buildContent(context, state, notifier);
+            return _buildContent(context, state, notifier, viewModel);
           },
         ),
       ),
     );
   }
 
+  /// Builds the main content of the screen based on the current state.
   Widget _buildContent(
     BuildContext context,
     ResizeState state,
     ImageResizeViewModel notifier,
+    AsyncValue<ResizeState> viewModel,
   ) {
+    final isProcessing = viewModel.isLoading;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -161,6 +178,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
           heightController: _heightController,
           state: state,
           notifier: notifier,
+          isProcessing: isProcessing,
           onSave: () async {
             final originalName = p.basenameWithoutExtension(
               state.originalImage!.name,
@@ -174,7 +192,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
               fileExtension: extension.isNotEmpty ? extension : '.jpg',
             );
 
-            if (saveResult != null) {
+            if (saveResult != null && context.mounted) {
               await notifier.saveResizedImage(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,

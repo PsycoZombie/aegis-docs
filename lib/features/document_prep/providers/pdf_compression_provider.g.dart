@@ -7,7 +7,7 @@ part of 'pdf_compression_provider.dart';
 // **************************************************************************
 
 String _$pdfCompressionViewModelHash() =>
-    r'f0f5284ffde23f6af70e8fedba110765cebcad45';
+    r'f64e378d5e5d3fa6661bdc7ddaa09c9fe37cc4f3';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,23 +32,43 @@ class _SystemHash {
 
 abstract class _$PdfCompressionViewModel
     extends BuildlessAutoDisposeAsyncNotifier<PdfCompressionState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<PdfCompressionState> build(PickedFile? initialFile);
+  FutureOr<PdfCompressionState> build(PickedFileModel? initialFile);
 }
 
-/// See also [PdfCompressionViewModel].
+/// A ViewModel for the native PDF compression feature.
+///
+/// Manages the state and business logic for compressing a PDF to a target
+/// size using a high-performance native implementation.
+///
+/// Copied from [PdfCompressionViewModel].
 @ProviderFor(PdfCompressionViewModel)
 const pdfCompressionViewModelProvider = PdfCompressionViewModelFamily();
 
-/// See also [PdfCompressionViewModel].
+/// A ViewModel for the native PDF compression feature.
+///
+/// Manages the state and business logic for compressing a PDF to a target
+/// size using a high-performance native implementation.
+///
+/// Copied from [PdfCompressionViewModel].
 class PdfCompressionViewModelFamily
     extends Family<AsyncValue<PdfCompressionState>> {
-  /// See also [PdfCompressionViewModel].
+  /// A ViewModel for the native PDF compression feature.
+  ///
+  /// Manages the state and business logic for compressing a PDF to a target
+  /// size using a high-performance native implementation.
+  ///
+  /// Copied from [PdfCompressionViewModel].
   const PdfCompressionViewModelFamily();
 
-  /// See also [PdfCompressionViewModel].
-  PdfCompressionViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the native PDF compression feature.
+  ///
+  /// Manages the state and business logic for compressing a PDF to a target
+  /// size using a high-performance native implementation.
+  ///
+  /// Copied from [PdfCompressionViewModel].
+  PdfCompressionViewModelProvider call(PickedFileModel? initialFile) {
     return PdfCompressionViewModelProvider(initialFile);
   }
 
@@ -74,15 +94,25 @@ class PdfCompressionViewModelFamily
   String? get name => r'pdfCompressionViewModelProvider';
 }
 
-/// See also [PdfCompressionViewModel].
+/// A ViewModel for the native PDF compression feature.
+///
+/// Manages the state and business logic for compressing a PDF to a target
+/// size using a high-performance native implementation.
+///
+/// Copied from [PdfCompressionViewModel].
 class PdfCompressionViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           PdfCompressionViewModel,
           PdfCompressionState
         > {
-  /// See also [PdfCompressionViewModel].
-  PdfCompressionViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the native PDF compression feature.
+  ///
+  /// Manages the state and business logic for compressing a PDF to a target
+  /// size using a high-performance native implementation.
+  ///
+  /// Copied from [PdfCompressionViewModel].
+  PdfCompressionViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => PdfCompressionViewModel()..initialFile = initialFile,
         from: pdfCompressionViewModelProvider,
@@ -106,7 +136,7 @@ class PdfCompressionViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<PdfCompressionState> runNotifierBuild(
@@ -160,7 +190,7 @@ class PdfCompressionViewModelProvider
 mixin PdfCompressionViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<PdfCompressionState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _PdfCompressionViewModelProviderElement
@@ -173,7 +203,7 @@ class _PdfCompressionViewModelProviderElement
   _PdfCompressionViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as PdfCompressionViewModelProvider).initialFile;
 }
 

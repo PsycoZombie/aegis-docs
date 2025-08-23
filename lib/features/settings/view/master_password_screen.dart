@@ -5,15 +5,27 @@ import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// A screen for creating or entering a
+/// master password for cloud backup and restore.
 class MasterPasswordScreen extends ConsumerStatefulWidget {
+  /// Creates an instance of [MasterPasswordScreen].
   const MasterPasswordScreen({
     required this.isCreating,
     required this.onSubmit,
-    super.key,
     this.backupBytes,
+    super.key,
   });
+
+  /// A flag to determine if the screen is in "create" or "enter" mode.
   final bool isCreating;
-  final Future<void> Function(String password) onSubmit;
+
+  /// A callback function that is invoked with the entered password.
+  /// This is used by the parent widget to
+  /// trigger the backup or restore process.
+  final Future<bool> Function(String password) onSubmit;
+
+  /// The downloaded backup data, required only
+  /// when restoring (`isCreating` is false).
   final Uint8List? backupBytes;
 
   @override
@@ -26,36 +38,34 @@ class _MasterPasswordScreenState extends ConsumerState<MasterPasswordScreen> {
   final _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  /// Validates the form and calls the appropriate provider method or callback.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (!widget.isCreating) {
-      final success = await ref
-          .read(settingsViewModelProvider.notifier)
-          .finishRestore(widget.backupBytes!, _passwordController.text);
+    // The logic is now handled by the parent widget via the onSubmit callback.
+    final success = await widget.onSubmit(_passwordController.text);
 
-      if (success && mounted) {
+    if (success && mounted) {
+      // The parent screen is responsible for showing feedback and popping.
+      // This screen can pop itself if it's not in creation mode.
+      if (!widget.isCreating) {
         Navigator.of(context).pop();
       }
-    } else {
-      await widget.onSubmit(_passwordController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watch the provider to get the loading state for UI feedback.
     final state = ref.watch(settingsViewModelProvider);
-    final isLoading = state.valueOrNull?.isProcessing ?? false;
-
-    ref.listen(settingsViewModelProvider, (previous, next) {
-      if (previous is AsyncData && previous!.value!.isProcessing) {
-        if (next is AsyncData && !next.value!.isProcessing && mounted) {
-          if (next.value!.successMessage != null && widget.isCreating) {
-            Navigator.of(context).pop();
-          }
-        }
-      }
-    });
+    final isLoading = state.isLoading;
 
     return AppScaffold(
       title: widget.isCreating
@@ -86,6 +96,8 @@ class _MasterPasswordScreenState extends ConsumerState<MasterPasswordScreen> {
                 validator: (value) =>
                     value!.isEmpty ? 'Password cannot be empty' : null,
               ),
+              // Only show the confirm password field when
+              // creating a new password.
               if (widget.isCreating) ...[
                 const SizedBox(height: 16),
                 TextFormField(

@@ -16,30 +16,39 @@ import com.itextpdf.text.pdf.parser.PdfImageObject
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import java.io.*
 import java.util.*
 import kotlin.math.min
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
+/**
+ * The main and only activity for the Aegis Docs Android application.
+ *
+ * This class serves as the bridge between the Flutter UI and native Android capabilities. It sets
+ * up a [MethodChannel] to handle performance-critical tasks like PDF compression, file cleanup, and
+ * direct file saving, which are more efficient when implemented in native code.
+ */
 class MainActivity : FlutterFragmentActivity() {
-    // Loads the compiled MuPDF native library.
+    // Loads the compiled MuPDF native library required for PDF rendering.
     init {
         System.loadLibrary("mupdf_java")
     }
 
-    // The channel name for communication with Flutter.
-    // IMPORTANT: This must match the string used in your Dart code.
-    private val CHANNEL = "com.aegis_docs.compress"
+    /**
+     * The channel name for communication with Flutter. IMPORTANT: This must match the string used
+     * in your Dart code.
+     */
+    private val CHANNEL = "com.aegis_docs.platform"
 
+    /** Configures the Flutter engine and sets up the [MethodChannel] handler. */
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CHANNEL
-        ).setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+            call,
+            result ->
             when (call.method) {
                 "compressPdf" -> {
                     // Extract arguments from the Flutter call
@@ -50,13 +59,18 @@ class MainActivity : FlutterFragmentActivity() {
 
                     // Launch a coroutine to handle the heavy processing off the main thread.
                     CoroutineScope(Dispatchers.Main).launch {
-                        val output = withContext(Dispatchers.IO) {
-                            if (preserveText == 0) {
-                                compressByRasterization(filePath, outputPath, sizeLimit)
-                            } else {
-                                compressWithTextPreservation(filePath, outputPath, sizeLimit.toLong())
+                        val output =
+                            withContext(Dispatchers.IO) {
+                                if (preserveText == 0) {
+                                    compressByRasterization(filePath, outputPath, sizeLimit)
+                                } else {
+                                    compressWithTextPreservation(
+                                        filePath,
+                                        outputPath,
+                                        sizeLimit.toLong()
+                                    )
+                                }
                             }
-                        }
                         // Send the result (the new file path or an error message) back to Flutter.
                         result.success(output)
                     }
@@ -66,19 +80,16 @@ class MainActivity : FlutterFragmentActivity() {
                     val data = call.argument<ByteArray>("data")!!
 
                     CoroutineScope(Dispatchers.Main).launch {
-                        val outputPath = withContext(Dispatchers.IO) {
-                            saveBytesToDownloads(fileName, data)
-                        }
+                        val outputPath =
+                            withContext(Dispatchers.IO) { saveBytesToDownloads(fileName, data) }
                         result.success(outputPath)
                     }
                 }
                 "cleanupExportedFiles" -> {
                     val expirationInMinutes = call.argument<Int>("expirationInMinutes")!!
                     CoroutineScope(Dispatchers.Main).launch {
-                        withContext(Dispatchers.IO) {
-                            cleanupFiles(expirationInMinutes)
-                        }
-                        result.success(null)
+                        withContext(Dispatchers.IO) { cleanupFiles(expirationInMinutes) }
+                        result.success(null) // Fire-and-forget
                     }
                 }
                 else -> result.notImplemented()
@@ -86,10 +97,17 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Deletes files from the app's public "AegisDocs" directory that are older than the specified
+     * expiration time.
+     *
+     * @param expirationInMinutes The age in minutes after which a file is considered expired.
+     */
     private fun cleanupFiles(expirationInMinutes: Int) {
         try {
             Log.d("Cleanup", "Starting cleanup with expiration of $expirationInMinutes minutes.")
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val downloadsDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val aegisDir = File(downloadsDir, "AegisDocs")
 
             if (!aegisDir.exists() || !aegisDir.isDirectory) {
@@ -97,7 +115,6 @@ class MainActivity : FlutterFragmentActivity() {
                 return
             }
 
-            // THE FIX: Calculate expiration in milliseconds from minutes.
             val expirationInMillis = expirationInMinutes * 60 * 1000L
             val currentTime = System.currentTimeMillis()
             var deletedCount = 0
@@ -121,9 +138,17 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Saves a byte array to a file in the public "Downloads/AegisDocs" directory.
+     *
+     * @param fileName The name of the file to save.
+     * @param data The byte data of the file.
+     * @return The absolute path of the saved file, or an error message on failure.
+     */
     private fun saveBytesToDownloads(fileName: String, data: ByteArray): String {
         return try {
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val downloadsDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val aegisDir = File(downloadsDir, "AegisDocs")
             if (!aegisDir.exists()) {
                 aegisDir.mkdirs()
@@ -138,9 +163,20 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
-    // --- All of your compression logic from the old file is below ---
-
-    private fun compressByRasterization(inputPath: String, outputPath: String, sizeLimitKB: Int): String {
+    /**
+     * Compresses a PDF by converting each page into a compressed JPEG image. This method results in
+     * a smaller file size but loses all text selectability.
+     *
+     * @param inputPath The path to the source PDF.
+     * @param outputPath The path where the compressed PDF will be saved.
+     * @param sizeLimitKB The target size for the final PDF in kilobytes.
+     * @return The path to the compressed file, or an error message.
+     */
+    private fun compressByRasterization(
+        inputPath: String,
+        outputPath: String,
+        sizeLimitKB: Int
+    ): String {
         var reader: PdfReader? = null
         var fos: FileOutputStream? = null
         var outDoc: iTextDocument? = null
@@ -155,13 +191,21 @@ class MainActivity : FlutterFragmentActivity() {
             val semaphore = Semaphore(determineConcurrency())
             runBlocking(Dispatchers.Default) {
                 coroutineScope {
-                    (1..pageCount).map { pageNum ->
-                        async {
-                            semaphore.withPermit {
-                                processPageRaster(inputPath, pdfCopy, pageNum, sizeLimitKB, pageCount)
+                    (1..pageCount)
+                        .map { pageNum ->
+                            async {
+                                semaphore.withPermit {
+                                    processPageRaster(
+                                        inputPath,
+                                        pdfCopy,
+                                        pageNum,
+                                        sizeLimitKB,
+                                        pageCount
+                                    )
+                                }
                             }
                         }
-                    }.awaitAll()
+                        .awaitAll()
                 }
             }
             outDoc.close()
@@ -182,7 +226,23 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
-    private fun processPageRaster(inputPath: String, pdfCopy: PdfCopy, pageNum: Int, sizeLimitKB: Int, pageCount: Int) {
+    /**
+     * Processes a single page of a PDF by rendering it to a bitmap, compressing it as a JPEG, and
+     * adding it to a new PDF document.
+     *
+     * @param inputPath The path to the source PDF.
+     * @param pdfCopy The iText PdfCopy instance to add the new page to.
+     * @param pageNum The page number to process.
+     * @param sizeLimitKB The overall size limit for the final PDF.
+     * @param pageCount The total number of pages in the PDF.
+     */
+    private fun processPageRaster(
+        inputPath: String,
+        pdfCopy: PdfCopy,
+        pageNum: Int,
+        sizeLimitKB: Int,
+        pageCount: Int
+    ) {
         var muDoc: Document? = null
         var page: com.artifex.mupdf.fitz.Page? = null
         var pixmap: com.artifex.mupdf.fitz.Pixmap? = null
@@ -222,6 +282,12 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Creates a temporary, single-page PDF in memory from a given byte array of an image.
+     *
+     * @param imageBytes The byte data of the image.
+     * @return A byte array representing the new PDF.
+     */
     private fun createTempPdfWithImage(imageBytes: ByteArray): ByteArray {
         val baos = ByteArrayOutputStream()
         val doc = iTextDocument()
@@ -237,6 +303,13 @@ class MainActivity : FlutterFragmentActivity() {
         return baos.toByteArray()
     }
 
+    /**
+     * Finds the optimal JPEG quality setting to compress a bitmap to be under a target size.
+     *
+     * @param bitmap The source bitmap.
+     * @param maxBytes The target maximum size in bytes.
+     * @return A byte array of the compressed JPEG.
+     */
     private fun findBestQualityJPEG(bitmap: Bitmap, maxBytes: Long): ByteArray {
         var low = 25
         var high = 95
@@ -254,28 +327,47 @@ class MainActivity : FlutterFragmentActivity() {
                 high = mid - 1
             }
         }
-        return best ?: ByteArrayOutputStream().apply {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 25, this)
-        }.toByteArray()
+        return best
+            ?: ByteArrayOutputStream()
+                .apply { bitmap.compress(Bitmap.CompressFormat.JPEG, 25, this) }
+                .toByteArray()
     }
 
-    private fun compressWithTextPreservation(inputPath: String, outputPath: String, sizeLimitKb: Long): String {
+    /**
+     * Compresses a PDF by re-compressing only the images within it, preserving text and vector
+     * content.
+     *
+     * @param inputPath The path to the source PDF.
+     * @param outputPath The path where the compressed PDF will be saved.
+     * @param sizeLimitKb The target size for the final PDF in kilobytes.
+     * @return The path to the compressed file, or an error message.
+     */
+    private fun compressWithTextPreservation(
+        inputPath: String,
+        outputPath: String,
+        sizeLimitKb: Long
+    ): String {
         val sizeLimitBytes = sizeLimitKb * 1024L
         val originalFile = File(inputPath)
         if (originalFile.length() <= sizeLimitBytes) {
             return copyTo(inputPath, outputPath)
         }
 
-        val textOnlyBytes = try {
-            stripAllImagesToBytes(inputPath)
-        } catch (e: Exception) {
-            Log.e("PDFCompression", "Failed to strip images", e)
-            return "Error: Failed to process PDF structure. ${e.message}"
-        }
+        val textOnlyBytes =
+            try {
+                stripAllImagesToBytes(inputPath)
+            } catch (e: Exception) {
+                Log.e("PDFCompression", "Failed to strip images", e)
+                return "Error: Failed to process PDF structure. ${e.message}"
+            }
 
         if (textOnlyBytes.size > sizeLimitBytes) {
             Log.w("PDFCompression", "The PDF with only text is larger than the size limit.")
-            val finalFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "stripped_${UUID.randomUUID()}.pdf")
+            val finalFile =
+                File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "stripped_${UUID.randomUUID()}.pdf"
+                )
             FileOutputStream(finalFile).use { it.write(textOnlyBytes) }
             return "Could not meet size limit. Text content alone is ${textOnlyBytes.size / 1024}KB. Saved image-stripped version at: ${finalFile.absolutePath}"
         }
@@ -287,12 +379,13 @@ class MainActivity : FlutterFragmentActivity() {
         while (low <= high) {
             val mid = (low + high) / 2
             Log.d("PDFCompression", "Text-Preserving: Trying quality $mid")
-            val trialBytes = try {
-                recompressImagesToBytes(inputPath, mid)
-            } catch (e: Exception) {
-                Log.e("PDFCompression", "Failed to recompress at quality $mid", e)
-                null
-            }
+            val trialBytes =
+                try {
+                    recompressImagesToBytes(inputPath, mid)
+                } catch (e: Exception) {
+                    Log.e("PDFCompression", "Failed to recompress at quality $mid", e)
+                    null
+                }
 
             if (trialBytes != null && trialBytes.size <= sizeLimitBytes) {
                 bestBytes = trialBytes
@@ -303,12 +396,13 @@ class MainActivity : FlutterFragmentActivity() {
         }
 
         if (bestBytes == null) {
-            bestBytes = try {
-                recompressImagesToBytes(inputPath, 0)
-            } catch (e: Exception) {
-                Log.e("PDFCompression", "Failed to recompress at lowest quality", e)
-                textOnlyBytes
-            }
+            bestBytes =
+                try {
+                    recompressImagesToBytes(inputPath, 0)
+                } catch (e: Exception) {
+                    Log.e("PDFCompression", "Failed to recompress at lowest quality", e)
+                    textOnlyBytes
+                }
         }
 
         val finalFile = File(outputPath)
@@ -321,9 +415,18 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Copies a file from a source path to a destination path.
+     *
+     * @param srcPath The source file path.
+     * @param destPath The destination file path.
+     * @return The destination path, or an error message on failure.
+     */
     private fun copyTo(srcPath: String, destPath: String): String {
         return try {
-            FileInputStream(File(srcPath)).use { inF -> FileOutputStream(File(destPath)).use { outF -> inF.copyTo(outF) } }
+            FileInputStream(File(srcPath)).use { inF ->
+                FileOutputStream(File(destPath)).use { outF -> inF.copyTo(outF) }
+            }
             destPath
         } catch (e: IOException) {
             Log.e("PDFCompression", "Copy failed.", e)
@@ -331,12 +434,17 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Re-compresses all images within a PDF to a specified JPEG quality.
+     *
+     * @param inputPath The path to the source PDF.
+     * @param quality The target JPEG quality (0-100).
+     * @return A byte array of the new PDF with re-compressed images.
+     */
     private fun recompressImagesToBytes(inputPath: String, quality: Int): ByteArray {
         val reader = PdfReader(inputPath)
         val baos = ByteArrayOutputStream()
-        val stamper = PdfStamper(reader, baos).apply {
-            setFullCompression()
-        }
+        val stamper = PdfStamper(reader, baos).apply { setFullCompression() }
 
         val imageObjectNumbers = mutableListOf<Int>()
         for (i in 0 until reader.xrefSize) {
@@ -353,32 +461,49 @@ class MainActivity : FlutterFragmentActivity() {
         }
 
         val semaphore = Semaphore(determineConcurrency())
-        val compressedImagesData = runBlocking(Dispatchers.Default) {
-            imageObjectNumbers.map { objectNumber ->
-                async {
-                    semaphore.withPermit {
-                        try {
-                            val stream = reader.getPdfObject(objectNumber) as PRStream
-                            val imageObject = PdfImageObject(stream)
-                            val imageBytes = imageObject.imageAsBytes
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                            if (bitmap != null) {
-                                val compressedStream = ByteArrayOutputStream()
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream)
-                                val newBytes = compressedStream.toByteArray()
-                                bitmap.recycle()
-                                Pair(objectNumber, newBytes)
-                            } else {
-                                null
+        val compressedImagesData =
+            runBlocking(Dispatchers.Default) {
+                imageObjectNumbers
+                    .map { objectNumber ->
+                        async {
+                            semaphore.withPermit {
+                                try {
+                                    val stream = reader.getPdfObject(objectNumber) as PRStream
+                                    val imageObject = PdfImageObject(stream)
+                                    val imageBytes = imageObject.imageAsBytes
+                                    val bitmap =
+                                        BitmapFactory.decodeByteArray(
+                                            imageBytes,
+                                            0,
+                                            imageBytes.size
+                                        )
+                                    if (bitmap != null) {
+                                        val compressedStream = ByteArrayOutputStream()
+                                        bitmap.compress(
+                                            Bitmap.CompressFormat.JPEG,
+                                            quality,
+                                            compressedStream
+                                        )
+                                        val newBytes = compressedStream.toByteArray()
+                                        bitmap.recycle()
+                                        Pair(objectNumber, newBytes)
+                                    } else {
+                                        null
+                                    }
+                                } catch (e: Exception) {
+                                    Log.w(
+                                        "PDFCompression",
+                                        "Could not process image object: $objectNumber",
+                                        e
+                                    )
+                                    null
+                                }
                             }
-                        } catch (e: Exception) {
-                            Log.w("PDFCompression", "Could not process image object: $objectNumber", e)
-                            null
                         }
                     }
-                }
-            }.awaitAll().filterNotNull()
-        }
+                    .awaitAll()
+                    .filterNotNull()
+            }
 
         for ((objectNumber, newBytes) in compressedImagesData) {
             val stream = reader.getPdfObject(objectNumber) as PRStream
@@ -399,6 +524,12 @@ class MainActivity : FlutterFragmentActivity() {
         return baos.toByteArray()
     }
 
+    /**
+     * Strips all images from a PDF, leaving only text and vector content.
+     *
+     * @param inputPath The path to the source PDF.
+     * @return A byte array of the image-stripped PDF.
+     */
     private fun stripAllImagesToBytes(inputPath: String): ByteArray {
         val baos = ByteArrayOutputStream()
         val reader = PdfReader(inputPath)
@@ -418,13 +549,26 @@ class MainActivity : FlutterFragmentActivity() {
         return baos.toByteArray()
     }
 
+    /**
+     * A utility function to copy a file to the public "Downloads" directory with a unique name to
+     * avoid conflicts.
+     *
+     * This is primarily a debugging helper for the text-preservation compression method to save
+     * intermediate files.
+     *
+     * @param src The source file path.
+     * @return The absolute path of the newly created copy.
+     */
     private fun copyToDownloads(src: String): String {
-        val dest = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "${File(src).nameWithoutExtension}_copy_${UUID.randomUUID()}.pdf"
-        )
+        val dest =
+            File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "${File(src).nameWithoutExtension}_copy_${UUID.randomUUID()}.pdf"
+            )
         return try {
-            FileInputStream(File(src)).use { inF -> FileOutputStream(dest).use { outF -> inF.copyTo(outF) } }
+            FileInputStream(File(src)).use { inF ->
+                FileOutputStream(dest).use { outF -> inF.copyTo(outF) }
+            }
             dest.absolutePath
         } catch (e: IOException) {
             Log.e("PDFCompression", "Copy failed.", e)
@@ -432,11 +576,18 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    /**
+     * Determines an optimal level of concurrency for parallel tasks based on the device's CPU cores
+     * and available RAM.
+     *
+     * @return The number of parallel tasks to run.
+     */
     private fun determineConcurrency(): Int {
         val cores = Runtime.getRuntime().availableProcessors()
-        val ram = (getSystemService(ACTIVITY_SERVICE) as ActivityManager).run {
-            MemoryInfo().apply { getMemoryInfo(this) }.totalMem / (1024 * 1024)
-        }
+        val ram =
+            (getSystemService(ACTIVITY_SERVICE) as ActivityManager).run {
+                MemoryInfo().apply { getMemoryInfo(this) }.totalMem / (1024 * 1024)
+            }
         return when {
             ram < 3000 -> min(cores, 2)
             ram < 6000 -> min(cores, 4)

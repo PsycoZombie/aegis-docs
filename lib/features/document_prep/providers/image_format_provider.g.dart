@@ -7,7 +7,7 @@ part of 'image_format_provider.dart';
 // **************************************************************************
 
 String _$imageFormatViewModelHash() =>
-    r'd5f9cad78ce79fcf0fa2802414d952f9a34fa9fb';
+    r'68ad66bfb3a85d3fa5ecd749949ed4f823e1503f';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,22 +32,42 @@ class _SystemHash {
 
 abstract class _$ImageFormatViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ImageFormatState> {
-  late final PickedFile? initialFile;
+  late final PickedFileModel? initialFile;
 
-  FutureOr<ImageFormatState> build(PickedFile? initialFile);
+  FutureOr<ImageFormatState> build(PickedFileModel? initialFile);
 }
 
-/// See also [ImageFormatViewModel].
+/// A ViewModel for the image format conversion feature.
+///
+/// Manages the state and business logic for changing an image's file type
+/// (e.g., from JPG to PNG).
+///
+/// Copied from [ImageFormatViewModel].
 @ProviderFor(ImageFormatViewModel)
 const imageFormatViewModelProvider = ImageFormatViewModelFamily();
 
-/// See also [ImageFormatViewModel].
+/// A ViewModel for the image format conversion feature.
+///
+/// Manages the state and business logic for changing an image's file type
+/// (e.g., from JPG to PNG).
+///
+/// Copied from [ImageFormatViewModel].
 class ImageFormatViewModelFamily extends Family<AsyncValue<ImageFormatState>> {
-  /// See also [ImageFormatViewModel].
+  /// A ViewModel for the image format conversion feature.
+  ///
+  /// Manages the state and business logic for changing an image's file type
+  /// (e.g., from JPG to PNG).
+  ///
+  /// Copied from [ImageFormatViewModel].
   const ImageFormatViewModelFamily();
 
-  /// See also [ImageFormatViewModel].
-  ImageFormatViewModelProvider call(PickedFile? initialFile) {
+  /// A ViewModel for the image format conversion feature.
+  ///
+  /// Manages the state and business logic for changing an image's file type
+  /// (e.g., from JPG to PNG).
+  ///
+  /// Copied from [ImageFormatViewModel].
+  ImageFormatViewModelProvider call(PickedFileModel? initialFile) {
     return ImageFormatViewModelProvider(initialFile);
   }
 
@@ -73,15 +93,25 @@ class ImageFormatViewModelFamily extends Family<AsyncValue<ImageFormatState>> {
   String? get name => r'imageFormatViewModelProvider';
 }
 
-/// See also [ImageFormatViewModel].
+/// A ViewModel for the image format conversion feature.
+///
+/// Manages the state and business logic for changing an image's file type
+/// (e.g., from JPG to PNG).
+///
+/// Copied from [ImageFormatViewModel].
 class ImageFormatViewModelProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
           ImageFormatViewModel,
           ImageFormatState
         > {
-  /// See also [ImageFormatViewModel].
-  ImageFormatViewModelProvider(PickedFile? initialFile)
+  /// A ViewModel for the image format conversion feature.
+  ///
+  /// Manages the state and business logic for changing an image's file type
+  /// (e.g., from JPG to PNG).
+  ///
+  /// Copied from [ImageFormatViewModel].
+  ImageFormatViewModelProvider(PickedFileModel? initialFile)
     : this._internal(
         () => ImageFormatViewModel()..initialFile = initialFile,
         from: imageFormatViewModelProvider,
@@ -105,7 +135,7 @@ class ImageFormatViewModelProvider
     required this.initialFile,
   }) : super.internal();
 
-  final PickedFile? initialFile;
+  final PickedFileModel? initialFile;
 
   @override
   FutureOr<ImageFormatState> runNotifierBuild(
@@ -159,7 +189,7 @@ class ImageFormatViewModelProvider
 mixin ImageFormatViewModelRef
     on AutoDisposeAsyncNotifierProviderRef<ImageFormatState> {
   /// The parameter `initialFile` of this provider.
-  PickedFile? get initialFile;
+  PickedFileModel? get initialFile;
 }
 
 class _ImageFormatViewModelProviderElement
@@ -172,7 +202,7 @@ class _ImageFormatViewModelProviderElement
   _ImageFormatViewModelProviderElement(super.provider);
 
   @override
-  PickedFile? get initialFile =>
+  PickedFileModel? get initialFile =>
       (origin as ImageFormatViewModelProvider).initialFile;
 }
 

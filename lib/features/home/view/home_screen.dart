@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// The main screen of the application,
+/// displaying the contents of the secure wallet.
 class HomeScreen extends ConsumerWidget {
+  /// Creates an instance of [HomeScreen].
   const HomeScreen({super.key});
 
   @override
@@ -17,31 +20,21 @@ class HomeScreen extends ConsumerWidget {
     final homeState = ref.watch(homeViewModelProvider);
     final homeNotifier = ref.read(homeViewModelProvider.notifier);
 
+    // Watch the wallet view model, passing the
+    // current folder path from the home state.
+    // This ensures the wallet content
+    // automatically updates when the path changes.
     final walletState = ref.watch(
       walletViewModelProvider(homeState.currentFolderPath),
     );
 
-    ref.listen(homeViewModelProvider, (previous, next) {
-      if (next.infoMessage != null &&
-          previous?.infoMessage != next.infoMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.infoMessage!),
-            backgroundColor:
-                next.infoMessage!.startsWith('Failed') ||
-                    next.infoMessage!.startsWith('Error')
-                ? Colors.red
-                : Colors.green,
-          ),
-        );
-      }
-    });
-
     return PopScope(
+      // Allow the default back button behavior
+      // only when at the root of the wallet.
       canPop: homeState.currentFolderPath == null,
+      // Intercept the back button press to navigate up the folder hierarchy.
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop) return;
-
         homeNotifier.navigateUp();
       },
       child: AppScaffold(
@@ -50,7 +43,27 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.create_new_folder_outlined),
             tooltip: 'New Folder',
-            onPressed: () => homeNotifier.createFolder(context),
+            onPressed: () async {
+              // The UI is responsible for showing dialogs and gathering input.
+              final folderName = await _showCreateFolderDialog(context);
+
+              if (folderName != null && folderName.isNotEmpty) {
+                // The UI then calls the provider with the gathered data.
+                final success = await homeNotifier.createFolder(folderName);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Folder "$folderName" created.'
+                            : 'A folder named "$folderName" already exists.',
+                      ),
+                      backgroundColor: success ? Colors.green : Colors.orange,
+                    ),
+                  );
+                }
+              }
+            },
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -137,6 +150,34 @@ class HomeScreen extends ConsumerWidget {
           icon: const Icon(Icons.add),
         ),
       ),
+    );
+  }
+
+  /// A helper method to show the "Create Folder" dialog.
+  Future<String?> _showCreateFolderDialog(BuildContext context) {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create New Folder'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: 'Folder Name'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
