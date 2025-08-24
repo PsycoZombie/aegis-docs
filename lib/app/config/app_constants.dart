@@ -37,7 +37,7 @@ class AppConstants {
   static const String routeHome = '/home';
   static const String routeDocumentDetail = '/document/:fileName';
   static const String routeSettings = '/settings';
-  static const String routeHub = 'hub';
+  static const String routeHub = '/hub';
   static const String routeResize = '/hub/resize';
   static const String routeCompress = '/hub/compress';
   static const String routeEdit = '/hub/edit';

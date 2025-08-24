@@ -1,6 +1,6 @@
 import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:aegis_docs/core/services/auth_service.dart';
 import 'package:aegis_docs/core/services/settings_service.dart';
-import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/settings/providers/settings_provider.dart';
 import 'package:aegis_docs/features/settings/view/master_password_screen.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -286,10 +286,8 @@ class SettingsScreen extends ConsumerWidget {
             onPressed: () async {
               Navigator.of(ctx).pop(); // Close the dialog first
 
-              final authNotifier = ref.read(localAuthProvider.notifier);
-              await authNotifier.authenticateWithDeviceCredentials();
-              final isAuthenticated =
-                  ref.read(localAuthProvider) == AuthState.success;
+              final authService = ref.read(authServiceProvider);
+              final isAuthenticated = await authService.authenticate();
 
               if (isAuthenticated && context.mounted) {
                 final result = await notifier.deleteBackup();
