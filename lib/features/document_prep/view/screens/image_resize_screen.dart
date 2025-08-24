@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_resize_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_resize/image_preview_section.dart';
@@ -129,7 +130,7 @@ class _ImageResizeScreenState extends ConsumerState<ImageResizeScreen> {
     });
 
     return AppScaffold(
-      title: 'Resize Image',
+      title: AppConstants.titleResizeImage,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: viewModel.when(

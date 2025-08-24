@@ -6,6 +6,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'settings_provider.g.dart';
 
+/// Represents the possible outcomes of a backup deletion attempt.
+// ignore: public_member_api_docs
+enum DeleteBackupResult { success, notFound, error }
+
 /// Represents the state for the settings screen.
 /// Note: This class is currently empty because loading and error states are
 /// handled by the AsyncValue wrapper from Riverpod. It can be extended later
@@ -81,14 +85,26 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   /// Deletes the wallet backup from the cloud.
-  /// Returns `true` on success, `false` on failure.
-  Future<bool> deleteBackup() async {
+  /// Returns a [DeleteBackupResult] to indicate the outcome.
+  Future<DeleteBackupResult> deleteBackup() async {
     state = const AsyncLoading<SettingsState>().copyWithPrevious(state);
-    state = await AsyncValue.guard(() async {
+    try {
       final repo = await ref.read(documentRepositoryProvider.future);
-      await repo.deleteBackupFromDrive();
-      return const SettingsState();
-    });
-    return !state.hasError;
+      final result = await repo.deleteBackupFromDrive();
+
+      state = const AsyncData(SettingsState()); // Reset to idle state
+
+      switch (result) {
+        case true:
+          return DeleteBackupResult.success;
+        case null:
+          return DeleteBackupResult.notFound;
+        default:
+          return DeleteBackupResult.error;
+      }
+    } on Exception catch (e, st) {
+      state = AsyncError(e, st);
+      return DeleteBackupResult.error;
+    }
   }
 }

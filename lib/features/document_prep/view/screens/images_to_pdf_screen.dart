@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/images_to_pdf_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/images_to_pdf_options_card.dart';
@@ -27,7 +28,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
     );
 
     return AppScaffold(
-      title: 'Images to PDF',
+      title: AppConstants.titleImagesToPdf,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: viewModel.when(

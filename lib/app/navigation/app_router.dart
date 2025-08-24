@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/auth/view/login_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/feature_test_hub_screen.dart';
@@ -21,14 +22,20 @@ import 'package:go_router/go_router.dart';
 /// between them.
 final List<RouteBase> appRoutes = [
   // --- Authentication Flow --- //
-  GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+  GoRoute(
+    path: AppConstants.routeLogin,
+    builder: (context, state) => const LoginScreen(),
+  ),
 
   // --- Main App Flow --- //
-  GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
   GoRoute(
-    path: '/document/:fileName',
+    path: AppConstants.routeHome,
+    builder: (context, state) => const HomeScreen(),
+  ),
+  GoRoute(
+    path: AppConstants.routeDocumentDetail,
     builder: (context, state) {
-      final fileName = state.pathParameters['fileName']!;
+      final fileName = state.pathParameters[AppConstants.paramFileName]!;
       final folderPath = state.extra as String?;
       return DocumentDetailScreen(
         fileName: fileName,
@@ -37,66 +44,66 @@ final List<RouteBase> appRoutes = [
     },
   ),
   GoRoute(
-    path: '/settings',
+    path: AppConstants.routeSettings,
     builder: (context, state) => const SettingsScreen(),
   ),
 
   // --- Document Preparation Hub and Workflows --- //
   GoRoute(
-    path: '/hub',
+    path: AppConstants.routeHub,
     builder: (context, state) => const FeatureTestHubScreen(),
   ),
   GoRoute(
-    path: '/hub/resize',
+    path: AppConstants.routeResize,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return ImageResizeScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/compress',
+    path: AppConstants.routeCompress,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return ImageCompressionScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/edit',
+    path: AppConstants.routeEdit,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return ImageEditingScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/image-format',
+    path: AppConstants.routeImageFormat,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return ImageFormatScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/images-to-pdf',
+    path: AppConstants.routeImagesToPdf,
     builder: (context, state) {
       final pickedFiles = state.extra as List<PickedFileModel>? ?? [];
       return ImagesToPdfScreen(initialFiles: pickedFiles);
     },
   ),
   GoRoute(
-    path: '/hub/pdf-to-images',
+    path: AppConstants.routePdfToImages,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return PdfToImagesScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/pdf-compression',
+    path: AppConstants.routePdfCompression,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return PdfCompressionScreen(initialFile: pickedFile);
     },
   ),
   GoRoute(
-    path: '/hub/pdf-security',
+    path: AppConstants.routePdfSecurity,
     builder: (context, state) {
       final pickedFile = state.extra as PickedFileModel?;
       return PdfSecurityScreen(initialFile: pickedFile);

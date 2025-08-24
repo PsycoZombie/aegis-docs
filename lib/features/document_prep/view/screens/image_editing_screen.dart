@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_editing_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_editing/editing_toolbar.dart';
@@ -30,7 +31,7 @@ class ImageEditingScreen extends ConsumerWidget {
     final isProcessing = viewModel.isLoading;
 
     return AppScaffold(
-      title: 'Edit Image',
+      title: AppConstants.titleCropEditImage,
       actions: [
         // Show the save button only when there is an image to save.
         if (viewModel.value?.currentImage != null)

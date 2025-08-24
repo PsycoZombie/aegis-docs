@@ -21,12 +21,12 @@ class NativePdfCompressionService {
   ///
   /// [filePath]: The path of the source PDF to compress.
   /// [sizeLimit]: The target size in kilobytes (e.g., 1024 for 1MB).
-  /// [preserveText]: Whether to avoid
-  /// converting text to images, which maintains
+  /// [preserveText]: Whether to avoid converting
+  /// text to images, which maintains
   /// text selectability but may result in a larger file size.
   ///
-  /// Throws an [Exception] on failure.
-  /// Returns the path to the compressed temporary file.
+  /// Throws an [Exception] on failure. Returns the path
+  /// to the compressed temporary file.
   Future<String> compressPdf({
     required String filePath,
     required int sizeLimit,
@@ -37,22 +37,35 @@ class NativePdfCompressionService {
       final tempFileName = 'temp_compressed_${const Uuid().v4()}.pdf';
       final outputPath = '${tempDir.path}/$tempFileName';
 
-      final result = await _platform.invokeMethod('compressPdf', {
-        'filePath': filePath,
-        'outputPath': outputPath,
-        'sizeLimit': sizeLimit,
-        'preserveText': preserveText ? 1 : 0, // Pass bool as int
-      });
+      // The native method now returns a Map.
+      final result = await _platform.invokeMethod<Map<Object?, Object?>>(
+        AppConstants.methodCompressPdf,
+        {
+          AppConstants.paramFilePath: filePath,
+          AppConstants.paramOutputPath: outputPath,
+          AppConstants.paramSizeLimit: sizeLimit,
+          AppConstants.paramPreserveText: preserveText ? 1 : 0,
+        },
+      );
 
-      final resultPath = result as String?;
-
-      if (resultPath == null || resultPath.isEmpty) {
-        throw Exception('Native compression returned an empty or null path.');
+      // Check the status from the native result.
+      if (result?['status'] == 'success') {
+        final path = result?['path'] as String?;
+        if (path != null && path.isNotEmpty) {
+          return path;
+        }
+        throw Exception(
+          'Native compression succeeded but returned an empty path.',
+        );
+      } else {
+        // If the status is 'error', throw an exception with the native message.
+        final message =
+            result?['message'] as String? ??
+            'An unknown native error occurred.';
+        throw Exception(message);
       }
-
-      return resultPath;
     } on PlatformException catch (e) {
-      throw Exception('Failed to compress PDF via native code: ${e.message}');
+      throw Exception('Failed to communicate with native code: ${e.message}');
     }
   }
 }

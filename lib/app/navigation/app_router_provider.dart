@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/app/navigation/app_router.dart';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ GoRouter appRouter(Ref ref) {
     ..onDispose(listenable.dispose);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AppConstants.routeLogin,
     routes: appRoutes,
     refreshListenable: listenable,
 
@@ -36,18 +37,18 @@ GoRouter appRouter(Ref ref) {
       // Read the current authentication state.
       final isLoggedIn = ref.read(localAuthProvider) == AuthState.success;
       final location = state.matchedLocation;
-      final isGoingToLogin = location == '/login';
+      final isGoingToLogin = location == AppConstants.routeLogin;
 
       // If the user is not logged in and is trying to access a protected route,
       // redirect them to the login screen.
       if (!isLoggedIn && !isGoingToLogin) {
-        return '/login';
+        return AppConstants.routeLogin;
       }
 
       // If the user is already logged in and tries to go to the login screen,
       // redirect them to the home screen.
       if (isLoggedIn && isGoingToLogin) {
-        return '/home';
+        return AppConstants.routeHome;
       }
 
       // In all other cases, allow the navigation to proceed.

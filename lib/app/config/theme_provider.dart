@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -6,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'theme_provider.g.dart';
 
 /// A key for storing the user's theme preference in SharedPreferences.
-const _themePrefsKey = 'appTheme';
+const String _themePrefsKey = AppConstants.keyTheme;
 
 /// Manages the application's theme, persisting the user's choice.
 ///

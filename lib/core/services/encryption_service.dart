@@ -90,9 +90,9 @@ Map<String, String> _wrapKeyIsolate(_KeyWrapPayload payload) {
 
   // Return all components needed for decryption, encoded as Base64 strings.
   return {
-    'salt': base64Encode(salt),
-    'iv': iv.base64,
-    'key': encryptedDataKey.base64,
+    AppConstants.keySalt: base64Encode(salt),
+    AppConstants.keyIv: iv.base64,
+    AppConstants.keyEncryptionKey: encryptedDataKey.base64,
   };
 }
 
@@ -100,10 +100,12 @@ Map<String, String> _wrapKeyIsolate(_KeyWrapPayload payload) {
 /// It re-derives the same master key using the
 /// provided salt and master password.
 Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
-  final salt = base64Decode(payload.backupData['salt'] as String);
-  final iv = enc.IV.fromBase64(payload.backupData['iv'] as String);
+  final salt = base64Decode(payload.backupData[AppConstants.keySalt] as String);
+  final iv = enc.IV.fromBase64(
+    payload.backupData[AppConstants.keyIv] as String,
+  );
   final encryptedKey = enc.Encrypted.fromBase64(
-    payload.backupData['key'] as String,
+    payload.backupData[AppConstants.keyEncryptionKey] as String,
   );
 
   // Re-run PBKDF2 with the exact same parameters to get the same key.

@@ -1,4 +1,6 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/core/services/settings_service.dart';
+import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/settings/providers/settings_provider.dart';
 import 'package:aegis_docs/features/settings/view/master_password_screen.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -45,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
     final isProcessing = settingsState.isLoading;
 
     return AppScaffold(
-      title: 'Settings',
+      title: AppConstants.titleSettings,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -116,7 +118,11 @@ class SettingsScreen extends ConsumerWidget {
                 label: const Text('Delete Cloud Backup'),
                 onPressed: isProcessing
                     ? null
-                    : () => _showDeleteConfirmationDialog(context, notifier),
+                    : () => _showDeleteConfirmationDialog(
+                        context,
+                        ref,
+                        notifier,
+                      ),
               ),
             ),
             if (isProcessing) ...[
@@ -256,6 +262,7 @@ class SettingsScreen extends ConsumerWidget {
   /// Shows the confirmation dialog for deleting a cloud backup.
   void _showDeleteConfirmationDialog(
     BuildContext context,
+    WidgetRef ref,
     SettingsViewModel notifier,
   ) {
     showDialog<void>(
@@ -277,15 +284,41 @@ class SettingsScreen extends ConsumerWidget {
             ),
             child: const Text('Delete'),
             onPressed: () async {
-              Navigator.of(ctx).pop();
-              final success = await notifier.deleteBackup();
-              if (context.mounted) {
-                _showFeedbackSnackbar(
-                  context,
-                  !success,
-                  'Cloud backup deleted successfully!',
-                  'Failed to delete backup. Please try again.',
-                );
+              Navigator.of(ctx).pop(); // Close the dialog first
+
+              final authNotifier = ref.read(localAuthProvider.notifier);
+              await authNotifier.authenticateWithDeviceCredentials();
+              final isAuthenticated =
+                  ref.read(localAuthProvider) == AuthState.success;
+
+              if (isAuthenticated && context.mounted) {
+                final result = await notifier.deleteBackup();
+                if (context.mounted) {
+                  switch (result) {
+                    case DeleteBackupResult.success:
+                      _showFeedbackSnackbar(
+                        context,
+                        false,
+                        'Cloud backup deleted successfully!',
+                        '',
+                      );
+                    case DeleteBackupResult.notFound:
+                      _showFeedbackSnackbar(
+                        context,
+                        true,
+                        '',
+                        'No cloud backup found to delete.',
+                        color: Colors.orange,
+                      );
+                    case DeleteBackupResult.error:
+                      _showFeedbackSnackbar(
+                        context,
+                        true,
+                        '',
+                        'Failed to delete backup. Please try again.',
+                      );
+                  }
+                }
               }
             },
           ),

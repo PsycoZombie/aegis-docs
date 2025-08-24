@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_option_cards_widget.dart';
@@ -26,7 +27,7 @@ class PdfCompressionScreen extends ConsumerWidget {
     );
 
     return AppScaffold(
-      title: 'Compress PDF',
+      title: AppConstants.titleCompressPdf,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: viewModel.when(

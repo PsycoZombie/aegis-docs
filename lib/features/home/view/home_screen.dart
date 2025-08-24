@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/features/home/widgets/breadcrumb_navigation.dart';
@@ -38,11 +39,11 @@ class HomeScreen extends ConsumerWidget {
         homeNotifier.navigateUp();
       },
       child: AppScaffold(
-        title: 'Secure Wallet',
+        title: AppConstants.titleSecureWallet,
         actions: [
           IconButton(
             icon: const Icon(Icons.create_new_folder_outlined),
-            tooltip: 'New Folder',
+            tooltip: AppConstants.titleNewFolder,
             onPressed: () async {
               // The UI is responsible for showing dialogs and gathering input.
               final folderName = await _showCreateFolderDialog(context);
@@ -71,7 +72,7 @@ class HomeScreen extends ConsumerWidget {
                 ref.read(localAuthProvider.notifier).logout();
               }
               if (value == 'settings') {
-                context.push('/settings');
+                context.push(AppConstants.routeSettings);
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -79,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                 value: 'settings',
                 child: ListTile(
                   leading: Icon(Icons.settings),
-                  title: Text('Settings'),
+                  title: Text(AppConstants.titleSettings),
                 ),
               ),
               const PopupMenuDivider(),
@@ -87,7 +88,7 @@ class HomeScreen extends ConsumerWidget {
                 value: 'logout',
                 child: ListTile(
                   leading: Icon(Icons.logout),
-                  title: Text('Logout'),
+                  title: Text(AppConstants.titleLogout),
                 ),
               ),
             ],
@@ -145,8 +146,8 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => context.push('/hub'),
-          label: const Text('Start New Prep'),
+          onPressed: () => context.push(AppConstants.routeHub),
+          label: const Text(AppConstants.titleStartNewPrep),
           icon: const Icon(Icons.add),
         ),
       ),

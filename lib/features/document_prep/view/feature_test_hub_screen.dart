@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -26,43 +27,43 @@ class FeatureTestHubScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: const [
           _FeatureButton(
-            title: 'Resize Image',
-            path: '/hub/resize',
+            title: AppConstants.titleResizeImage,
+            path: AppConstants.routeResize,
             pickType: PickType.singleImage,
           ),
           _FeatureButton(
-            title: 'Compress Image',
-            path: '/hub/compress',
+            title: AppConstants.titleCompressImage,
+            path: AppConstants.routeCompress,
             pickType: PickType.singleImage,
           ),
           _FeatureButton(
-            title: 'Crop & Edit Image',
-            path: '/hub/edit',
+            title: AppConstants.titleCropEditImage,
+            path: AppConstants.routeEdit,
             pickType: PickType.singleImage,
           ),
           _FeatureButton(
-            title: 'Change Image Format',
-            path: '/hub/image-format',
+            title: AppConstants.titleChangeImageFormat,
+            path: AppConstants.routeImageFormat,
             pickType: PickType.singleImage,
           ),
           _FeatureButton(
-            title: 'Images to PDF',
-            path: '/hub/images-to-pdf',
+            title: AppConstants.titleImagesToPdf,
+            path: AppConstants.routeImagesToPdf,
             pickType: PickType.multiImage,
           ),
           _FeatureButton(
-            title: 'PDF to Images',
-            path: '/hub/pdf-to-images',
+            title: AppConstants.titlePdfToImages,
+            path: AppConstants.routePdfToImages,
             pickType: PickType.pdf,
           ),
           _FeatureButton(
-            title: 'Compress PDF (Native)',
-            path: '/hub/pdf-compression',
+            title: AppConstants.titleCompressPdf,
+            path: AppConstants.routePdfCompression,
             pickType: PickType.pdf,
           ),
           _FeatureButton(
-            title: 'PDF Security',
-            path: '/hub/pdf-security',
+            title: AppConstants.titlePdfSecurity,
+            path: AppConstants.routePdfSecurity,
             pickType: PickType.pdf,
           ),
         ],

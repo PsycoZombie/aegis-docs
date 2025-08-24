@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/app/config/app_secrets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,15 +92,17 @@ class CloudStorageService {
 
   /// Deletes a backup file from the Google Drive AppData folder.
   ///
-  /// Returns `true` if the file is deleted or never existed,
-  /// `false` on failure.
-  Future<bool> deleteBackup(String fileName) async {
+  /// Returns:
+  /// - `true` if the file was found and deleted successfully.
+  /// - `null` if no backup file was found.
+  /// - `false` if an error occurred during deletion.
+  Future<bool?> deleteBackup(String fileName) async {
     final driveApi = await _getDriveApi();
-    if (driveApi == null) return false;
+    if (driveApi == null) return false; // Auth or API client error
 
     try {
       final existingFiles = await driveApi.files.list(
-        spaces: 'appDataFolder',
+        spaces: AppConstants.keyAppDataFolder,
         q: "name = '$fileName'",
       );
 
@@ -108,13 +111,14 @@ class CloudStorageService {
         debugPrint('Deleting backup file...');
         await driveApi.files.delete(fileId);
         debugPrint('Backup delete complete.');
+        return true; // Success
       } else {
         debugPrint('No backup file found to delete.');
+        return null; // Not found
       }
-      return true;
     } on Exception catch (e) {
       debugPrint('Error deleting backup: $e');
-      return false;
+      return false; // Error
     }
   }
 

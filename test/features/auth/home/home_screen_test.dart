@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/home/view/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,10 @@ void main() {
       expect(find.text('My Wallet'), findsOneWidget);
       expect(find.text('Profiles'), findsOneWidget);
       expect(
-        find.widgetWithText(FloatingActionButton, 'Start New Prep'),
+        find.widgetWithText(
+          FloatingActionButton,
+          AppConstants.titleStartNewPrep,
+        ),
         findsOneWidget,
       );
       expect(find.byIcon(Icons.logout), findsOneWidget);

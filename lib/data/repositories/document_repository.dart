@@ -347,8 +347,9 @@ class DocumentRepository {
   // --- Cloud Backup & Restore --- //
 
   /// Deletes the wallet backup from Google Drive.
-  Future<void> deleteBackupFromDrive() async {
-    await _cloudStorageService.deleteBackup(AppConstants.backupFileName);
+  /// Returns true if deleted, null if not found, false on error.
+  Future<bool?> deleteBackupFromDrive() async {
+    return _cloudStorageService.deleteBackup(AppConstants.backupFileName);
   }
 
   /// Downloads the wallet backup from Google Drive.

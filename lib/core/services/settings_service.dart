@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,7 +17,7 @@ enum CleanupDuration { fiveMinutes, oneHour, oneDay, sevenDays, never }
 /// type-safe API for app settings.
 class SettingsService {
   /// The key used to store the cleanup duration in SharedPreferences.
-  static const _cleanupDurationKey = 'cleanup_duration';
+  static const String _cleanupDurationKey = AppConstants.keyCleanupDuration;
 
   /// Saves the user's selected [CleanupDuration] to persistent storage.
   ///

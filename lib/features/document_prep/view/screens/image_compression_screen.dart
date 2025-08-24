@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/image_compression/compression_options_card.dart';
@@ -44,7 +45,7 @@ class ImageCompressionScreen extends ConsumerWidget {
     });
 
     return AppScaffold(
-      title: 'Compress Image',
+      title: AppConstants.titleCompressImage,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: viewModel.when(

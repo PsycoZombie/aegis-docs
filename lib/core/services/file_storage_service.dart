@@ -251,8 +251,8 @@ class FileStorageService {
   }) async {
     try {
       final result = await _platform.invokeMethod(
-        'saveToDownloads',
-        {'fileName': fileName, 'data': data},
+        AppConstants.methodSaveToDownloads,
+        {AppConstants.paramFileName: fileName, AppConstants.paramData: data},
       );
 
       final resultPath = result as String?;

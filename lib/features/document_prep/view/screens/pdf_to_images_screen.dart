@@ -1,3 +1,4 @@
+import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_to_images_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_to_images/selectable_image_grid.dart';
@@ -26,7 +27,7 @@ class PdfToImagesScreen extends ConsumerWidget {
     );
 
     return AppScaffold(
-      title: 'PDF to Images',
+      title: AppConstants.titlePdfToImages,
       body: Padding(
         padding: const EdgeInsets.all(16),
         // Use .when to handle loading, error, and data states of the provider.
