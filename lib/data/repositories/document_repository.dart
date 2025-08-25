@@ -272,7 +272,7 @@ class DocumentRepository {
   );
 
   /// Compresses an image with the given quality.
-  Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 85}) =>
+  Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 100}) =>
       _imageProcessor.compressImage(imageBytes: imageBytes, quality: quality);
 
   /// Opens an interactive image cropping UI.

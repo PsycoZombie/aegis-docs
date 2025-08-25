@@ -118,20 +118,29 @@ class ImageCompressionViewModel extends _$ImageCompressionViewModel {
       final imageProcessor = ref.read(imageProcessorProvider);
       final targetBytes = state.value!.targetSizeKB * 1024;
 
-      var quality = 95;
+      var minQuality = 1;
+      var maxQuality = 100;
       Uint8List? bestCompressedImage;
 
-      // Iteratively lower quality to find the best fit under the target size.
-      while (quality > 10) {
+      while (minQuality <= maxQuality) {
+        final midQuality = minQuality + ((maxQuality - minQuality) ~/ 2);
+        if (midQuality == 0) break; // Safety break
+
         final compressed = await imageProcessor.compressImage(
           imageBytes: originalImageBytes,
-          quality: quality,
+          quality: midQuality,
         );
+
         if (compressed.lengthInBytes <= targetBytes) {
+          // This quality works! It's a potential answer.
+          // Let's save it and try for an even HIGHER quality.
           bestCompressedImage = compressed;
-          break;
+          minQuality = midQuality + 1; // Search in the upper half
+        } else {
+          // This quality is too high, the file is too big.
+          // We must search for a LOWER quality.
+          maxQuality = midQuality - 1; // Search in the lower half
         }
-        quality -= 5;
       }
 
       // Handle cases where compression was not possible or didn't reduce size.

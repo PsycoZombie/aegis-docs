@@ -377,8 +377,8 @@ class MainActivity : FlutterFragmentActivity() {
      * @return A byte array of the compressed JPEG.
      */
     private fun findBestQualityJPEG(bitmap: Bitmap, maxBytes: Long): ByteArray {
-        var low = 25
-        var high = 95
+        var low = 1
+        var high = 100
         var best: ByteArray? = null
         while (low <= high) {
             val mid = (low + high) / 2
@@ -448,7 +448,7 @@ class MainActivity : FlutterFragmentActivity() {
         }
 
         var low = 1
-        var high = 99
+        var high = 100
         var bestBytes: ByteArray? = null
 
         while (low <= high) {

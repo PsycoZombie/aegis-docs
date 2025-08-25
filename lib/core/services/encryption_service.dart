@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:encrypt/encrypt.dart' as enc;
+import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -73,26 +75,35 @@ Uint8List _decryptIsolate(_DecryptIsolatePayload params) {
 /// main data key using a master password.
 /// It uses PBKDF2 to derive a strong key from the password.
 Map<String, String> _wrapKeyIsolate(_KeyWrapPayload payload) {
-  // A unique salt is generated for each key wrapping operation.
   final salt = enc.IV.fromSecureRandom(16).bytes;
 
-  // PBKDF2 with 100,000 rounds of HMAC-SHA256 to derive the key.
+  // Derive 64 bytes: 32 for encryption, 32 for HMAC authentication.
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-    ..init(Pbkdf2Parameters(salt, 100000, 32)); // 32 bytes for AES-256
-  final masterKey = enc.Key(
-    derivator.process(Uint8List.fromList(utf8.encode(payload.masterPassword))),
+    ..init(Pbkdf2Parameters(salt, 100000, 64));
+  final derivedKey = derivator.process(
+    Uint8List.fromList(utf8.encode(payload.masterPassword)),
   );
 
-  // Encrypt the data key with the derived master key.
-  final encrypter = enc.Encrypter(enc.AES(masterKey)); // Defaults to CBC mode
+  final encryptionKey = enc.Key(derivedKey.sublist(0, 32));
+  final hmacKey = derivedKey.sublist(32, 64);
+
+  // Encrypt the data key.
+  final encrypter = enc.Encrypter(enc.AES(encryptionKey));
   final iv = enc.IV.fromSecureRandom(16);
   final encryptedDataKey = encrypter.encryptBytes(payload.dataKeyBytes, iv: iv);
 
-  // Return all components needed for decryption, encoded as Base64 strings.
+  // Create an HMAC signature of the salt, IV, and ciphertext.
+  final hmac = crypto.Hmac(crypto.sha256, hmacKey);
+  final authenticatedData = Uint8List.fromList(
+    salt + iv.bytes + encryptedDataKey.bytes,
+  );
+  final signature = hmac.convert(authenticatedData).bytes;
+
   return {
     AppConstants.keySalt: base64Encode(salt),
     AppConstants.keyIv: iv.base64,
     AppConstants.keyEncryptionKey: encryptedDataKey.base64,
+    'hmac': base64Encode(signature), // Add the HMAC signature
   };
 }
 
@@ -107,16 +118,34 @@ Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
   final encryptedKey = enc.Encrypted.fromBase64(
     payload.backupData[AppConstants.keyEncryptionKey] as String,
   );
+  final signature = base64Decode(payload.backupData['hmac'] as String);
 
-  // Re-run PBKDF2 with the exact same parameters to get the same key.
+  // Re-derive the same 64-byte key.
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-    ..init(Pbkdf2Parameters(salt, 100000, 32));
-  final masterKey = enc.Key(
-    derivator.process(Uint8List.fromList(utf8.encode(payload.masterPassword))),
+    ..init(Pbkdf2Parameters(salt, 100000, 64));
+  final derivedKey = derivator.process(
+    Uint8List.fromList(utf8.encode(payload.masterPassword)),
   );
 
-  // Decrypt the data key.
-  final encrypter = enc.Encrypter(enc.AES(masterKey));
+  final encryptionKey = enc.Key(derivedKey.sublist(0, 32));
+  final hmacKey = derivedKey.sublist(32, 64);
+
+  // Verify the HMAC signature first.
+  final hmac = crypto.Hmac(crypto.sha256, hmacKey);
+  final authenticatedData = Uint8List.fromList(
+    salt + iv.bytes + encryptedKey.bytes,
+  );
+  final expectedSignature = hmac.convert(authenticatedData).bytes;
+
+  // If the signatures don't match, the password was wrong or data is corrupt.
+  if (!foundation.listEquals(signature, expectedSignature)) {
+    throw Exception(
+      'Authentication failed. Invalid password or corrupted data.',
+    );
+  }
+
+  // If the signature is valid, proceed with decryption.
+  final encrypter = enc.Encrypter(enc.AES(encryptionKey));
   return Uint8List.fromList(encrypter.decryptBytes(encryptedKey, iv: iv));
 }
 
@@ -131,7 +160,13 @@ Uint8List _unwrapKeyIsolate(_KeyUnwrapPayload payload) {
 /// 4. The KEK is then used to "wrap" (encrypt) the DEK, which can be safely
 ///    stored in the cloud. The KEK is never stored.
 class EncryptionService {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  /// Creates an instance of the EncryptionService.
+  /// An optional [secureStorage] instance can be provided for testing purposes.
+  EncryptionService({
+    FlutterSecureStorage? secureStorage,
+  }) : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+
+  final FlutterSecureStorage _secureStorage;
   static const String _keyStorageIdentifier =
       AppConstants.encryptionKeyIdentifier;
 

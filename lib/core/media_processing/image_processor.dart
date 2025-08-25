@@ -1,5 +1,5 @@
-import 'dart:io';
-
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ThemeData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -121,6 +121,17 @@ final imageProcessorProvider = Provider<ImageProcessor>((ref) {
 /// isolates to prevent blocking the UI thread,
 /// ensuring the app remains responsive.
 class ImageProcessor {
+  /// Creates an instance of [ImageProcessor].
+  /// An optional [imageCropper] instance can be provided for testing purposes.
+  ImageProcessor({
+    ImageCropper? imageCropper,
+    FileSystem? fileSystem,
+  }) : _imageCropper = imageCropper ?? ImageCropper(),
+       _fileSystem = fileSystem ?? const LocalFileSystem();
+
+  final ImageCropper _imageCropper;
+  final FileSystem _fileSystem;
+
   /// Resizes an image to the specified dimensions.
   ///
   /// This operation is performed in an isolate to avoid UI jank.
@@ -139,7 +150,7 @@ class ImageProcessor {
   /// Compresses an image to reduce its file size using JPEG compression.
   Future<Uint8List> compressImage({
     required Uint8List imageBytes,
-    int quality = 85,
+    int quality = 100,
   }) async {
     final clampedQuality = quality.clamp(0, 100);
     return compute(
@@ -163,18 +174,17 @@ class ImageProcessor {
   /// Opens a native user interface for cropping an image.
   ///
   /// Returns the cropped image bytes, or null if the user cancels.
+  /// Opens a native user interface for cropping an image.
   Future<Uint8List?> crop({
     required Uint8List imageBytes,
     required ThemeData theme,
   }) async {
-    // The image_cropper package requires a file path,
-    // so we write to a temporary file.
     final tempDir = await getTemporaryDirectory();
     final tempPath = '${tempDir.path}/temp_crop_image.jpg';
-    final file = await File(tempPath).writeAsBytes(imageBytes);
+    final file = await _fileSystem.file(tempPath).writeAsBytes(imageBytes);
     final colorScheme = theme.colorScheme;
 
-    final croppedFile = await ImageCropper().cropImage(
+    final croppedFile = await _imageCropper.cropImage(
       sourcePath: file.path,
       uiSettings: [
         AndroidUiSettings(
@@ -186,15 +196,14 @@ class ImageProcessor {
           activeControlsWidgetColor: colorScheme.secondary,
           lockAspectRatio: false,
         ),
-        // Add IOSUiSettings here for iOS-specific styling.
       ],
     );
 
-    // Clean up the temporary file.
     await file.delete();
 
     if (croppedFile != null) {
-      return croppedFile.readAsBytes();
+      // THE FIX: Use the injected file system to read the cropped file.
+      return _fileSystem.file(croppedFile.path).readAsBytes();
     }
 
     return null;

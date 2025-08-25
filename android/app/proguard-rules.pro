@@ -2,6 +2,7 @@
 -keep class org.bouncycastle.** { *; }
 
 # Keep iText crypto classes
+-keep class com.artifex.mupdf.** { *; }
 -keep class com.itextpdf.text.pdf.crypto.** { *; }
 -keep class com.itextpdf.text.pdf.PdfEncryptor { *; }
 -keep class com.yalantis.ucrop.** { *; }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -9,10 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 
 /// A tuple representing the result of processing a picked file.
-///
-/// The first element is the [PickedFileModel] itself, which may be null if
-/// processing fails. The second is a boolean indicating whether the file
-/// was converted from an unsupported format to a supported one.
 typedef ProcessedFileResult = (PickedFileModel?, bool wasConverted);
 
 /// Provides an instance of [FilePickerService] for dependency injection.
@@ -21,16 +15,17 @@ final filePickerServiceProvider = Provider<FilePickerService>((ref) {
 });
 
 /// A service that handles file and image selection from the device.
-///
-/// This class abstracts the functionality of `image_picker` and `file_picker`,
-/// providing a unified interface for picking images and PDFs. It also includes
-/// logic to handle and convert unsupported image formats to ensure they can be
-/// processed by the application.
 class FilePickerService {
-  final ImagePicker _imagePicker = ImagePicker();
-  final FilePicker _filePicker = FilePicker.platform;
+  /// Creates an instance of [FilePickerService].
+  FilePickerService({
+    ImagePicker? imagePicker,
+    FilePicker? filePicker,
+  }) : _imagePicker = imagePicker ?? ImagePicker(),
+       _filePicker = filePicker ?? FilePicker.platform;
 
-  /// A set of image file extensions that the `image` package can decode.
+  final ImagePicker _imagePicker;
+  final FilePicker _filePicker;
+
   static const Set<String> _decodableFormats = {
     '.jpg',
     '.jpeg',
@@ -50,22 +45,20 @@ class FilePickerService {
   Future<ProcessedFileResult> _processPickedFile(XFile file) async {
     try {
       final fileExtension = p.extension(file.path).toLowerCase();
-      Uint8List imageBytes;
+      final imageBytes = await file.readAsBytes();
       var finalFileName = file.name;
       var wasConverted = false;
+      Uint8List processedBytes;
 
       if (_decodableFormats.contains(fileExtension)) {
-        imageBytes = await file.readAsBytes();
+        processedBytes = imageBytes;
       } else {
-        // If the format is not supported by the
-        // image library, convert it to JPG.
         debugPrint(
           'Unsupported format "$fileExtension" detected. Converting to JPG...',
         );
-        final originalBytes = await file.readAsBytes();
-        imageBytes = await FlutterImageCompress.compressWithList(
-          originalBytes,
-          quality: 100, // Use high quality for conversion
+        processedBytes = await FlutterImageCompress.compressWithList(
+          imageBytes,
+          quality: 100,
         );
         finalFileName = '${p.basenameWithoutExtension(file.path)}.jpg';
         wasConverted = true;
@@ -73,7 +66,7 @@ class FilePickerService {
 
       return (
         PickedFileModel(
-          bytes: imageBytes,
+          bytes: processedBytes,
           name: finalFileName,
           path: file.path,
         ),
@@ -87,12 +80,10 @@ class FilePickerService {
     }
   }
 
-  /// Sanitizes an image for PDF embedding by
-  /// converting it to a standard format.
+  /// Sanitizes an image for PDF embedding.
   Future<PickedFileModel?> _processAndSanitizeFileForPdf(XFile file) async {
     try {
       final originalBytes = await file.readAsBytes();
-      // Compress with default settings to standardize the image.
       final sanitizedBytes = await FlutterImageCompress.compressWithList(
         originalBytes,
       );
@@ -109,9 +100,6 @@ class FilePickerService {
   }
 
   /// Picks a single image from the device gallery.
-  ///
-  /// After picking, it processes the image to ensure it's in a usable format,
-  /// converting it if necessary. Returns a [ProcessedFileResult].
   Future<ProcessedFileResult> pickImage() async {
     try {
       final pickedFile = await _imagePicker.pickImage(
@@ -128,9 +116,6 @@ class FilePickerService {
   }
 
   /// Picks multiple images from the device gallery.
-  ///
-  /// Each selected image is processed concurrently.
-  /// Returns a list of [ProcessedFileResult].
   Future<List<ProcessedFileResult>> pickMultipleImages() async {
     try {
       final pickedFiles = await _imagePicker.pickMultiImage();
@@ -144,23 +129,18 @@ class FilePickerService {
   }
 
   /// Picks a single PDF file from the device.
-  ///
-  /// Returns a [PickedFileModel] containing the
-  /// PDF data, or null if the user cancels.
   Future<PickedFileModel?> pickPdf() async {
     try {
       final result = await _filePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null && result.files.single.bytes != null) {
         final platformFile = result.files.single;
-        final file = File(platformFile.path!);
-        final bytes = await file.readAsBytes();
-
         return PickedFileModel(
-          bytes: bytes,
+          bytes: platformFile.bytes,
           name: platformFile.name,
           path: platformFile.path,
         );
@@ -172,9 +152,6 @@ class FilePickerService {
   }
 
   /// Picks multiple images and prepares them for PDF conversion.
-  ///
-  /// This method ensures all selected images are in a format suitable
-  /// for embedding in a PDF by standardizing them.
   Future<List<PickedFileModel>> pickAndSanitizeMultipleImagesForPdf() async {
     try {
       final pickedFiles = await _imagePicker.pickMultiImage();
@@ -182,7 +159,6 @@ class FilePickerService {
         final results = await Future.wait(
           pickedFiles.map(_processAndSanitizeFileForPdf),
         );
-        // Filter out any files that failed to process.
         return results.whereType<PickedFileModel>().toList();
       }
     } on Exception catch (e) {

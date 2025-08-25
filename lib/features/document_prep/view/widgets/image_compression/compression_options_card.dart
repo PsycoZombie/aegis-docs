@@ -1,10 +1,11 @@
+import 'dart:math';
+
 import 'package:aegis_docs/features/document_prep/providers/image_compression_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// A card containing the user-configurable options for image compression.
-class CompressionOptionsCard extends ConsumerStatefulWidget {
+class CompressionOptionsCard extends ConsumerWidget {
   /// Creates an instance of [CompressionOptionsCard].
   const CompressionOptionsCard({
     required this.state,
@@ -27,40 +28,14 @@ class CompressionOptionsCard extends ConsumerStatefulWidget {
   final VoidCallback onSave;
 
   @override
-  ConsumerState<CompressionOptionsCard> createState() =>
-      _CompressionOptionsCardState();
-}
-
-class _CompressionOptionsCardState
-    extends ConsumerState<CompressionOptionsCard> {
-  late final TextEditingController _targetSizeController;
-
-  @override
-  void initState() {
-    super.initState();
-    _targetSizeController = TextEditingController(
-      text: widget.state.targetSizeKB.toString(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Define the min and max for the slider.
+    const double minSize = 50;
+    final double maxSize = max(
+      minSize,
+      state.originalImage!.bytes!.lengthInBytes / 1024,
     );
-  }
 
-  @override
-  void didUpdateWidget(CompressionOptionsCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Sync the controller's text if the state from the provider changes,
-    // for example, when a new image is loaded.
-    if (widget.state.targetSizeKB.toString() != _targetSizeController.text) {
-      _targetSizeController.text = widget.state.targetSizeKB.toString();
-    }
-  }
-
-  @override
-  void dispose() {
-    _targetSizeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -73,27 +48,39 @@ class _CompressionOptionsCardState
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: 120,
-              child: TextFormField(
-                controller: _targetSizeController,
-                enabled: !widget.isProcessing,
-                decoration: const InputDecoration(
-                  labelText: 'Target Size',
-                  suffixText: 'KB',
-                  border: OutlineInputBorder(),
+
+            // Text display for the current slider value
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Target Size:', style: TextStyle(fontSize: 16)),
+                Text(
+                  '${state.targetSizeKB} KB',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                onFieldSubmitted: (value) {
-                  final size = int.tryParse(value);
-                  if (size != null) {
-                    widget.notifier.setTargetSize(size);
-                  }
-                },
-              ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+
+            // Slider to control the target compression size
+            Slider(
+              value: state.targetSizeKB.toDouble().clamp(minSize, maxSize),
+              min: minSize,
+              max: maxSize, // Steps of 10 KB
+              label: '${state.targetSizeKB} KB',
+              onChanged: isProcessing
+                  ? null // Disable the slider while processing
+                  : (double value) {
+                      notifier.setTargetSize(value.round());
+                    },
+            ),
+            const SizedBox(height: 16),
+
+            // Action buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -101,23 +88,21 @@ class _CompressionOptionsCardState
                   style: OutlinedButton.styleFrom(
                     textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  icon: widget.isProcessing
+                  icon: isProcessing
                       ? const SizedBox.square(
                           dimension: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.compress),
                   label: const Text('Compress'),
-                  onPressed: widget.isProcessing
-                      ? null
-                      : widget.notifier.compressImage,
+                  onPressed: isProcessing ? null : notifier.compressImage,
                 ),
                 // Only show the save button after a compression has occurred.
-                if (widget.state.compressedImage != null)
+                if (state.compressedImage != null)
                   FilledButton.icon(
                     icon: const Icon(Icons.save_alt_outlined),
                     label: const Text('Save'),
-                    onPressed: widget.isProcessing ? null : widget.onSave,
+                    onPressed: isProcessing ? null : onSave,
                   ),
               ],
             ),

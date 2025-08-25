@@ -1,51 +1,170 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:aegis_docs/core/services/encryption_service.dart'; // Adjust this import path to match your project structure
-import 'package:flutter/foundation.dart';
+import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+
+// This annotation tells the build_runner to generate
+// a mock class for FlutterSecureStorage.
+@GenerateMocks([FlutterSecureStorage])
+import 'encryption_service_test.mocks.dart';
 
 void main() {
-  // This group bundles all tests related to the EncryptionService.
-  group('EncryptionService Tests', () {
-    late EncryptionService encryptionService;
+  // We declare the variables that will be used across multiple tests.
+  late EncryptionService encryptionService;
+  late MockFlutterSecureStorage mockSecureStorage;
 
-    // This setup code runs before each test.
-    setUpAll(() async {
-      // We must mock the platform-specific implementation of
-      // flutter_secure_storage
-      // for tests to run in a pure Dart environment.
-      FlutterSecureStorage.setMockInitialValues({});
+  // The setUp function is called before each individual test runs.
+  // This ensures that each test starts with a
+  // fresh, clean instance of our service.
+  setUp(() {
+    mockSecureStorage = MockFlutterSecureStorage();
+    // We inject the mock dependency into our service.
+    // Note: We need to modify the EncryptionService to allow this injection.
+    encryptionService = EncryptionService(secureStorage: mockSecureStorage);
+  });
 
-      // Create and initialize the service.
-      encryptionService = EncryptionService();
+  // A group is a way to organize related tests.
+  group('Encryption Key Management', () {
+    test(
+      'should create and save a new key when no key exists in secure storage',
+      () async {
+        // Arrange: Set up the conditions for the test.
+        // We tell the mock to return null when 'read' is called,
+        // simulating an empty storage.
+        when(
+          mockSecureStorage.read(key: AppConstants.encryptionKeyIdentifier),
+        ).thenAnswer((_) async => null);
+        // We also set up the mock for the 'write' call
+        // that we expect to happen.
+        when(
+          mockSecureStorage.write(
+            key: anyNamed('key'),
+            value: anyNamed('value'),
+          ),
+        ).thenAnswer((_) async {
+          return;
+        });
+
+        // Act: Call the method we want to test.
+        await encryptionService.init();
+
+        // Assert: Verify that the expected outcomes occurred.
+        // We verify that the 'write' method was called
+        // exactly once with the correct key.
+        verify(
+          mockSecureStorage.write(
+            key: AppConstants.encryptionKeyIdentifier,
+            value: anyNamed('value'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('should load an existing key from secure storage', () async {
+      // Arrange: Set up a fake key to be "loaded".
+      final fakeKey = base64Encode(Uint8List(32));
+      when(
+        mockSecureStorage.read(key: AppConstants.encryptionKeyIdentifier),
+      ).thenAnswer((_) async => fakeKey);
+
+      // Act
       await encryptionService.init();
+
+      // Assert: Verify that the 'write' method was
+      // NEVER called, because the key already existed.
+      verifyNever(
+        mockSecureStorage.write(
+          key: anyNamed('key'),
+          value: anyNamed('value'),
+        ),
+      );
+    });
+  });
+
+  group('Data Encryption and Decryption', () {
+    test('should correctly encrypt and then decrypt data', () async {
+      // Arrange
+      final testData = Uint8List.fromList('Hello, Aegis Docs!'.codeUnits);
+      final fakeKey = base64Encode(Uint8List(32));
+      when(
+        mockSecureStorage.read(key: AppConstants.encryptionKeyIdentifier),
+      ).thenAnswer((_) async => fakeKey);
+
+      // Act
+      final encryptedData = await encryptionService.encrypt(testData);
+      final decryptedData = await encryptionService.decrypt(encryptedData);
+
+      // Assert: The decrypted data should be identical to the original data.
+      expect(decryptedData, equals(testData));
+      // Also, the encrypted data should NOT be the same as the original.
+      expect(encryptedData, isNot(equals(testData)));
+    });
+  });
+
+  group('Key Wrapping and Unwrapping for Backup', () {
+    test('should wrap and then unwrap the data key successfully', () async {
+      // Arrange
+      const masterPassword = 'secure_password_123';
+      final fakeKey = base64Encode(Uint8List(32));
+      when(
+        mockSecureStorage.read(key: AppConstants.encryptionKeyIdentifier),
+      ).thenAnswer((_) async => fakeKey);
+      when(
+        mockSecureStorage.write(key: anyNamed('key'), value: anyNamed('value')),
+      ).thenAnswer((_) async {
+        return;
+      });
+
+      // Act
+      final wrappedKeyData = await encryptionService
+          .getEncryptedDataKeyForBackup(masterPassword);
+      await encryptionService.restoreDataKeyFromBackup(
+        masterPassword,
+        wrappedKeyData,
+      );
+
+      // Assert
+      // We verify that the 'write' method was called,
+      // which means a key was successfully
+      // unwrapped and is being saved back to storage.
+      verify(
+        mockSecureStorage.write(
+          key: AppConstants.encryptionKeyIdentifier,
+          value: anyNamed('value'),
+        ),
+      ).called(1);
     });
 
     test(
-      'should encrypt and decrypt data successfully (round-trip test)',
+      'should fail to unwrap the data key with an incorrect password',
       () async {
-        // 1. Arrange: Define the original data we want to protect.
-        const originalString = 'This is a top secret document!';
-        final originalData = Uint8List.fromList(utf8.encode(originalString));
+        // Arrange
+        const correctPassword = 'secure_password_123';
+        const wrongPassword = 'wrong_password';
+        final fakeKey = base64Encode(Uint8List(32));
+        when(
+          mockSecureStorage.read(key: AppConstants.encryptionKeyIdentifier),
+        ).thenAnswer((_) async => fakeKey);
 
-        // 2. Act: Perform the encryption and decryption.
-        final encryptedBase64 = await encryptionService.encrypt(originalData);
-        final decryptedData = await encryptionService.decrypt(encryptedBase64);
+        // Act
+        final wrappedKeyData = await encryptionService
+            .getEncryptedDataKeyForBackup(correctPassword);
 
-        // 3. Assert: Check that the decrypted data is identical to the original
-        // We also check that the encrypted data is not the same as the original
-        expect(decryptedData, equals(originalData));
-        expect(encryptedBase64, isNot(equals(originalString)));
-
-        // You can also decode it back to a string to be sure.
-        final finalString = utf8.decode(decryptedData);
-        expect(finalString, equals(originalString));
-
-        debugPrint('Original data: "$originalString"');
-        debugPrint('Encrypted (Base64): "$encryptedBase64"');
-        debugPrint('Decrypted data: "$finalString"');
-        debugPrint('✅ Round-trip test successful!');
+        // Assert: We expect that calling
+        // restoreDataKeyFromBackup with the wrong
+        // password will throw an exception.
+        expect(
+          () => encryptionService.restoreDataKeyFromBackup(
+            wrongPassword,
+            wrappedKeyData,
+          ),
+          throwsA(isA<Exception>()),
+        );
       },
     );
   });

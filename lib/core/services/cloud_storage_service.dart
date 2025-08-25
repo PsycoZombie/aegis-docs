@@ -15,47 +15,46 @@ final cloudStorageServiceProvider = Provider<CloudStorageService>((ref) {
   return CloudStorageService();
 });
 
-/// A service for handling backup and restore ops with
-/// Google Drive's AppData folder.
-///
-/// The AppData folder is private to the app and secure for user data backups.
+/// A service for handling backup and restore ops
+/// with Google Drive's AppData folder.
 class CloudStorageService {
   /// Creates an instance of the cloud storage service.
-  ///
-  /// Requires the [serverClientId] for Google Sign-In.
-  CloudStorageService();
+  /// Optional [driveApi] and [googleSignIn] can be
+  /// provided for testing purposes.
+  CloudStorageService({
+    drive.DriveApi? driveApi,
+    GoogleSignIn? googleSignIn,
+  }) : _driveApi = driveApi,
+       _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+
+  final drive.DriveApi? _driveApi;
+  final GoogleSignIn _googleSignIn;
 
   /// The OAuth 2.0 Web Client ID from the Google Cloud project.
   final String serverClientId = AppSecrets.googleServerClientId;
-
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-
-  /// The required scope for accessing the private Google Drive AppData folder.
   static const List<String> _driveScope = [drive.DriveApi.driveAppdataScope];
 
-  /// Authenticates the user with Google and returns an
-  /// authorized Drive API client.
-  ///
-  /// This method contains the authentication flow required
-  /// for google_sign_in v7+.
-  /// It manually constructs the credentials to create an authenticated client.
-  /// Returns null if authentication fails or is cancelled.
+  /// Gets a DriveApi instance. In tests, returns the injected mock.
+  /// In production, it initiates the full Google Sign-In flow.
   Future<drive.DriveApi?> _getDriveApi() async {
+    if (_driveApi != null) return _driveApi; // Return the mock if it exists
+    return _getDriveApiFromSignIn(); // Proceed with real sign-in otherwise
+  }
+
+  /// Authenticates the user with Google and returns
+  /// an authorized Drive API client.
+  Future<drive.DriveApi?> _getDriveApiFromSignIn() async {
     try {
-      // It's crucial that the serverClientId is not null or empty.
       if (serverClientId.isEmpty) {
         debugPrint('Error: Google Server Client ID is not configured.');
         return null;
       }
 
       await _googleSignIn.initialize(serverClientId: serverClientId);
-
-      // Authenticate the user, hinting at the required Drive scope.
       final googleUser = await _googleSignIn.authenticate(
         scopeHint: _driveScope,
       );
 
-      // Ensure the necessary scopes have been authorized.
       final authz = await googleUser.authorizationClient.authorizationForScopes(
         _driveScope,
       );
@@ -63,8 +62,6 @@ class CloudStorageService {
         await googleUser.authorizationClient.authorizeScopes(_driveScope);
       }
 
-      // Manually construct the authenticated client as
-      // required by the newer API.
       final headers = await googleUser.authorizationClient.authorizationHeaders(
         _driveScope,
       );
@@ -84,41 +81,30 @@ class CloudStorageService {
       return drive.DriveApi(httpClient);
     } on Exception catch (e) {
       debugPrint('Error getting Drive API client: $e');
-      // Sign out to clear any corrupted authentication state.
       await _googleSignIn.signOut();
       return null;
     }
   }
 
   /// Deletes a backup file from the Google Drive AppData folder.
-  ///
-  /// Returns:
-  /// - `true` if the file was found and deleted successfully.
-  /// - `null` if no backup file was found.
-  /// - `false` if an error occurred during deletion.
   Future<bool?> deleteBackup(String fileName) async {
     final driveApi = await _getDriveApi();
-    if (driveApi == null) return false; // Auth or API client error
-
+    if (driveApi == null) return false;
     try {
       final existingFiles = await driveApi.files.list(
         spaces: AppConstants.keyAppDataFolder,
         q: "name = '$fileName'",
       );
-
       if (existingFiles.files != null && existingFiles.files!.isNotEmpty) {
         final fileId = existingFiles.files!.first.id!;
-        debugPrint('Deleting backup file...');
         await driveApi.files.delete(fileId);
-        debugPrint('Backup delete complete.');
-        return true; // Success
+        return true;
       } else {
-        debugPrint('No backup file found to delete.');
-        return null; // Not found
+        return null;
       }
     } on Exception catch (e) {
       debugPrint('Error deleting backup: $e');
-      return false; // Error
+      return false;
     }
   }
 
@@ -137,9 +123,9 @@ class CloudStorageService {
       );
 
       if (existingFiles.files != null && existingFiles.files!.isNotEmpty) {
-        final fileId = existingFiles.files!.first.id!;
+        final fileId = existingFiles.files!.first.id;
         debugPrint('Updating existing backup file...');
-        await driveApi.files.update(drive.File(), fileId, uploadMedia: media);
+        await driveApi.files.update(drive.File(), fileId!, uploadMedia: media);
       } else {
         debugPrint('Creating new backup file...');
         final createFile = drive.File()
@@ -172,11 +158,11 @@ class CloudStorageService {
         return null;
       }
 
-      final fileId = existingFiles.files!.first.id!;
+      final fileId = existingFiles.files!.first.id;
       debugPrint('Downloading backup file...');
       final response =
           await driveApi.files.get(
-                fileId,
+                fileId!,
                 downloadOptions: drive.DownloadOptions.fullMedia,
               )
               as drive.Media;
