@@ -37,15 +37,14 @@ class AppConstants {
   static const String routeHome = '/home';
   static const String routeDocumentDetail = '/document/:fileName';
   static const String routeSettings = '/settings';
-  static const String routeHub = '/hub';
-  static const String routeResize = '/hub/resize';
-  static const String routeCompress = '/hub/compress';
-  static const String routeEdit = '/hub/edit';
-  static const String routeImageFormat = '/hub/image-format';
-  static const String routeImagesToPdf = '/hub/images-to-pdf';
-  static const String routePdfToImages = '/hub/pdf-to-images';
-  static const String routePdfCompression = '/hub/pdf-compression';
-  static const String routePdfSecurity = '/hub/pdf-security';
+  static const String routeResize = '/resize';
+  static const String routeCompress = '/compress';
+  static const String routeEdit = '/edit';
+  static const String routeImageFormat = '/image-format';
+  static const String routeImagesToPdf = '/images-to-pdf';
+  static const String routePdfToImages = '/pdf-to-images';
+  static const String routePdfCompression = '/pdf-compression';
+  static const String routePdfSecurity = '/pdf-security';
 
   // --- Method Channel Keys --- //
   static const String keyTheme = 'appTheme';

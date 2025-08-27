@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:aegis_docs/data/repositories/document_repository.dart';
@@ -7,7 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import '../../auth/home/providers/home_provider_test.mocks.dart';
+// Import the generated mock file.
+import 'settings_provider_test.mocks.dart';
 
 // This annotation tells build_runner to generate a mock for DocumentRepository.
 @GenerateMocks([DocumentRepository])
@@ -56,12 +58,16 @@ void main() {
       },
     );
 
-    test('downloadBackup should return data on success', () async {
+    test('downloadBackup should return a File on success', () async {
       // Arrange
-      final mockBytes = Uint8List.fromList([1, 2, 3]);
+      // Create a temporary file to be returned by the mock.
+      final tempDir = await Directory.systemTemp.createTemp();
+      final mockFile = File('${tempDir.path}/test.zip');
+      await mockFile.writeAsBytes(Uint8List.fromList([1, 2, 3]));
+
       when(
         mockDocumentRepository.downloadBackupFromDrive(),
-      ).thenAnswer((_) async => mockBytes);
+      ).thenAnswer((_) async => mockFile);
       final container = createContainer();
       final notifier = container.read(settingsViewModelProvider.notifier);
 
@@ -69,8 +75,17 @@ void main() {
       final result = await notifier.downloadBackup();
 
       // Assert
-      expect(result, equals(mockBytes));
+      // Verify that the result is a File object
+      // and that its content is correct.
+      expect(result, isA<File>());
+      expect(
+        await result?.readAsBytes(),
+        equals(Uint8List.fromList([1, 2, 3])),
+      );
       verify(mockDocumentRepository.downloadBackupFromDrive()).called(1);
+
+      // Clean up the temporary file.
+      await tempDir.delete(recursive: true);
     });
 
     test(

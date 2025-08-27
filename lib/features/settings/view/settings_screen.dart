@@ -4,6 +4,7 @@ import 'package:aegis_docs/core/services/settings_service.dart';
 import 'package:aegis_docs/features/settings/providers/settings_provider.dart';
 import 'package:aegis_docs/features/settings/view/master_password_screen.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -192,12 +193,15 @@ class SettingsScreen extends ConsumerWidget {
           onSubmit: (password) async {
             final success = await notifier.backupWallet(password);
             if (context.mounted) {
-              _showFeedbackSnackbar(
-                context,
-                !success,
-                'Backup successful!',
-                'Backup failed. Please try again.',
-              );
+              if (success) {
+                showToast(context, 'Backup successful!');
+              } else {
+                showToast(
+                  context,
+                  'Backup failed. Please try again.',
+                  type: ToastType.error,
+                );
+              }
               if (success) Navigator.of(context).pop();
             }
             return success;
@@ -215,22 +219,18 @@ class SettingsScreen extends ConsumerWidget {
   ) async {
     final backupBytes = await notifier.downloadBackup();
     if (backupBytes == null && context.mounted) {
-      _showFeedbackSnackbar(
+      showToast(
         context,
-        true,
-        '',
         'No backup found on Google Drive.',
+        type: ToastType.error,
       );
-      return;
     }
 
     if (backupBytes != null && context.mounted) {
-      _showFeedbackSnackbar(
+      showToast(
         context,
-        false,
         'Backup found! Please enter your password to restore.',
-        '',
-        color: Colors.blue,
+        type: ToastType.info,
       );
 
       await Navigator.of(context).push(
@@ -244,12 +244,15 @@ class SettingsScreen extends ConsumerWidget {
                 password,
               );
               if (context.mounted) {
-                _showFeedbackSnackbar(
-                  context,
-                  !success,
-                  'Restore successful!',
-                  'Restore failed. Please check your password.',
-                );
+                if (success) {
+                  showToast(context, 'Restore successful!');
+                } else {
+                  showToast(
+                    context,
+                    'Restore failed. Please check your password.',
+                    type: ToastType.error,
+                  );
+                }
               }
               return success;
             },
@@ -294,26 +297,18 @@ class SettingsScreen extends ConsumerWidget {
                 if (context.mounted) {
                   switch (result) {
                     case DeleteBackupResult.success:
-                      _showFeedbackSnackbar(
-                        context,
-                        false,
-                        'Cloud backup deleted successfully!',
-                        '',
-                      );
+                      showToast(context, 'Cloud backup deleted successfully!');
                     case DeleteBackupResult.notFound:
-                      _showFeedbackSnackbar(
+                      showToast(
                         context,
-                        true,
-                        '',
                         'No cloud backup found to delete.',
-                        color: Colors.orange,
+                        type: ToastType.warning,
                       );
                     case DeleteBackupResult.error:
-                      _showFeedbackSnackbar(
+                      showToast(
                         context,
-                        true,
-                        '',
-                        'Failed to delete backup. Please try again.',
+                        'Failed to delete backup.',
+                        type: ToastType.error,
                       );
                   }
                 }
@@ -321,22 +316,6 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  /// A helper to show a consistent SnackBar for feedback.
-  void _showFeedbackSnackbar(
-    BuildContext context,
-    bool isError,
-    String successMessage,
-    String errorMessage, {
-    Color? color,
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(isError ? errorMessage : successMessage),
-        backgroundColor: color ?? (isError ? Colors.red : Colors.green),
       ),
     );
   }

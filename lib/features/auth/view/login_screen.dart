@@ -1,12 +1,13 @@
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// A widget that listens to the [localAuthProvider] for state changes
-/// and shows a [SnackBar] when an error occurs.
+/// and shows a Toast when an error occurs.
 ///
-/// This separates side-effect logic (like showing dialogs or snackbars)
+/// This separates side-effect logic (like showing dialogs or Toast)
 /// from the main UI layout.
 class AuthStateListener extends ConsumerWidget {
   /// Creates an [AuthStateListener].
@@ -22,17 +23,10 @@ class AuthStateListener extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen<AuthState>(localAuthProvider, (previous, next) {
       if (next == AuthState.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            content: Text(
-              'Authentication Failed. Please try again.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onErrorContainer,
-              ),
-            ),
-          ),
+        showToast(
+          context,
+          'Authentication Failed. Please try again.',
+          type: ToastType.error,
         );
       }
     });

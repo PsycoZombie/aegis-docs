@@ -253,7 +253,7 @@ class MockDocumentRepository extends _i1.Mock
   @override
   _i3.Future<_i5.Uint8List> compressImage(
     _i5.Uint8List? imageBytes, {
-    int? quality = 100,
+    int? quality = 85,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -391,12 +391,12 @@ class MockDocumentRepository extends _i1.Mock
           as _i3.Future<bool?>);
 
   @override
-  _i3.Future<_i5.Uint8List?> downloadBackupFromDrive() =>
+  _i3.Future<_i4.File?> downloadBackupFromDrive() =>
       (super.noSuchMethod(
             Invocation.method(#downloadBackupFromDrive, []),
-            returnValue: _i3.Future<_i5.Uint8List?>.value(),
+            returnValue: _i3.Future<_i4.File?>.value(),
           )
-          as _i3.Future<_i5.Uint8List?>);
+          as _i3.Future<_i4.File?>);
 
   @override
   _i3.Future<void> backupWalletToDrive(String? masterPassword) =>
@@ -409,12 +409,12 @@ class MockDocumentRepository extends _i1.Mock
 
   @override
   _i3.Future<void> restoreWalletFromBackupData({
-    required _i5.Uint8List? backupBytes,
+    required _i4.File? backupFile,
     required String? masterPassword,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#restoreWalletFromBackupData, [], {
-              #backupBytes: backupBytes,
+              #backupFile: backupFile,
               #masterPassword: masterPassword,
             }),
             returnValue: _i3.Future<void>.value(),

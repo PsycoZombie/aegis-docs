@@ -202,7 +202,7 @@ class ImageProcessor {
     await file.delete();
 
     if (croppedFile != null) {
-      // THE FIX: Use the injected file system to read the cropped file.
+      // Use the injected file system to read the cropped file.
       return _fileSystem.file(croppedFile.path).readAsBytes();
     }
 

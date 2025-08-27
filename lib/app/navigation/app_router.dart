@@ -1,7 +1,6 @@
 import 'package:aegis_docs/app/config/app_constants.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/auth/view/login_screen.dart';
-import 'package:aegis_docs/features/document_prep/view/feature_test_hub_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_compression_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_editing_screen.dart';
 import 'package:aegis_docs/features/document_prep/view/screens/image_format_screen.dart';
@@ -48,11 +47,7 @@ final List<RouteBase> appRoutes = [
     builder: (context, state) => const SettingsScreen(),
   ),
 
-  // --- Document Preparation Hub and Workflows --- //
-  GoRoute(
-    path: AppConstants.routeHub,
-    builder: (context, state) => const FeatureTestHubScreen(),
-  ),
+  // --- Document Workflows --- //
   GoRoute(
     path: AppConstants.routeResize,
     builder: (context, state) {

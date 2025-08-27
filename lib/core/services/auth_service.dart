@@ -31,8 +31,7 @@ class AuthService {
   /// biometrics (e.g., fingerprint, face ID)
   /// or the device passcode.
   ///
-  // ignore: comment_references
-  /// The [stickyAuth] option keeps the authentication
+  /// The stickyAuth option keeps the authentication
   ///  dialog open on app resume.
   /// Returns `true` if the user successfully authenticates, otherwise `false`.
   /// Returns `false` if a [PlatformException] occurs (e.g., user cancels).

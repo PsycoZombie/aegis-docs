@@ -1,5 +1,6 @@
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/shared_widgets/rename_dialog.dart';
+import 'package:aegis_docs/shared_widgets/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
@@ -81,17 +82,17 @@ void showContextMenu(
           p.basename(path),
         );
         if (context.mounted) {
-          _showFeedbackSnackbar(
-            context,
-            errorMessage,
-            'File exported successfully!',
-          );
+          if (errorMessage != null) {
+            showToast(context, errorMessage, type: ToastType.error);
+          } else {
+            showToast(context, 'File exported successfully!');
+          }
         }
       case 'share':
         // The UI layer handles the feedback from the view model.
         final errorMessage = await homeNotifier.shareDocument(p.basename(path));
         if (context.mounted && errorMessage != null) {
-          _showFeedbackSnackbar(context, errorMessage, '');
+          showToast(context, errorMessage, type: ToastType.error);
         }
     }
   });
@@ -157,18 +158,4 @@ Future<void> _handleDelete(
   if (confirmed ?? false) {
     await notifier.deleteItem(path, isFolder: isFolder);
   }
-}
-
-/// A helper function to show a success or error SnackBar.
-void _showFeedbackSnackbar(
-  BuildContext context,
-  String? error,
-  String successMessage,
-) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(error ?? successMessage),
-      backgroundColor: error != null ? Colors.red : Colors.green,
-    ),
-  );
 }

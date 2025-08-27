@@ -6,6 +6,7 @@ import 'package:aegis_docs/features/document_prep/view/widgets/images_to_pdf/reo
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
+import 'package:aegis_docs/shared_widgets/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -92,12 +93,7 @@ class ImagesToPdfScreen extends ConsumerWidget {
                 folderPath: saveResult.folderPath,
               );
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('PDF saved successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                showToast(context, 'PDF saved successfully!');
                 ref.invalidate(walletViewModelProvider);
                 context.pop();
               }

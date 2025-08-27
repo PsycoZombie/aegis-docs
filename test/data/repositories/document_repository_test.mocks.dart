@@ -295,21 +295,21 @@ class MockCloudStorageService extends _i1.Mock
           as _i4.Future<bool?>);
 
   @override
-  _i4.Future<void> uploadBackup(_i7.Uint8List? data, String? fileName) =>
+  _i4.Future<void> uploadBackup(_i2.File? backupFile, String? fileName) =>
       (super.noSuchMethod(
-            Invocation.method(#uploadBackup, [data, fileName]),
+            Invocation.method(#uploadBackup, [backupFile, fileName]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )
           as _i4.Future<void>);
 
   @override
-  _i4.Future<_i7.Uint8List?> downloadBackup(String? fileName) =>
+  _i4.Future<_i2.File?> downloadBackup(String? fileName) =>
       (super.noSuchMethod(
             Invocation.method(#downloadBackup, [fileName]),
-            returnValue: _i4.Future<_i7.Uint8List?>.value(),
+            returnValue: _i4.Future<_i2.File?>.value(),
           )
-          as _i4.Future<_i7.Uint8List?>);
+          as _i4.Future<_i2.File?>);
 }
 
 /// A class which mocks [EncryptionService].

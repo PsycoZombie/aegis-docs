@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 /// Provides the single instance of [DocumentRepository]
 /// after all its dependencies,
@@ -38,62 +39,33 @@ final documentRepositoryProvider = FutureProvider<DocumentRepository>((
 
 // --- Isolate Payloads and Entry Points for Backup/Restore --- //
 
-/// A payload for passing backup parameters to a separate isolate.
-class _BackupPayload {
-  _BackupPayload(this.walletPath, this.keyJson);
-  final String walletPath;
-  final String keyJson;
-}
-
 /// A payload for passing restore parameters to a separate isolate.
-class _RestorePayload {
-  _RestorePayload(this.zipBytes, this.walletPath);
-  final Uint8List zipBytes;
+class _RestoreFilePayload {
+  _RestoreFilePayload(this.filePath, this.walletPath);
+  final String filePath;
   final String walletPath;
 }
 
-/// Isolate entry point to create a zip archive of the wallet.
-Uint8List _createBackupIsolate(_BackupPayload payload) {
-  final archive = Archive()
-    ..addFile(
-      ArchiveFile(
-        AppConstants.backupKeyFileName,
-        payload.keyJson.length,
-        utf8.encode(payload.keyJson),
-      ),
-    );
+/// Isolate entry point to restore a wallet from a zip archive file.
+void _restoreBackupIsolateFromFile(_RestoreFilePayload payload) {
+  final backupFile = File(payload.filePath);
+  final bytes = backupFile.readAsBytesSync();
+  final archive = ZipDecoder().decodeBytes(bytes);
 
   final walletDir = Directory(payload.walletPath);
-  // Using sync methods is efficient and safe inside an isolate.
-  final files = walletDir.listSync(recursive: true);
-  for (final file in files) {
-    if (file is File) {
-      final relativePath = p.relative(file.path, from: walletDir.path);
-      final fileBytes = file.readAsBytesSync();
-      archive.addFile(ArchiveFile(relativePath, fileBytes.length, fileBytes));
-    }
-  }
-
-  final zipEncoder = ZipEncoder();
-  return Uint8List.fromList(zipEncoder.encode(archive));
-}
-
-/// Isolate entry point to restore a wallet from a zip archive.
-void _restoreBackupIsolate(_RestorePayload payload) {
-  final archive = ZipDecoder().decodeBytes(payload.zipBytes);
-  final walletDir = Directory(payload.walletPath);
-
   if (walletDir.existsSync()) {
     walletDir.deleteSync(recursive: true);
   }
   walletDir.createSync(recursive: true);
 
   for (final file in archive) {
+    final filePath = p.join(walletDir.path, file.name);
     if (file.isFile && file.name != AppConstants.backupKeyFileName) {
-      final filePath = p.join(walletDir.path, file.name);
       final outFile = File(filePath);
       outFile.parent.createSync(recursive: true);
       outFile.writeAsBytesSync(file.content as List<int>);
+    } else if (file.isDirectory) {
+      Directory(filePath).createSync(recursive: true);
     }
   }
 }
@@ -141,8 +113,8 @@ class DocumentRepository {
   Future<List<FileSystemEntity>> listWalletContents({String? folderPath}) =>
       _fileStorageService.listDirectoryContents(folderPath: folderPath);
 
-  /// Lists all encrypted files (non-recursively) in
-  /// the root of the private wallet.
+  /// Lists all encrypted files (non-recursively)
+  /// in the root of the private wallet.
   Future<List<File>> listEncryptedFiles() async {
     return _fileStorageService.listPrivateFiles();
   }
@@ -272,7 +244,7 @@ class DocumentRepository {
   );
 
   /// Compresses an image with the given quality.
-  Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 100}) =>
+  Future<Uint8List> compressImage(Uint8List imageBytes, {int quality = 85}) =>
       _imageProcessor.compressImage(imageBytes: imageBytes, quality: quality);
 
   /// Opens an interactive image cropping UI.
@@ -347,18 +319,17 @@ class DocumentRepository {
   // --- Cloud Backup & Restore --- //
 
   /// Deletes the wallet backup from Google Drive.
-  /// Returns true if deleted, null if not found, false on error.
   Future<bool?> deleteBackupFromDrive() async {
     return _cloudStorageService.deleteBackup(AppConstants.backupFileName);
   }
 
-  /// Downloads the wallet backup from Google Drive.
-  Future<Uint8List?> downloadBackupFromDrive() async {
+  /// Downloads the wallet backup from Google Drive to a temporary file.
+  Future<File?> downloadBackupFromDrive() async {
     return _cloudStorageService.downloadBackup(AppConstants.backupFileName);
   }
 
-  /// Creates a complete, encrypted backup of the wallet
-  /// and uploads it to Google Drive.
+  /// Creates a complete, encrypted backup of
+  /// the wallet and uploads it to Google Drive.
   Future<void> backupWalletToDrive(String masterPassword) async {
     final keyData = await _encryptionService.getEncryptedDataKeyForBackup(
       masterPassword,
@@ -366,24 +337,52 @@ class DocumentRepository {
     final keyJson = jsonEncode(keyData);
     final walletDir = await _fileStorageService.getBaseWalletDirectory();
 
-    final zipBytes = await compute(
-      _createBackupIsolate,
-      _BackupPayload(walletDir.path, keyJson),
-    );
+    // Create a temporary file for the zip archive.
+    final tempDir = await getTemporaryDirectory();
+    final zipFile = File('${tempDir.path}/${AppConstants.backupFileName}');
+    final encoder = ZipFileEncoder()
+      ..create(zipFile.path)
+      // Add the key file.
+      ..addArchiveFile(
+        ArchiveFile(
+          AppConstants.backupKeyFileName,
+          keyJson.length,
+          utf8.encode(keyJson),
+        ),
+      );
 
+    // Add all wallet files and directories.
+    final entities = walletDir.listSync(recursive: true);
+    for (final entity in entities) {
+      final relativePath = p.relative(entity.path, from: walletDir.path);
+      if (entity is File) {
+        await encoder.addFile(entity, relativePath);
+      } else if (entity is Directory) {
+        await encoder.addDirectory(entity);
+      }
+    }
+    await encoder.close();
+
+    // Stream the temporary file to the cloud.
     await _cloudStorageService.uploadBackup(
-      zipBytes,
+      zipFile,
       AppConstants.backupFileName,
     );
+
+    // Clean up the temporary file.
+    await zipFile.delete();
   }
 
-  /// Restores the wallet from a downloaded backup.
+  /// Restores the wallet from a downloaded backup file.
   Future<void> restoreWalletFromBackupData({
-    required Uint8List backupBytes,
+    required File backupFile,
     required String masterPassword,
   }) async {
-    final archive = ZipDecoder().decodeBytes(backupBytes);
+    // Read the backup file into memory and decode it using decodeBytes.
+    final bytes = await backupFile.readAsBytes();
+    final archive = ZipDecoder().decodeBytes(bytes);
     final keyFile = archive.findFile(AppConstants.backupKeyFileName);
+
     if (keyFile == null) {
       throw Exception('Backup is corrupted: key file not found.');
     }
@@ -392,10 +391,11 @@ class DocumentRepository {
     final keyData = jsonDecode(keyJson) as Map<String, dynamic>;
     await _encryptionService.restoreDataKeyFromBackup(masterPassword, keyData);
 
+    // Offload the full file extraction to a separate isolate.
     final walletDir = await _fileStorageService.getBaseWalletDirectory();
     await compute(
-      _restoreBackupIsolate,
-      _RestorePayload(backupBytes, walletDir.path),
+      _restoreBackupIsolateFromFile,
+      _RestoreFilePayload(backupFile.path, walletDir.path),
     );
   }
 }

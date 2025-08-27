@@ -17,11 +17,23 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.*
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.math.min
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+
+private const val LOG_TAG = "AegisDocsNative"
+
+// --- Result Status Codes --- //
+private const val SUCCESS = "SUCCESS"
+private const val SUCCESS_WITH_FALLBACK = "SUCCESS_WITH_FALLBACK"
+private const val ERROR_SIZE_LIMIT = "ERROR_SIZE_LIMIT"
+private const val ERROR_OUT_OF_MEMORY = "ERROR_OUT_OF_MEMORY"
+private const val ERROR_BAD_PASSWORD = "ERROR_BAD_PASSWORD"
+private const val ERROR_TEXT_TOO_LARGE = "ERROR_TEXT_TOO_LARGE"
+private const val ERROR_UNKNOWN = "ERROR_UNKNOWN"
 
 /**
  * The main and only activity for the Aegis Docs Android application.
@@ -59,45 +71,41 @@ class MainActivity : FlutterFragmentActivity() {
                         val preserveText = call.argument<Int>("preserveText")!!
 
                         CoroutineScope(Dispatchers.Main).launch {
-                            val output =
-                                withContext(Dispatchers.IO) {
-                                    if (preserveText == 0) {
-                                        compressByRasterization(
-                                            filePath,
-                                            outputPath,
-                                            sizeLimit
-                                        )
+                            val output = withContext(Dispatchers.IO) {
+                                if (preserveText == 0) {
+                                    compressByRasterization(filePath, outputPath, sizeLimit)
+                                } else {
+                                    val textResult = compressWithTextPreservation(filePath, outputPath, sizeLimit.toLong())
+                                    if (textResult["status"] == ERROR_BAD_PASSWORD) {
+                                        Log.w(LOG_TAG, "Text preservation failed due to security restrictions. Falling back to rasterization.")
+                                        val rasterResult = compressByRasterization(filePath, outputPath, sizeLimit)
+                                        // If the fallback was successful, modify the status to let the UI know.
+                                        if (rasterResult["status"] == SUCCESS) {
+                                            rasterResult + mapOf("status" to SUCCESS_WITH_FALLBACK)
+                                        } else {
+                                            rasterResult
+                                        }
                                     } else {
-                                        compressWithTextPreservation(
-                                            filePath,
-                                            outputPath,
-                                            sizeLimit.toLong()
-                                        )
+                                        textResult
                                     }
                                 }
+                            }
                             result.success(output)
                         }
                     }
                     "saveToDownloads" -> {
                         val fileName = call.argument<String>("fileName")!!
                         val data = call.argument<ByteArray>("data")!!
-
                         CoroutineScope(Dispatchers.Main).launch {
-                            val outputPath =
-                                withContext(Dispatchers.IO) {
-                                    saveBytesToDownloads(fileName, data)
-                                }
+                            val outputPath = withContext(Dispatchers.IO) { saveBytesToDownloads(fileName, data) }
                             result.success(outputPath)
                         }
                     }
                     "cleanupExportedFiles" -> {
-                        val expirationInMinutes =
-                            call.argument<Int>("expirationInMinutes")!!
+                        val expirationInMinutes = call.argument<Int>("expirationInMinutes")!!
                         CoroutineScope(Dispatchers.Main).launch {
-                            withContext(Dispatchers.IO) {
-                                cleanupFiles(expirationInMinutes)
-                            }
-                            result.success(null) // Fire-and-forget
+                            withContext(Dispatchers.IO) { cleanupFiles(expirationInMinutes) }
+                            result.success(null)
                         }
                     }
                     else -> result.notImplemented()
@@ -205,71 +213,61 @@ class MainActivity : FlutterFragmentActivity() {
      * @return A Map containing the status and either a file path or an error
      *   message.
      */
-    private fun compressByRasterization(
-        inputPath: String,
-        outputPath: String,
-        sizeLimitKB: Int
-    ): Map<String, String> {
+    private fun compressByRasterization(inputPath: String, outputPath: String, sizeLimitKB: Int): Map<String, String> {
+        Log.d(LOG_TAG, "Starting rasterization compression for $inputPath")
         var reader: PdfReader? = null
         var fos: FileOutputStream? = null
         var outDoc: iTextDocument? = null
-        return try {
-            reader = PdfReader(inputPath)
+        try {
+            val muDoc = Document.openDocument(inputPath)
+            val pageCount = muDoc.countPages()
+            muDoc.destroy()
+
             val outputFile = File(outputPath)
             fos = FileOutputStream(outputFile)
             outDoc = iTextDocument()
             val pdfCopy = PdfCopy(outDoc, fos)
             outDoc.open()
-            val pageCount = reader.numberOfPages
+            Log.d(LOG_TAG, "PDF has $pageCount pages.")
             val semaphore = Semaphore(determineConcurrency())
+
             runBlocking(Dispatchers.Default) {
                 coroutineScope {
-                    (1..pageCount)
-                        .map { pageNum ->
-                            async {
-                                semaphore.withPermit {
-                                    processPageRaster(
-                                        inputPath,
-                                        pdfCopy,
-                                        pageNum,
-                                        sizeLimitKB,
-                                        pageCount
-                                    )
-                                }
+                    (1..pageCount).map { pageNum ->
+                        async {
+                            semaphore.withPermit {
+                                processPageRaster(inputPath, pdfCopy, pageNum, sizeLimitKB, pageCount)
                             }
                         }
-                        .awaitAll()
+                    }.awaitAll()
                 }
             }
+
             outDoc.close()
             fos.close()
-            reader.close()
+            reader?.close()
 
-            if (outputFile.length() <= sizeLimitKB * 1024) {
-                mapOf("status" to "success", "path" to outputPath)
+            val finalSize = outputFile.length() / 1024
+            Log.d(LOG_TAG, "Rasterization complete. Final size: ${finalSize}KB")
+
+            return if (finalSize <= sizeLimitKB) {
+                mapOf("status" to SUCCESS, "data" to outputPath)
             } else {
-                mapOf(
-                    "status" to "error",
-                    "message" to
-                        "Compressed but size ${outputFile.length() / 1024}KB > $sizeLimitKB KB"
-                )
+                mapOf("status" to ERROR_SIZE_LIMIT, "data" to "Compressed but size ${finalSize}KB > ${sizeLimitKB}KB")
             }
+        } catch (e: OutOfMemoryError) {
+            Log.e(LOG_TAG, "OutOfMemoryError during rasterization.", e)
+            return mapOf("status" to ERROR_OUT_OF_MEMORY, "data" to "Compression failed: Out of memory.")
+        } catch (e: BadPasswordException) {
+            Log.e(LOG_TAG, "BadPasswordException in compressByRasterization", e)
+            return mapOf("status" to ERROR_BAD_PASSWORD, "data" to "PDF is password protected or corrupted.")
         } catch (e: Exception) {
-            Log.e("PDFCompression", "Error in compressByRasterization", e)
-            mapOf(
-                "status" to "error",
-                "message" to (e.message ?: "An unknown error occurred.")
-            )
+            Log.e(LOG_TAG, "Error in compressByRasterization", e)
+            return mapOf("status" to ERROR_UNKNOWN, "data" to (e.message ?: "An unknown error occurred."))
         } finally {
-            try {
-                reader?.close()
-            } catch (e: IOException) {}
-            try {
-                fos?.close()
-            } catch (e: IOException) {}
-            try {
-                outDoc?.close()
-            } catch (e: Exception) {}
+            try { reader?.close() } catch (e: IOException) {}
+            try { fos?.close() } catch (e: IOException) {}
+            try { outDoc?.close() } catch (e: Exception) {}
         }
     }
 
@@ -283,13 +281,7 @@ class MainActivity : FlutterFragmentActivity() {
      * @param sizeLimitKB The overall size limit for the final PDF.
      * @param pageCount The total number of pages in the PDF.
      */
-    private fun processPageRaster(
-        inputPath: String,
-        pdfCopy: PdfCopy,
-        pageNum: Int,
-        sizeLimitKB: Int,
-        pageCount: Int
-    ) {
+    private fun processPageRaster(inputPath: String, pdfCopy: PdfCopy, pageNum: Int, sizeLimitKB: Int, pageCount: Int) {
         var muDoc: Document? = null
         var page: com.artifex.mupdf.fitz.Page? = null
         var pixmap: com.artifex.mupdf.fitz.Pixmap? = null
@@ -297,46 +289,35 @@ class MainActivity : FlutterFragmentActivity() {
         var tempReader: PdfReader? = null
 
         try {
+            Log.d(LOG_TAG, "Processing page $pageNum...")
             muDoc = Document.openDocument(inputPath)
             page = muDoc.loadPage(pageNum - 1)
-            val matrix = Matrix(72f / 72f, 72f / 72f)
-            pixmap = page.toPixmap(matrix, ColorSpace.DeviceRGB, false)
-            bitmap =
-                Bitmap.createBitmap(
-                    pixmap.width,
-                    pixmap.height,
-                    Bitmap.Config.ARGB_8888
-                )
 
+            val matrix = Matrix(150f / 72f, 150f / 72f) // Render at 150 DPI
+            pixmap = page.toPixmap(matrix, ColorSpace.DeviceRGB, false)
+            bitmap = Bitmap.createBitmap(pixmap.width, pixmap.height, Bitmap.Config.ARGB_8888)
+
+            // THE FIX: Manually convert the 3-byte RGB data from MuPDF into a
+            // 4-byte ARGB IntArray that the Android Bitmap can understand.
             val pixels = IntArray(pixmap.width * pixmap.height)
             val data = pixmap.samples
-            val pixelSize = if (pixmap.alpha) 4 else 3
-            for (i in 0 until min(data.size / pixelSize, pixels.size)) {
-                val base = i * pixelSize
+            for (i in pixels.indices) {
+                val base = i * 3
                 val r = data[base].toInt() and 0xFF
                 val g = data[base + 1].toInt() and 0xFF
                 val b = data[base + 2].toInt() and 0xFF
-                val a =
-                    if (pixmap.alpha) data[base + 3].toInt() and 0xFF else 0xFF
-                pixels[i] = (a shl 24) or (r shl 16) or (g shl 8) or b
+                pixels[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
             }
-            bitmap.setPixels(
-                pixels,
-                0,
-                pixmap.width,
-                0,
-                0,
-                pixmap.width,
-                pixmap.height
-            )
+            bitmap.setPixels(pixels, 0, pixmap.width, 0, 0, pixmap.width, pixmap.height)
 
-            val imgBytes =
-                findBestQualityJPEG(bitmap, (sizeLimitKB * 1024L) / pageCount)
+            val targetBytesPerPage = (sizeLimitKB * 1024L) / pageCount
+            val imgBytes = findBestQualityJPEG(bitmap, targetBytesPerPage)
 
             tempReader = PdfReader(createTempPdfWithImage(imgBytes))
             synchronized(pdfCopy) {
                 pdfCopy.addPage(pdfCopy.getImportedPage(tempReader, 1))
             }
+            Log.d(LOG_TAG, "Finished processing page $pageNum.")
         } finally {
             bitmap?.recycle()
             pixmap?.destroy()
@@ -405,103 +386,63 @@ class MainActivity : FlutterFragmentActivity() {
      * @return A Map containing the status and either a file path or an error
      *   message.
      */
-    private fun compressWithTextPreservation(
-        inputPath: String,
-        outputPath: String,
-        sizeLimitKb: Long
-    ): Map<String, String> {
-        val sizeLimitBytes = sizeLimitKb * 1024L
-        val originalFile = File(inputPath)
-        if (originalFile.length() <= sizeLimitBytes) {
-            return try {
+    private fun compressWithTextPreservation(inputPath: String, outputPath: String, sizeLimitKb: Long): Map<String, String> {
+        Log.d(LOG_TAG, "Starting text-preserving compression for $inputPath")
+        try {
+            val sizeLimitBytes = sizeLimitKb * 1024L
+            val originalFile = File(inputPath)
+            if (originalFile.length() <= sizeLimitBytes) {
+                Log.d(LOG_TAG, "File is already under size limit. Copying...")
                 copyTo(inputPath, outputPath)
-                mapOf("status" to "success", "path" to outputPath)
-            } catch (e: IOException) {
-                mapOf(
-                    "status" to "error",
-                    "message" to "Copy failed: ${e.message}"
-                )
-            }
-        }
-
-        val textOnlyBytes =
-            try {
-                stripAllImagesToBytes(inputPath)
-            } catch (e: Exception) {
-                Log.e("PDFCompression", "Failed to strip images", e)
-                return mapOf(
-                    "status" to "error",
-                    "message" to "Failed to process PDF structure: ${e.message}"
-                )
+                return mapOf("status" to SUCCESS, "data" to outputPath)
             }
 
-        if (textOnlyBytes.size > sizeLimitBytes) {
-            Log.w(
-                "PDFCompression",
-                "The PDF with only text is larger than the size limit."
-            )
-            return mapOf(
-                "status" to "error",
-                "message" to
-                    "Could not meet size limit. Text content alone is ${textOnlyBytes.size / 1024}KB."
-            )
-        }
+            Log.d(LOG_TAG, "Stripping images to calculate text size...")
+            val textOnlyBytes = stripAllImagesToBytes(inputPath)
+            Log.d(LOG_TAG, "Text content size: ${textOnlyBytes.size / 1024}KB")
 
-        var low = 1
-        var high = 100
-        var bestBytes: ByteArray? = null
+            if (textOnlyBytes.size > sizeLimitBytes) {
+                Log.w(LOG_TAG, "The PDF with only text is larger than the size limit.")
+                return mapOf("status" to ERROR_TEXT_TOO_LARGE, "data" to "Could not meet size limit. Text content alone is ${textOnlyBytes.size / 1024}KB.")
+            }
 
-        while (low <= high) {
-            val mid = (low + high) / 2
-            Log.d("PDFCompression", "Text-Preserving: Trying quality $mid")
-            val trialBytes =
-                try {
-                    recompressImagesToBytes(inputPath, mid)
-                } catch (e: Exception) {
-                    Log.e(
-                        "PDFCompression",
-                        "Failed to recompress at quality $mid",
-                        e
-                    )
-                    null
+            var low = 1
+            var high = 100
+            var bestBytes: ByteArray? = null
+
+            while (low <= high) {
+                val mid = (low + high) / 2
+                Log.d(LOG_TAG, "Text-Preserving: Trying quality $mid")
+                val trialBytes = try { recompressImagesToBytes(inputPath, mid) } catch (e: Exception) { null }
+                if (trialBytes != null && trialBytes.size <= sizeLimitBytes) {
+                    bestBytes = trialBytes
+                    low = mid + 1
+                } else {
+                    high = mid - 1
                 }
+            }
 
-            if (trialBytes != null && trialBytes.size <= sizeLimitBytes) {
-                bestBytes = trialBytes
-                low = mid + 1
+            val finalBytes = bestBytes ?: try { recompressImagesToBytes(inputPath, 1) } catch (e: Exception) { textOnlyBytes }
+
+            val finalFile = File(outputPath)
+            FileOutputStream(finalFile).use { it.write(finalBytes) }
+            val finalSize = finalFile.length() / 1024
+            Log.d(LOG_TAG, "Text-preserving compression complete. Final size: ${finalSize}KB")
+
+            return if (finalSize <= sizeLimitKb) {
+                mapOf("status" to SUCCESS, "data" to outputPath)
             } else {
-                high = mid - 1
+                mapOf("status" to ERROR_SIZE_LIMIT, "data" to "Compressed but size ${finalSize}KB > $sizeLimitKb KB")
             }
-        }
-
-        if (bestBytes == null) {
-            bestBytes =
-                try {
-                    recompressImagesToBytes(
-                        inputPath,
-                        1
-                    ) // Try with lowest quality
-                } catch (e: Exception) {
-                    Log.e(
-                        "PDFCompression",
-                        "Failed to recompress at lowest quality",
-                        e
-                    )
-                    textOnlyBytes
-                }
-        }
-
-        val finalFile = File(outputPath)
-        FileOutputStream(finalFile).use { it.write(bestBytes) }
-
-        return if (finalFile.length() <= sizeLimitBytes) {
-            mapOf("status" to "success", "path" to outputPath)
-        } else {
-            mapOf(
-                "status" to "error",
-                "message" to
-                    "Compressed but size ${finalFile.length() / 1024}KB > $sizeLimitKb KB"
-            )
+        } catch (e: OutOfMemoryError) {
+            Log.e(LOG_TAG, "OutOfMemoryError during text-preserving compression.", e)
+            return mapOf("status" to ERROR_OUT_OF_MEMORY, "data" to "Compression failed: Out of memory.")
+        } catch (e: BadPasswordException) {
+            Log.e(LOG_TAG, "BadPasswordException in compressWithTextPreservation", e)
+            return mapOf("status" to ERROR_BAD_PASSWORD, "data" to "PDF is password protected or corrupted.")
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error in compressWithTextPreservation", e)
+            return mapOf("status" to ERROR_UNKNOWN, "data" to (e.message ?: "An unknown error occurred."))
         }
     }
 
@@ -537,7 +478,7 @@ class MainActivity : FlutterFragmentActivity() {
         inputPath: String,
         quality: Int
     ): ByteArray {
-        val reader = PdfReader(inputPath)
+        val reader = openPdfReader(inputPath)
         val baos = ByteArrayOutputStream()
         val stamper = PdfStamper(reader, baos).apply { setFullCompression() }
 
@@ -635,7 +576,7 @@ class MainActivity : FlutterFragmentActivity() {
      */
     private fun stripAllImagesToBytes(inputPath: String): ByteArray {
         val baos = ByteArrayOutputStream()
-        val reader = PdfReader(inputPath)
+        val reader = openPdfReader(inputPath)
         reader.removeUnusedObjects()
         for (i in 0 until reader.xrefSize) {
             val pdfObject = reader.getPdfObject(i) ?: continue
@@ -700,4 +641,26 @@ class MainActivity : FlutterFragmentActivity() {
             else -> min(cores, 6)
         }
     }
+
+    /**
+     * THE FIX: A robust helper function to open a PDF, trying multiple methods.
+     * It first tries the lenient constructor, and if that fails with a BadPasswordException,
+     * it tries again with an empty string password.
+     */
+    private fun openPdfReader(path: String): PdfReader {
+        try {
+            // First attempt: Lenient mode for owner passwords.
+            return PdfReader(path, null, true)
+        } catch (e: Exception) {
+            Log.w(LOG_TAG, "Lenient open failed with BadPasswordException, trying with empty password...")
+            try {
+                // Second attempt: Try with an empty user password.
+                return PdfReader(path, "".toByteArray())
+            } catch (e2: Exception) {
+                Log.e(LOG_TAG, "Opening with empty password also failed.", e2)
+                throw e2 // Re-throw the second exception if it also fails.
+            }
+        }
+    }
+
 }

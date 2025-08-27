@@ -8,16 +8,18 @@ import 'package:aegis_docs/core/services/encryption_service.dart';
 import 'package:aegis_docs/core/services/file_storage_service.dart';
 import 'package:aegis_docs/core/services/native_pdf_compression_service.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
+import 'package:file/memory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-// Import the generated mock file.
 import 'document_repository_test.mocks.dart';
 
-// This annotation tells build_runner to generate
-// mock classes for all our services.
+// This annotation tells build_runner to
+// generate mock classes for all our services.
 @GenerateMocks([
   FilePickerService,
   ImageProcessor,
@@ -27,7 +29,21 @@ import 'document_repository_test.mocks.dart';
   FileStorageService,
   NativePdfCompressionService,
 ])
+// A fake implementation of the PathProviderPlatform. This allows us to control
+// what paths are returned during a test,
+// without touching the actual file system.
+class FakePathProviderPlatform extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
+  @override
+  Future<String?> getTemporaryPath() async {
+    return '/fake/temp';
+  }
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   // Declare mock objects for all dependencies.
   late MockFilePickerService mockFilePickerService;
   late MockImageProcessor mockImageProcessor;
@@ -38,10 +54,13 @@ void main() {
   late MockNativePdfCompressionService mockNativePdfCompressionService;
   // Declare the instance of the class we are testing.
   late DocumentRepository documentRepository;
+  late MemoryFileSystem memoryFileSystem;
 
   // This runs before each test, ensuring a clean state.
   setUp(() {
     // Initialize all the mock objects.
+    PathProviderPlatform.instance = FakePathProviderPlatform();
+    memoryFileSystem = MemoryFileSystem();
     mockFilePickerService = MockFilePickerService();
     mockImageProcessor = MockImageProcessor();
     mockPdfProcessor = MockPdfProcessor();
@@ -84,10 +103,40 @@ void main() {
       ).called(1);
     });
 
+    test('createFolderInWallet should call the file storage service', () async {
+      when(
+        mockFileStorageService.createFolder(
+          folderName: anyNamed('folderName'),
+          parentFolderPath: anyNamed('parentFolderPath'),
+        ),
+      ).thenAnswer((_) async {});
+      await documentRepository.createFolderInWallet(folderName: 'new_folder');
+      verify(
+        mockFileStorageService.createFolder(folderName: 'new_folder'),
+      ).called(1);
+    });
+
+    test(
+      'deleteFolderFromWallet should call the file storage service',
+      () async {
+        when(
+          mockFileStorageService.deleteFolder(
+            folderPath: anyNamed('folderPath'),
+          ),
+        ).thenAnswer((_) async {});
+        await documentRepository.deleteFolderFromWallet(
+          folderPath: 'folder_to_delete',
+        );
+        verify(
+          mockFileStorageService.deleteFolder(folderPath: 'folder_to_delete'),
+        ).called(1);
+      },
+    );
+
     // --- Document Encryption & Management Tests --- //
     test(
-      'saveEncryptedDocument should call encrypt '
-      'and then saveToPrivateDirectory',
+      'saveEncryptedDocument should call '
+      'encrypt and then saveToPrivateDirectory',
       () async {
         final testData = Uint8List.fromList([1, 2, 3]);
         final encryptedData = Uint8List.fromList([4, 5, 6]);
@@ -223,6 +272,38 @@ void main() {
         ).thenAnswer((_) async => true);
         await documentRepository.deleteBackupFromDrive();
         verify(mockCloudStorageService.deleteBackup(any)).called(1);
+      },
+    );
+
+    test(
+      'backupWalletToDrive should call all necessary services in order',
+      () async {
+        // Arrange
+        const password = 'password';
+        final fakeKeyData = {'key': 'data'};
+        // Create the fake directory within the in-memory file system.
+        final fakeWalletDir = memoryFileSystem.directory('/fake/wallet')
+          ..createSync(recursive: true);
+
+        when(
+          mockEncryptionService.getEncryptedDataKeyForBackup(any),
+        ).thenAnswer((_) async => fakeKeyData);
+        when(
+          mockFileStorageService.getBaseWalletDirectory(),
+        ).thenAnswer((_) async => fakeWalletDir);
+        when(
+          mockCloudStorageService.uploadBackup(any, any),
+        ).thenAnswer((_) async {});
+
+        // Act
+        await documentRepository.backupWalletToDrive(password);
+
+        // Assert
+        verify(
+          mockEncryptionService.getEncryptedDataKeyForBackup(password),
+        ).called(1);
+        verify(mockFileStorageService.getBaseWalletDirectory()).called(1);
+        verify(mockCloudStorageService.uploadBackup(any, any)).called(1);
       },
     );
   });

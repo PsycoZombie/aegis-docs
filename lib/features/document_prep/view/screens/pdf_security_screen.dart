@@ -5,6 +5,7 @@ import 'package:aegis_docs/features/document_prep/view/widgets/pdf_security/secu
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/save_options_dialog.dart';
+import 'package:aegis_docs/shared_widgets/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,14 +33,13 @@ class PdfSecurityScreen extends ConsumerWidget {
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) {
-            // On error, show a SnackBar and display the
+            // On error, show a Toast and display the
             // last valid data if available.
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('An error occurred: $err'),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                ),
+              showToast(
+                context,
+                'An error occurred: $err',
+                type: ToastType.error,
               );
             });
             // Show the previous data to avoid a blank screen on error.
@@ -128,11 +128,9 @@ class PdfSecurityScreen extends ConsumerWidget {
                 folderPath: saveResult.folderPath,
               );
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('PDF saved successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
+                showToast(
+                  context,
+                  'PDF saved successfully!',
                 );
                 ref.invalidate(walletViewModelProvider);
                 context.pop();

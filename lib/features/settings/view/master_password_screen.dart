@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:aegis_docs/features/settings/providers/settings_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
@@ -26,7 +26,7 @@ class MasterPasswordScreen extends ConsumerStatefulWidget {
 
   /// The downloaded backup data, required only
   /// when restoring (`isCreating` is false).
-  final Uint8List? backupBytes;
+  final File? backupBytes;
 
   @override
   ConsumerState<MasterPasswordScreen> createState() =>
