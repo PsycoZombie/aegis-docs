@@ -39,6 +39,8 @@ class OptionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -50,7 +52,7 @@ class OptionsCard extends StatelessWidget {
             children: [
               Text(
                 'Resize Options',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 20),
               // Preset buttons for common resize scales.
@@ -102,9 +104,7 @@ class OptionsCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    style: theme.outlinedButtonTheme.style,
                     icon: isProcessing
                         ? const SizedBox.square(
                             dimension: 20,

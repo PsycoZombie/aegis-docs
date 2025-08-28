@@ -31,19 +31,37 @@ final ThemeData lightTheme = ThemeData(
       color: Color(0xFF212121),
       fontWeight: FontWeight.bold,
     ),
+    displaySmall: TextStyle(
+      color: Color(0xFF212121),
+      fontWeight: FontWeight.bold,
+    ),
+    headlineLarge: TextStyle(
+      color: Color(0xFF212121),
+      fontWeight: FontWeight.w600,
+    ),
     headlineMedium: TextStyle(
       color: Color(0xFF212121),
       fontWeight: FontWeight.w600,
     ),
+    headlineSmall: TextStyle(
+      color: Color(0xFF212121),
+      fontWeight: FontWeight.w600,
+    ),
     titleLarge: TextStyle(
-      color: Color.fromRGBO(33, 33, 33, 0.85),
+      color: Color(0xD9212121),
       fontWeight: FontWeight.w500,
     ),
-    bodyMedium: TextStyle(color: Color.fromRGBO(33, 33, 33, 0.8), height: 1.5),
+    titleMedium: TextStyle(color: Color(0xD9212121)),
+    titleSmall: TextStyle(color: Color(0xD9212121)),
+    bodyLarge: TextStyle(color: Color(0xCC212121), height: 1.5),
+    bodyMedium: TextStyle(color: Color(0xCC212121), height: 1.5),
+    bodySmall: TextStyle(color: Color(0xB3212121)),
     labelLarge: TextStyle(
-      color: Color(0xFFFFFFFF),
+      color: Color(0xFF212121),
       fontWeight: FontWeight.bold,
     ),
+    labelMedium: TextStyle(color: Color(0xFF757575)),
+    labelSmall: TextStyle(color: Color(0xFF757575)),
   ),
 
   appBarTheme: const AppBarTheme(
@@ -70,10 +88,7 @@ final ThemeData lightTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: const Color(0xFFF5F5F5),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 12,
-    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
@@ -141,44 +156,38 @@ final ThemeData darkTheme = ThemeData(
 
   textTheme: const TextTheme(
     displayLarge: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.bold,
     ),
     displayMedium: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.bold,
     ),
     displaySmall: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.bold,
     ),
     headlineLarge: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.w600,
     ),
     headlineMedium: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.w600,
     ),
     headlineSmall: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontWeight: FontWeight.w600,
     ),
     titleLarge: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.85),
+      color: Color(0xD9FFFFFF),
       fontWeight: FontWeight.w500,
     ),
-    titleMedium: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.85)),
-    titleSmall: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.85)),
-    bodyLarge: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.8),
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.8),
-      height: 1.5,
-    ),
-    bodySmall: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.7)),
+    titleMedium: TextStyle(color: Color(0xD9FFFFFF)),
+    titleSmall: TextStyle(color: Color(0xD9FFFFFF)),
+    bodyLarge: TextStyle(color: Color(0xCCFFFFFF), height: 1.5),
+    bodyMedium: TextStyle(color: Color(0xCCFFFFFF), height: 1.5),
+    bodySmall: TextStyle(color: Color(0xB3FFFFFF)),
     labelLarge: TextStyle(
       color: Color(0xFFFFFFFF),
       fontWeight: FontWeight.bold,
@@ -193,7 +202,7 @@ final ThemeData darkTheme = ThemeData(
     centerTitle: true,
     iconTheme: IconThemeData(color: Color(0xFFFFFFFF)),
     titleTextStyle: TextStyle(
-      color: Color.fromRGBO(255, 255, 255, 0.9),
+      color: Color(0xE6FFFFFF),
       fontSize: 20,
       fontFamily: 'Inter',
       fontWeight: FontWeight.w600,
@@ -209,10 +218,7 @@ final ThemeData darkTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: const Color(0xFF2A2A2A),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 12,
-    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: const BorderSide(color: Colors.transparent),

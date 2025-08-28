@@ -1,3 +1,4 @@
+import 'package:aegis_docs/core/services/haptics_service.dart';
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/shared_widgets/rename_dialog.dart';
 import 'package:aegis_docs/shared_widgets/toast_helper.dart';
@@ -22,7 +23,8 @@ void showContextMenu(
   final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
   final button = context.findRenderObject()! as RenderBox;
 
-  // Calculate the position of the menu relative to the tapped item.
+  final haptics = ref.read(hapticsProvider)..lightImpact();
+
   final position = RelativeRect.fromRect(
     Rect.fromPoints(
       button.localToGlobal(Offset.zero, ancestor: overlay),
@@ -38,7 +40,6 @@ void showContextMenu(
     context: context,
     position: position,
     items: [
-      // Conditionally show "Export" and "Share" options only for files.
       if (!isFolder) ...[
         const PopupMenuItem<String>(
           value: 'export',
@@ -66,18 +67,20 @@ void showContextMenu(
       ),
     ],
   ).then((String? value) async {
-    // Handle the user's selection.
     if (value == null || !context.mounted) return;
-
     switch (value) {
       case 'rename':
-        // The UI layer is responsible for showing the dialog.
-        await _handleRename(context, homeNotifier, path, isFolder: isFolder);
+        await haptics.selectionClick();
+        if (context.mounted) {
+          await _handleRename(context, homeNotifier, path, isFolder: isFolder);
+        }
       case 'delete':
-        // The UI layer is responsible for showing the confirmation dialog.
-        await _handleDelete(context, homeNotifier, path, isFolder: isFolder);
+        await haptics.heavyImpact();
+        if (context.mounted) {
+          await _handleDelete(context, homeNotifier, path, isFolder: isFolder);
+        }
       case 'export':
-        // The UI layer handles the feedback from the view model.
+        await haptics.selectionClick();
         final errorMessage = await homeNotifier.exportDocument(
           p.basename(path),
         );
@@ -89,7 +92,7 @@ void showContextMenu(
           }
         }
       case 'share':
-        // The UI layer handles the feedback from the view model.
+        await haptics.selectionClick();
         final errorMessage = await homeNotifier.shareDocument(p.basename(path));
         if (context.mounted && errorMessage != null) {
           showToast(context, errorMessage, type: ToastType.error);

@@ -72,7 +72,7 @@ class ReorderableImageGrid extends StatelessWidget {
                   backgroundColor: Colors.black54,
                   child: Text(
                     '${index + 1}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
               ),

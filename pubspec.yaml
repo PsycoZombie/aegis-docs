@@ -66,8 +66,12 @@ dev_dependencies:
   very_good_analysis: ^9.0.0
 
 flutter:
+  assets:
+    - assets/logo/icon.png
   uses-material-design: true
 
 flutter_launcher_icons:
-  image_path: "assets/logo/icon.png"
   android: true
+  image_path: "assets/logo/icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/logo/icon.png"

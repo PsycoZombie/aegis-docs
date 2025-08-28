@@ -1,6 +1,8 @@
+import 'package:aegis_docs/core/services/haptics_service.dart';
 import 'package:aegis_docs/data/models/wallet_item.dart';
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/features/home/widgets/item_context_menu.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,13 +20,33 @@ class DocumentCard extends ConsumerWidget {
     final isPdf = file.name.toLowerCase().endsWith('.pdf');
     final folderPath = ref.watch(homeViewModelProvider).currentFolderPath;
 
-    return GestureDetector(
-      // Tapping opens the document in the detail view.
-      onTap: () => context.push('/document/${file.name}', extra: folderPath),
-      // Long-pressing shows the context menu for
-      // actions like export, share, etc.
-      onLongPress: () =>
-          showContextMenu(context, ref, file.path, isFolder: false),
+    return RawGestureDetector(
+      gestures: {
+        LongPressGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+              () => LongPressGestureRecognizer(
+                duration: const Duration(milliseconds: 300),
+              ),
+              (LongPressGestureRecognizer instance) {
+                instance.onLongPress = () {
+                  // Haptic for long press menu
+                  ref.read(hapticsProvider).mediumImpact();
+                  showContextMenu(context, ref, file.path, isFolder: false);
+                };
+              },
+            ),
+        TapGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+              TapGestureRecognizer.new,
+              (TapGestureRecognizer instance) {
+                instance.onTap = () {
+                  // Haptic for document open
+                  ref.read(hapticsProvider).lightImpact();
+                  context.push('/document/${file.name}', extra: folderPath);
+                };
+              },
+            ),
+      },
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: GridTile(

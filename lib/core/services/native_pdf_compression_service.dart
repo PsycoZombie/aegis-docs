@@ -4,6 +4,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+/// Defines the possible outcomes of a native PDF compression operation.
+enum NativeCompressionStatus {
+  /// The compression was successful.
+  success,
+
+  /// Text-preserving compression failed,
+  /// but the fallback rasterization succeeded.
+  successWithFallback,
+
+  /// Compression succeeded, but the file is still larger than the target size.
+  errorSizeLimit,
+
+  /// The operation failed due to insufficient device memory.
+  errorOutOfMemory,
+
+  /// The operation failed because the PDF is password-protected or corrupted.
+  errorBadPassword,
+
+  /// Text-preserving compression failed
+  /// because the text content alone is too large.
+  errorTextTooLarge,
+
+  /// An unknown or unexpected error occurred.
+  errorUnknown,
+}
+
+/// A class to hold the structured result from a native compression operation.
+class NativeCompressionResult {
+  /// Creates an instance of the result.
+  const NativeCompressionResult(this.status, this.data);
+
+  /// The status code indicating the outcome of the operation.
+  final NativeCompressionStatus status;
+
+  /// The associated data. This will be the output file path on success,
+  /// or a detailed error message on failure.
+  final String? data;
+}
+
 /// Provides an instance of [NativePdfCompressionService]
 /// for dependency injection.
 final nativePdfCompressionServiceProvider =
@@ -12,22 +51,16 @@ final nativePdfCompressionServiceProvider =
     });
 
 /// A service that acts as a bridge to a high-performance native implementation
-/// for PDF compression using MuPDF.
+/// for PDF compression.
 class NativePdfCompressionService {
   /// The method channel used to communicate with the native platform.
   static const _platform = MethodChannel(AppConstants.platformChannelName);
 
-  /// Invokes a native method to compress a PDF file using MuPDF.
+  /// Invokes a native method to compress a PDF file.
   ///
-  /// [filePath]: The path of the source PDF to compress.
-  /// [sizeLimit]: The target size in kilobytes (e.g., 1024 for 1MB).
-  /// [preserveText]: Whether to avoid converting
-  /// text to images, which maintains
-  /// text selectability but may result in a larger file size.
-  ///
-  /// Throws an [Exception] on failure. Returns the path
-  /// to the compressed temporary file.
-  Future<String> compressPdf({
+  /// Returns a [NativeCompressionResult]
+  /// containing the status and relevant data.
+  Future<NativeCompressionResult> compressPdf({
     required String filePath,
     required int sizeLimit,
     required bool preserveText,
@@ -48,24 +81,49 @@ class NativePdfCompressionService {
         },
       );
 
-      // Check the status from the native result.
-      if (result?['status'] == 'success') {
-        final path = result?['path'] as String?;
-        if (path != null && path.isNotEmpty) {
-          return path;
-        }
-        throw Exception(
-          'Native compression succeeded but returned an empty path.',
-        );
-      } else {
-        // If the status is 'error', throw an exception with the native message.
-        final message =
-            result?['message'] as String? ??
-            'An unknown native error occurred.';
-        throw Exception(message);
+      // Parse the status and data from the native result map.
+      final statusString = result?['status'] as String?;
+      final data = result?['data'] as String?;
+
+      switch (statusString) {
+        case 'SUCCESS':
+          return NativeCompressionResult(NativeCompressionStatus.success, data);
+        case 'SUCCESS_WITH_FALLBACK':
+          return NativeCompressionResult(
+            NativeCompressionStatus.successWithFallback,
+            data,
+          );
+        case 'ERROR_SIZE_LIMIT':
+          return NativeCompressionResult(
+            NativeCompressionStatus.errorSizeLimit,
+            data,
+          );
+        case 'ERROR_OUT_OF_MEMORY':
+          return NativeCompressionResult(
+            NativeCompressionStatus.errorOutOfMemory,
+            data,
+          );
+        case 'ERROR_BAD_PASSWORD':
+          return NativeCompressionResult(
+            NativeCompressionStatus.errorBadPassword,
+            data,
+          );
+        case 'ERROR_TEXT_TOO_LARGE':
+          return NativeCompressionResult(
+            NativeCompressionStatus.errorTextTooLarge,
+            data,
+          );
+        default:
+          return NativeCompressionResult(
+            NativeCompressionStatus.errorUnknown,
+            data,
+          );
       }
     } on PlatformException catch (e) {
-      throw Exception('Failed to communicate with native code: ${e.message}');
+      return NativeCompressionResult(
+        NativeCompressionStatus.errorUnknown,
+        'Failed to communicate with native code: ${e.message}',
+      );
     }
   }
 }

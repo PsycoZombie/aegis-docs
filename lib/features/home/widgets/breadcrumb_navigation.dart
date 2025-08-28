@@ -42,9 +42,9 @@ class BreadcrumbNavigation extends StatelessWidget {
             return Center(
               child: InkWell(
                 onTap: () => onPathChanged(null),
-                child: const Text(
+                child: Text(
                   'Wallet',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
             );

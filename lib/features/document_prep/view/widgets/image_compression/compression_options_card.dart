@@ -35,6 +35,7 @@ class CompressionOptionsCard extends ConsumerWidget {
       minSize,
       state.originalImage!.bytes!.lengthInBytes / 1024,
     );
+    final theme = Theme.of(context);
 
     return Card(
       elevation: 2,
@@ -45,7 +46,7 @@ class CompressionOptionsCard extends ConsumerWidget {
           children: [
             Text(
               'Compression Options',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 20),
 
@@ -53,13 +54,12 @@ class CompressionOptionsCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Target Size:', style: TextStyle(fontSize: 16)),
+                Text('Target Size:', style: theme.textTheme.titleMedium),
                 Text(
                   '${state.targetSizeKB} KB',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  style: theme.textTheme.titleMedium!.copyWith(
                     color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -85,9 +85,6 @@ class CompressionOptionsCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
                   icon: isProcessing
                       ? const SizedBox.square(
                           dimension: 20,

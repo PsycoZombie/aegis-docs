@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'dart:io';
 
+import 'package:aegis_docs/core/services/native_pdf_compression_service.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:equatable/equatable.dart';
@@ -8,6 +8,18 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'pdf_compression_provider.g.dart';
+
+/// A class to hold the structured result of a PDF compression operation.
+class PdfCompressionResult {
+  /// Creates an instance of the compression result.
+  const PdfCompressionResult({required this.status, this.message});
+
+  /// The status indicating the outcome of the operation.
+  final NativeCompressionStatus status;
+
+  /// An optional message, which could be an error detail or other info.
+  final String? message;
+}
 
 /// Represents the state for the PDF compression feature.
 @immutable
@@ -60,9 +72,6 @@ class PdfCompressionState extends Equatable {
 }
 
 /// A ViewModel for the native PDF compression feature.
-///
-/// Manages the state and business logic for compressing a PDF to a target
-/// size using a high-performance native implementation.
 @Riverpod(keepAlive: false)
 class PdfCompressionViewModel extends _$PdfCompressionViewModel {
   /// Initializes the state with an optional initial file.
@@ -95,65 +104,63 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
 
   /// Compresses the PDF and saves the result to the secure wallet.
   ///
-  /// This method orchestrates the entire flow:
-  /// 1. Calls the native compression service.
-  /// 2. Reads the temporary compressed file.
-  /// 3. Saves the compressed data to the wallet via the repository.
-  /// 4. Deletes the temporary file.
-  ///
-  /// Returns `true` on success and `false` on failure.
-  Future<bool> compressAndSavePdf({
+  /// Returns a [PdfCompressionResult] indicating the outcome of the operation.
+  Future<PdfCompressionResult> compressAndSavePdf({
     required String fileName,
     String? folderPath,
   }) async {
-    if (state.value?.pickedPdf?.path == null) return false;
+    if (state.value?.pickedPdf?.path == null) {
+      return const PdfCompressionResult(
+        status: NativeCompressionStatus.errorUnknown,
+        message: 'No PDF file was selected.',
+      );
+    }
 
     state = const AsyncLoading<PdfCompressionState>().copyWithPrevious(state);
-    var success = false;
+    final currentState = state.value!;
 
-    state = await AsyncValue.guard(() async {
-      final currentState = state.value!;
+    try {
       final repo = await ref.read(documentRepositoryProvider.future);
 
-      final resultPath = await repo.compressPdfWithNative(
+      final result = await repo.compressPdfWithNative(
         filePath: currentState.pickedPdf!.path!,
         sizeLimit: currentState.sizeLimitKB,
         preserveText: currentState.preserveText,
       );
 
-      if (resultPath == null) {
-        throw Exception('Compression was cancelled or failed unexpectedly.');
-      }
-
-      final compressedFile = File(resultPath);
-      if (await compressedFile.exists()) {
-        try {
-          final bytes = await compressedFile.readAsBytes();
-
-          await repo.saveEncryptedDocument(
-            fileName: fileName,
-            data: bytes,
-            folderPath: folderPath,
-          );
-          success = true;
-
-          return currentState.copyWith(
-            compressedPdfBytes: () => bytes,
-          );
-        } finally {
-          // Ensure the temporary file is always deleted.
-          await compressedFile.delete();
+      // If the compression was successful, read the file and save it.
+      if (result.status == NativeCompressionStatus.success ||
+          result.status == NativeCompressionStatus.successWithFallback) {
+        final compressedFile = File(result.data!);
+        if (await compressedFile.exists()) {
+          try {
+            final bytes = await compressedFile.readAsBytes();
+            await repo.saveEncryptedDocument(
+              fileName: fileName,
+              data: bytes,
+              folderPath: folderPath,
+            );
+            // Update the UI state to show the compressed preview.
+            state = AsyncData(
+              currentState.copyWith(
+                compressedPdfBytes: () => bytes,
+              ),
+            );
+            return PdfCompressionResult(status: result.status);
+          } finally {
+            await compressedFile.delete();
+          }
         }
-      } else {
-        throw Exception('Native compression failed to produce an output file.');
       }
-    });
-
-    // If an error occurred, reset to the previous valid data state.
-    if (state.hasError) {
-      state = AsyncData(state.asError!.value!);
+      // If compression failed for any reason, return the result directly.
+      state = AsyncData(currentState); // Reset to non-loading state
+      return PdfCompressionResult(status: result.status, message: result.data);
+    } on Exception catch (e) {
+      state = AsyncData(currentState); // Reset to non-loading state
+      return PdfCompressionResult(
+        status: NativeCompressionStatus.errorUnknown,
+        message: e.toString(),
+      );
     }
-
-    return success;
   }
 }

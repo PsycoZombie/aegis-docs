@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:aegis_docs/core/services/haptics_service.dart'; // 👈 add
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,35 +49,32 @@ class _ExpandingFabState extends ConsumerState<ExpandingFab>
     super.dispose();
   }
 
-  /// Toggles the FAB menu open or closed, managing the overlay.
   void _toggle() {
     if (_controller.isAnimating) return;
 
     setState(() => _isOpen = !_isOpen);
 
+    final haptics = ref.read(hapticsProvider);
     if (_isOpen) {
       _overlayEntry = _createOverlayEntry();
       Overlay.of(context).insert(_overlayEntry!);
       _controller.forward();
+      haptics.lightImpact();
     } else {
       _controller.reverse().then((_) {
         _overlayEntry?.remove();
         _overlayEntry = null;
       });
+      haptics.selectionClick();
     }
   }
 
-  /// The action logic is now handled here, inside the state,
-  /// which has a stable BuildContext.
   Future<void> _onActionButtonTapped(String route, PickType pickType) async {
     final router = GoRouter.of(context);
-    // First, close the menu.
     _toggle();
-    // Wait for the animation to finish before picking a file.
-    //await Future.delayed(const Duration(milliseconds: 250));
 
-    // Now that the menu is closed, perform the file picking and navigation.
-    // The context here is from the _ExpandingFabState, which is still mounted.
+    await ref.read(hapticsProvider).selectionClick();
+
     final repo = await ref.read(documentRepositoryProvider.future);
     switch (pickType) {
       case PickType.singleImage:
@@ -97,8 +95,6 @@ class _ExpandingFabState extends ConsumerState<ExpandingFab>
     }
   }
 
-  /// Creates the overlay that contains both the dimming
-  /// layer and the action buttons.
   OverlayEntry _createOverlayEntry() {
     return OverlayEntry(
       builder: (context) {
@@ -107,9 +103,7 @@ class _ExpandingFabState extends ConsumerState<ExpandingFab>
             Positioned.fill(
               child: GestureDetector(
                 onTap: _toggle,
-                child: Container(
-                  color: Colors.black.withAlpha(128),
-                ),
+                child: Container(color: Colors.black.withAlpha(128)),
               ),
             ),
             Positioned.fill(
@@ -136,7 +130,6 @@ class _ExpandingFabState extends ConsumerState<ExpandingFab>
     );
   }
 
-  /// Builds the list of animating action buttons.
   List<Widget> _buildExpandingActionButtons() {
     final children = <Widget>[];
     final count = _actionButtons.length;

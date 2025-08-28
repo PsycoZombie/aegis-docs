@@ -1,4 +1,6 @@
+import 'package:aegis_docs/core/services/haptics_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Defines the different types of toasts to display, each with a distinct
 /// color and icon.
@@ -21,11 +23,27 @@ enum ToastType {
 /// [context]: The build context from which to show the toast.
 /// [message]: The text to display in the toast.
 /// [type]: The [ToastType] which determines the color and icon.
+
 void showToast(
   BuildContext context,
   String message, {
   ToastType type = ToastType.success,
 }) {
+  // Trigger haptic feedback based on toast type
+  final container = ProviderScope.containerOf(context, listen: false);
+  final haptics = container.read(hapticsProvider);
+
+  switch (type) {
+    case ToastType.success:
+      haptics.lightImpact();
+    case ToastType.error:
+      haptics.vibrate();
+    case ToastType.warning:
+      haptics.mediumImpact();
+    case ToastType.info:
+      haptics.selectionClick();
+  }
+
   // Create an OverlayEntry to hold our toast widget.
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
@@ -36,10 +54,7 @@ void showToast(
     ),
   );
 
-  // Insert the toast into the overlay.
   Overlay.of(context).insert(overlayEntry);
-
-  // Remove the toast after a short delay.
   Future.delayed(const Duration(seconds: 3), overlayEntry.remove);
 }
 
@@ -100,7 +115,7 @@ class _ToastWidget extends StatelessWidget {
               Flexible(
                 child: Text(
                   message,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: Theme.of(context).textTheme.labelLarge,
                   textAlign: TextAlign.center,
                 ),
               ),

@@ -3,13 +3,15 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
-import 'dart:io' as _i4;
-import 'dart:typed_data' as _i5;
+import 'dart:async' as _i4;
+import 'dart:io' as _i5;
+import 'dart:typed_data' as _i6;
 
-import 'package:aegis_docs/data/models/picked_file_model.dart' as _i6;
-import 'package:aegis_docs/data/repositories/document_repository.dart' as _i2;
-import 'package:flutter/material.dart' as _i7;
+import 'package:aegis_docs/core/services/native_pdf_compression_service.dart'
+    as _i2;
+import 'package:aegis_docs/data/models/picked_file_model.dart' as _i7;
+import 'package:aegis_docs/data/repositories/document_repository.dart' as _i3;
+import 'package:flutter/material.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -26,47 +28,53 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeNativeCompressionResult_0 extends _i1.SmartFake
+    implements _i2.NativeCompressionResult {
+  _FakeNativeCompressionResult_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [DocumentRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockDocumentRepository extends _i1.Mock
-    implements _i2.DocumentRepository {
+    implements _i3.DocumentRepository {
   MockDocumentRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<List<String>> listAllFolders() =>
+  _i4.Future<List<String>> listAllFolders() =>
       (super.noSuchMethod(
             Invocation.method(#listAllFolders, []),
-            returnValue: _i3.Future<List<String>>.value(<String>[]),
+            returnValue: _i4.Future<List<String>>.value(<String>[]),
           )
-          as _i3.Future<List<String>>);
+          as _i4.Future<List<String>>);
 
   @override
-  _i3.Future<List<_i4.FileSystemEntity>> listWalletContents({
+  _i4.Future<List<_i5.FileSystemEntity>> listWalletContents({
     String? folderPath,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#listWalletContents, [], {
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<List<_i4.FileSystemEntity>>.value(
-              <_i4.FileSystemEntity>[],
+            returnValue: _i4.Future<List<_i5.FileSystemEntity>>.value(
+              <_i5.FileSystemEntity>[],
             ),
           )
-          as _i3.Future<List<_i4.FileSystemEntity>>);
+          as _i4.Future<List<_i5.FileSystemEntity>>);
 
   @override
-  _i3.Future<List<_i4.File>> listEncryptedFiles() =>
+  _i4.Future<List<_i5.File>> listEncryptedFiles() =>
       (super.noSuchMethod(
             Invocation.method(#listEncryptedFiles, []),
-            returnValue: _i3.Future<List<_i4.File>>.value(<_i4.File>[]),
+            returnValue: _i4.Future<List<_i5.File>>.value(<_i5.File>[]),
           )
-          as _i3.Future<List<_i4.File>>);
+          as _i4.Future<List<_i5.File>>);
 
   @override
-  _i3.Future<void> createFolderInWallet({
+  _i4.Future<void> createFolderInWallet({
     required String? folderName,
     String? parentFolderPath,
   }) =>
@@ -75,24 +83,24 @@ class MockDocumentRepository extends _i1.Mock
               #folderName: folderName,
               #parentFolderPath: parentFolderPath,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<void> deleteFolderFromWallet({required String? folderPath}) =>
+  _i4.Future<void> deleteFolderFromWallet({required String? folderPath}) =>
       (super.noSuchMethod(
             Invocation.method(#deleteFolderFromWallet, [], {
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<void> renameFileInWallet({
+  _i4.Future<void> renameFileInWallet({
     required String? oldName,
     required String? newName,
     String? folderPath,
@@ -103,13 +111,13 @@ class MockDocumentRepository extends _i1.Mock
               #newName: newName,
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<void> renameFolderInWallet({
+  _i4.Future<void> renameFolderInWallet({
     required String? oldPath,
     required String? newName,
   }) =>
@@ -118,15 +126,15 @@ class MockDocumentRepository extends _i1.Mock
               #oldPath: oldPath,
               #newName: newName,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<void> saveEncryptedDocument({
+  _i4.Future<void> saveEncryptedDocument({
     required String? fileName,
-    required _i5.Uint8List? data,
+    required _i6.Uint8List? data,
     String? folderPath,
   }) =>
       (super.noSuchMethod(
@@ -135,13 +143,13 @@ class MockDocumentRepository extends _i1.Mock
               #data: data,
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<_i5.Uint8List?> loadDecryptedDocument({
+  _i4.Future<_i6.Uint8List?> loadDecryptedDocument({
     required String? fileName,
     String? folderPath,
   }) =>
@@ -150,12 +158,12 @@ class MockDocumentRepository extends _i1.Mock
               #fileName: fileName,
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<_i5.Uint8List?>.value(),
+            returnValue: _i4.Future<_i6.Uint8List?>.value(),
           )
-          as _i3.Future<_i5.Uint8List?>);
+          as _i4.Future<_i6.Uint8List?>);
 
   @override
-  _i3.Future<void> deleteEncryptedDocument({
+  _i4.Future<void> deleteEncryptedDocument({
     required String? fileName,
     String? folderPath,
   }) =>
@@ -164,63 +172,63 @@ class MockDocumentRepository extends _i1.Mock
               #fileName: fileName,
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<(_i6.PickedFileModel?, bool)> pickImage() =>
+  _i4.Future<(_i7.PickedFileModel?, bool)> pickImage() =>
       (super.noSuchMethod(
             Invocation.method(#pickImage, []),
-            returnValue: _i3.Future<(_i6.PickedFileModel?, bool)>.value((
+            returnValue: _i4.Future<(_i7.PickedFileModel?, bool)>.value((
               null,
               false,
             )),
           )
-          as _i3.Future<(_i6.PickedFileModel?, bool)>);
+          as _i4.Future<(_i7.PickedFileModel?, bool)>);
 
   @override
-  _i3.Future<_i6.PickedFileModel?> pickPdf() =>
+  _i4.Future<_i7.PickedFileModel?> pickPdf() =>
       (super.noSuchMethod(
             Invocation.method(#pickPdf, []),
-            returnValue: _i3.Future<_i6.PickedFileModel?>.value(),
+            returnValue: _i4.Future<_i7.PickedFileModel?>.value(),
           )
-          as _i3.Future<_i6.PickedFileModel?>);
+          as _i4.Future<_i7.PickedFileModel?>);
 
   @override
-  _i3.Future<List<(_i6.PickedFileModel?, bool)>> pickMultipleImages() =>
+  _i4.Future<List<(_i7.PickedFileModel?, bool)>> pickMultipleImages() =>
       (super.noSuchMethod(
             Invocation.method(#pickMultipleImages, []),
-            returnValue: _i3.Future<List<(_i6.PickedFileModel?, bool)>>.value(
-              <(_i6.PickedFileModel?, bool)>[],
+            returnValue: _i4.Future<List<(_i7.PickedFileModel?, bool)>>.value(
+              <(_i7.PickedFileModel?, bool)>[],
             ),
           )
-          as _i3.Future<List<(_i6.PickedFileModel?, bool)>>);
+          as _i4.Future<List<(_i7.PickedFileModel?, bool)>>);
 
   @override
-  _i3.Future<List<_i6.PickedFileModel>> pickAndSanitizeMultipleImagesForPdf() =>
+  _i4.Future<List<_i7.PickedFileModel>> pickAndSanitizeMultipleImagesForPdf() =>
       (super.noSuchMethod(
             Invocation.method(#pickAndSanitizeMultipleImagesForPdf, []),
-            returnValue: _i3.Future<List<_i6.PickedFileModel>>.value(
-              <_i6.PickedFileModel>[],
+            returnValue: _i4.Future<List<_i7.PickedFileModel>>.value(
+              <_i7.PickedFileModel>[],
             ),
           )
-          as _i3.Future<List<_i6.PickedFileModel>>);
+          as _i4.Future<List<_i7.PickedFileModel>>);
 
   @override
-  _i3.Future<String?> saveDocument(
-    _i5.Uint8List? bytes, {
+  _i4.Future<String?> saveDocument(
+    _i6.Uint8List? bytes, {
     required String? fileName,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#saveDocument, [bytes], {#fileName: fileName}),
-            returnValue: _i3.Future<String?>.value(),
+            returnValue: _i4.Future<String?>.value(),
           )
-          as _i3.Future<String?>);
+          as _i4.Future<String?>);
 
   @override
-  _i3.Future<_i5.Uint8List?> exportDecryptedDocument({
+  _i4.Future<_i6.Uint8List?> exportDecryptedDocument({
     required String? fileName,
     String? folderPath,
   }) =>
@@ -229,13 +237,13 @@ class MockDocumentRepository extends _i1.Mock
               #fileName: fileName,
               #folderPath: folderPath,
             }),
-            returnValue: _i3.Future<_i5.Uint8List?>.value(),
+            returnValue: _i4.Future<_i6.Uint8List?>.value(),
           )
-          as _i3.Future<_i5.Uint8List?>);
+          as _i4.Future<_i6.Uint8List?>);
 
   @override
-  _i3.Future<_i5.Uint8List> resizeImage(
-    _i5.Uint8List? imageBytes, {
+  _i4.Future<_i6.Uint8List> resizeImage(
+    _i6.Uint8List? imageBytes, {
     required int? width,
     required int? height,
     required String? outputFormat,
@@ -246,13 +254,13 @@ class MockDocumentRepository extends _i1.Mock
               [imageBytes],
               {#width: width, #height: height, #outputFormat: outputFormat},
             ),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List> compressImage(
-    _i5.Uint8List? imageBytes, {
+  _i4.Future<_i6.Uint8List> compressImage(
+    _i6.Uint8List? imageBytes, {
     int? quality = 85,
   }) =>
       (super.noSuchMethod(
@@ -261,24 +269,24 @@ class MockDocumentRepository extends _i1.Mock
               [imageBytes],
               {#quality: quality},
             ),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List?> cropImage(
-    _i5.Uint8List? imageBytes, {
-    required _i7.ThemeData? theme,
+  _i4.Future<_i6.Uint8List?> cropImage(
+    _i6.Uint8List? imageBytes, {
+    required _i8.ThemeData? theme,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#cropImage, [imageBytes], {#theme: theme}),
-            returnValue: _i3.Future<_i5.Uint8List?>.value(),
+            returnValue: _i4.Future<_i6.Uint8List?>.value(),
           )
-          as _i3.Future<_i5.Uint8List?>);
+          as _i4.Future<_i6.Uint8List?>);
 
   @override
-  _i3.Future<_i5.Uint8List> changeImageFormat(
-    _i5.Uint8List? imageBytes, {
+  _i4.Future<_i6.Uint8List> changeImageFormat(
+    _i6.Uint8List? imageBytes, {
     required String? originalFormat,
     required String? targetFormat,
   }) =>
@@ -288,71 +296,71 @@ class MockDocumentRepository extends _i1.Mock
               [imageBytes],
               {#originalFormat: originalFormat, #targetFormat: targetFormat},
             ),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List> convertImageToPdf(_i5.Uint8List? imageBytes) =>
+  _i4.Future<_i6.Uint8List> convertImageToPdf(_i6.Uint8List? imageBytes) =>
       (super.noSuchMethod(
             Invocation.method(#convertImageToPdf, [imageBytes]),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List> convertImagesToPdf(
-    List<_i5.Uint8List>? imageBytesList,
+  _i4.Future<_i6.Uint8List> convertImagesToPdf(
+    List<_i6.Uint8List>? imageBytesList,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#convertImagesToPdf, [imageBytesList]),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<List<_i5.Uint8List>> convertPdfToImages(_i5.Uint8List? pdfBytes) =>
+  _i4.Future<List<_i6.Uint8List>> convertPdfToImages(_i6.Uint8List? pdfBytes) =>
       (super.noSuchMethod(
             Invocation.method(#convertPdfToImages, [pdfBytes]),
-            returnValue: _i3.Future<List<_i5.Uint8List>>.value(
-              <_i5.Uint8List>[],
+            returnValue: _i4.Future<List<_i6.Uint8List>>.value(
+              <_i6.Uint8List>[],
             ),
           )
-          as _i3.Future<List<_i5.Uint8List>>);
+          as _i4.Future<List<_i6.Uint8List>>);
 
   @override
-  _i3.Future<bool> isPdfEncrypted(_i5.Uint8List? pdfBytes) =>
+  _i4.Future<bool> isPdfEncrypted(_i6.Uint8List? pdfBytes) =>
       (super.noSuchMethod(
             Invocation.method(#isPdfEncrypted, [pdfBytes]),
-            returnValue: _i3.Future<bool>.value(false),
+            returnValue: _i4.Future<bool>.value(false),
           )
-          as _i3.Future<bool>);
+          as _i4.Future<bool>);
 
   @override
-  _i3.Future<_i5.Uint8List> lockPdf(
-    _i5.Uint8List? pdfBytes, {
+  _i4.Future<_i6.Uint8List> lockPdf(
+    _i6.Uint8List? pdfBytes, {
     required String? password,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#lockPdf, [pdfBytes], {#password: password}),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List> unlockPdf(
-    _i5.Uint8List? pdfBytes, {
+  _i4.Future<_i6.Uint8List> unlockPdf(
+    _i6.Uint8List? pdfBytes, {
     required String? password,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#unlockPdf, [pdfBytes], {#password: password}),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<_i5.Uint8List> changePdfPassword(
-    _i5.Uint8List? pdfBytes, {
+  _i4.Future<_i6.Uint8List> changePdfPassword(
+    _i6.Uint8List? pdfBytes, {
     required String? oldPassword,
     required String? newPassword,
   }) =>
@@ -362,12 +370,12 @@ class MockDocumentRepository extends _i1.Mock
               [pdfBytes],
               {#oldPassword: oldPassword, #newPassword: newPassword},
             ),
-            returnValue: _i3.Future<_i5.Uint8List>.value(_i5.Uint8List(0)),
+            returnValue: _i4.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
           )
-          as _i3.Future<_i5.Uint8List>);
+          as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i3.Future<String?> compressPdfWithNative({
+  _i4.Future<_i2.NativeCompressionResult> compressPdfWithNative({
     required String? filePath,
     required int? sizeLimit,
     required bool? preserveText,
@@ -378,38 +386,47 @@ class MockDocumentRepository extends _i1.Mock
               #sizeLimit: sizeLimit,
               #preserveText: preserveText,
             }),
-            returnValue: _i3.Future<String?>.value(),
+            returnValue: _i4.Future<_i2.NativeCompressionResult>.value(
+              _FakeNativeCompressionResult_0(
+                this,
+                Invocation.method(#compressPdfWithNative, [], {
+                  #filePath: filePath,
+                  #sizeLimit: sizeLimit,
+                  #preserveText: preserveText,
+                }),
+              ),
+            ),
           )
-          as _i3.Future<String?>);
+          as _i4.Future<_i2.NativeCompressionResult>);
 
   @override
-  _i3.Future<bool?> deleteBackupFromDrive() =>
+  _i4.Future<bool?> deleteBackupFromDrive() =>
       (super.noSuchMethod(
             Invocation.method(#deleteBackupFromDrive, []),
-            returnValue: _i3.Future<bool?>.value(),
+            returnValue: _i4.Future<bool?>.value(),
           )
-          as _i3.Future<bool?>);
+          as _i4.Future<bool?>);
 
   @override
-  _i3.Future<_i4.File?> downloadBackupFromDrive() =>
+  _i4.Future<_i5.File?> downloadBackupFromDrive() =>
       (super.noSuchMethod(
             Invocation.method(#downloadBackupFromDrive, []),
-            returnValue: _i3.Future<_i4.File?>.value(),
+            returnValue: _i4.Future<_i5.File?>.value(),
           )
-          as _i3.Future<_i4.File?>);
+          as _i4.Future<_i5.File?>);
 
   @override
-  _i3.Future<void> backupWalletToDrive(String? masterPassword) =>
+  _i4.Future<void> backupWalletToDrive(String? masterPassword) =>
       (super.noSuchMethod(
             Invocation.method(#backupWalletToDrive, [masterPassword]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<void> restoreWalletFromBackupData({
-    required _i4.File? backupFile,
+  _i4.Future<void> restoreWalletFromBackupData({
+    required _i5.File? backupFile,
     required String? masterPassword,
   }) =>
       (super.noSuchMethod(
@@ -417,8 +434,8 @@ class MockDocumentRepository extends _i1.Mock
               #backupFile: backupFile,
               #masterPassword: masterPassword,
             }),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<void>);
+          as _i4.Future<void>);
 }

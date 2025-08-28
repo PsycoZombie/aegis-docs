@@ -92,8 +92,7 @@ class _ToolButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelMedium!.copyWith(
                 color: isEnabled
                     ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).disabledColor,

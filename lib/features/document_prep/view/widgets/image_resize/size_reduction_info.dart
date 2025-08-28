@@ -15,6 +15,7 @@ class SizeReductionInfo extends StatelessWidget {
     final hasResized = state.resizedImage != null;
     // If no resize has occurred yet, render nothing.
     if (!hasResized) return const SizedBox.shrink();
+    final theme = Theme.of(context);
 
     final originalSize = state.originalImage!.bytes!.lengthInBytes;
     final resizedSize = state.resizedImage!.lengthInBytes;
@@ -24,10 +25,9 @@ class SizeReductionInfo extends StatelessWidget {
     if (reduction > 0.1) {
       return Text(
         '✨ File size reduced by ${reduction.toStringAsFixed(1)}%',
-        style: TextStyle(
+        style: theme.textTheme.bodyLarge!.copyWith(
           color: Colors.green.shade700,
           fontWeight: FontWeight.bold,
-          fontSize: 16,
         ),
       );
     }
@@ -35,10 +35,9 @@ class SizeReductionInfo extends StatelessWidget {
     else if (reduction < -0.1) {
       return Text(
         '⚠️ File size increased by ${(-reduction).toStringAsFixed(1)}%',
-        style: TextStyle(
+        style: theme.textTheme.bodyLarge!.copyWith(
           color: Colors.orange.shade700,
           fontWeight: FontWeight.bold,
-          fontSize: 16,
         ),
       );
     }

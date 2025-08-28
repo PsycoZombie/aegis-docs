@@ -86,13 +86,15 @@ class DocumentRepository {
     required FileStorageService fileStorageService,
     required EncryptionService encryptionService,
     required CloudStorageService cloudStorageService,
+    BackupZipper? backupZipper,
   }) : _filePickerService = filePickerService,
        _imageProcessor = imageProcessor,
        _pdfProcessor = pdfProcessor,
        _nativePdfCompressionService = nativePdfCompressionService,
        _fileStorageService = fileStorageService,
        _encryptionService = encryptionService,
-       _cloudStorageService = cloudStorageService;
+       _cloudStorageService = cloudStorageService,
+       _backupZipper = backupZipper ?? BackupZipper();
 
   final FilePickerService _filePickerService;
   final ImageProcessor _imageProcessor;
@@ -101,6 +103,7 @@ class DocumentRepository {
   final FileStorageService _fileStorageService;
   final EncryptionService _encryptionService;
   final CloudStorageService _cloudStorageService;
+  final BackupZipper _backupZipper;
 
   // --- Wallet & File System --- //
 
@@ -304,7 +307,7 @@ class DocumentRepository {
   // --- Native Compression --- //
 
   /// Compresses a PDF using the high-performance native MuPDF implementation.
-  Future<String?> compressPdfWithNative({
+  Future<NativeCompressionResult> compressPdfWithNative({
     required String filePath,
     required int sizeLimit,
     required bool preserveText,
@@ -337,31 +340,8 @@ class DocumentRepository {
     final keyJson = jsonEncode(keyData);
     final walletDir = await _fileStorageService.getBaseWalletDirectory();
 
-    // Create a temporary file for the zip archive.
-    final tempDir = await getTemporaryDirectory();
-    final zipFile = File('${tempDir.path}/${AppConstants.backupFileName}');
-    final encoder = ZipFileEncoder()
-      ..create(zipFile.path)
-      // Add the key file.
-      ..addArchiveFile(
-        ArchiveFile(
-          AppConstants.backupKeyFileName,
-          keyJson.length,
-          utf8.encode(keyJson),
-        ),
-      );
-
-    // Add all wallet files and directories.
-    final entities = walletDir.listSync(recursive: true);
-    for (final entity in entities) {
-      final relativePath = p.relative(entity.path, from: walletDir.path);
-      if (entity is File) {
-        await encoder.addFile(entity, relativePath);
-      } else if (entity is Directory) {
-        await encoder.addDirectory(entity);
-      }
-    }
-    await encoder.close();
+    // Use the injected helper to create the zip file.
+    final zipFile = await _backupZipper.create(walletDir.path, keyJson);
 
     // Stream the temporary file to the cloud.
     await _cloudStorageService.uploadBackup(
@@ -397,5 +377,40 @@ class DocumentRepository {
       _restoreBackupIsolateFromFile,
       _RestoreFilePayload(backupFile.path, walletDir.path),
     );
+  }
+}
+
+/// A helper class responsible for creating the backup zip archive.
+/// This is extracted into its own class to make the repository more testable.
+class BackupZipper {
+  /// Creates a zip archive of the wallet at a temporary location.
+  /// Returns the [File] object for the created archive.
+  Future<File> create(String walletPath, String keyJson) async {
+    final tempDir = await getTemporaryDirectory();
+    final zipFile = File('${tempDir.path}/${AppConstants.backupFileName}');
+    final encoder = ZipFileEncoder()
+      ..create(zipFile.path)
+      // Add the key file.
+      ..addArchiveFile(
+        ArchiveFile(
+          AppConstants.backupKeyFileName,
+          keyJson.length,
+          utf8.encode(keyJson),
+        ),
+      );
+
+    // Add all wallet files and directories.
+    final walletDir = Directory(walletPath);
+    final entities = walletDir.listSync(recursive: true);
+    for (final entity in entities) {
+      final relativePath = p.relative(entity.path, from: walletDir.path);
+      if (entity is File) {
+        await encoder.addFile(entity, relativePath);
+      } else if (entity is Directory) {
+        await encoder.addDirectory(entity);
+      }
+    }
+    await encoder.close();
+    return zipFile;
   }
 }

@@ -3,23 +3,24 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 import 'dart:io' as _i2;
-import 'dart:typed_data' as _i7;
+import 'dart:typed_data' as _i8;
 
 import 'package:aegis_docs/core/media_processing/file_picker_service.dart'
-    as _i3;
-import 'package:aegis_docs/core/media_processing/image_processor.dart' as _i6;
-import 'package:aegis_docs/core/media_processing/pdf_processor.dart' as _i9;
-import 'package:aegis_docs/core/services/cloud_storage_service.dart' as _i10;
-import 'package:aegis_docs/core/services/encryption_service.dart' as _i12;
-import 'package:aegis_docs/core/services/file_storage_service.dart' as _i13;
+    as _i4;
+import 'package:aegis_docs/core/media_processing/image_processor.dart' as _i7;
+import 'package:aegis_docs/core/media_processing/pdf_processor.dart' as _i10;
+import 'package:aegis_docs/core/services/cloud_storage_service.dart' as _i11;
+import 'package:aegis_docs/core/services/encryption_service.dart' as _i13;
+import 'package:aegis_docs/core/services/file_storage_service.dart' as _i14;
 import 'package:aegis_docs/core/services/native_pdf_compression_service.dart'
-    as _i14;
-import 'package:aegis_docs/data/models/picked_file_model.dart' as _i5;
-import 'package:flutter/material.dart' as _i8;
+    as _i3;
+import 'package:aegis_docs/data/models/picked_file_model.dart' as _i6;
+import 'package:aegis_docs/data/repositories/document_repository.dart' as _i15;
+import 'package:flutter/material.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i11;
+import 'package:mockito/src/dummies.dart' as _i12;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -40,65 +41,76 @@ class _FakeDirectory_0 extends _i1.SmartFake implements _i2.Directory {
     : super(parent, parentInvocation);
 }
 
+class _FakeNativeCompressionResult_1 extends _i1.SmartFake
+    implements _i3.NativeCompressionResult {
+  _FakeNativeCompressionResult_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeFile_2 extends _i1.SmartFake implements _i2.File {
+  _FakeFile_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [FilePickerService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFilePickerService extends _i1.Mock implements _i3.FilePickerService {
+class MockFilePickerService extends _i1.Mock implements _i4.FilePickerService {
   MockFilePickerService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<(_i5.PickedFileModel?, bool)> pickImage() =>
+  _i5.Future<(_i6.PickedFileModel?, bool)> pickImage() =>
       (super.noSuchMethod(
             Invocation.method(#pickImage, []),
-            returnValue: _i4.Future<(_i5.PickedFileModel?, bool)>.value((
+            returnValue: _i5.Future<(_i6.PickedFileModel?, bool)>.value((
               null,
               false,
             )),
           )
-          as _i4.Future<(_i5.PickedFileModel?, bool)>);
+          as _i5.Future<(_i6.PickedFileModel?, bool)>);
 
   @override
-  _i4.Future<List<(_i5.PickedFileModel?, bool)>> pickMultipleImages() =>
+  _i5.Future<List<(_i6.PickedFileModel?, bool)>> pickMultipleImages() =>
       (super.noSuchMethod(
             Invocation.method(#pickMultipleImages, []),
-            returnValue: _i4.Future<List<(_i5.PickedFileModel?, bool)>>.value(
-              <(_i5.PickedFileModel?, bool)>[],
+            returnValue: _i5.Future<List<(_i6.PickedFileModel?, bool)>>.value(
+              <(_i6.PickedFileModel?, bool)>[],
             ),
           )
-          as _i4.Future<List<(_i5.PickedFileModel?, bool)>>);
+          as _i5.Future<List<(_i6.PickedFileModel?, bool)>>);
 
   @override
-  _i4.Future<_i5.PickedFileModel?> pickPdf() =>
+  _i5.Future<_i6.PickedFileModel?> pickPdf() =>
       (super.noSuchMethod(
             Invocation.method(#pickPdf, []),
-            returnValue: _i4.Future<_i5.PickedFileModel?>.value(),
+            returnValue: _i5.Future<_i6.PickedFileModel?>.value(),
           )
-          as _i4.Future<_i5.PickedFileModel?>);
+          as _i5.Future<_i6.PickedFileModel?>);
 
   @override
-  _i4.Future<List<_i5.PickedFileModel>> pickAndSanitizeMultipleImagesForPdf() =>
+  _i5.Future<List<_i6.PickedFileModel>> pickAndSanitizeMultipleImagesForPdf() =>
       (super.noSuchMethod(
             Invocation.method(#pickAndSanitizeMultipleImagesForPdf, []),
-            returnValue: _i4.Future<List<_i5.PickedFileModel>>.value(
-              <_i5.PickedFileModel>[],
+            returnValue: _i5.Future<List<_i6.PickedFileModel>>.value(
+              <_i6.PickedFileModel>[],
             ),
           )
-          as _i4.Future<List<_i5.PickedFileModel>>);
+          as _i5.Future<List<_i6.PickedFileModel>>);
 }
 
 /// A class which mocks [ImageProcessor].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockImageProcessor extends _i1.Mock implements _i6.ImageProcessor {
+class MockImageProcessor extends _i1.Mock implements _i7.ImageProcessor {
   MockImageProcessor() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<_i7.Uint8List> resize({
-    required _i7.Uint8List? imageBytes,
+  _i5.Future<_i8.Uint8List> resize({
+    required _i8.Uint8List? imageBytes,
     required int? width,
     required int? height,
     required String? outputFormat,
@@ -110,13 +122,13 @@ class MockImageProcessor extends _i1.Mock implements _i6.ImageProcessor {
               #height: height,
               #outputFormat: outputFormat,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> compressImage({
-    required _i7.Uint8List? imageBytes,
+  _i5.Future<_i8.Uint8List> compressImage({
+    required _i8.Uint8List? imageBytes,
     int? quality = 100,
   }) =>
       (super.noSuchMethod(
@@ -124,13 +136,13 @@ class MockImageProcessor extends _i1.Mock implements _i6.ImageProcessor {
               #imageBytes: imageBytes,
               #quality: quality,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> changeFormat({
-    required _i7.Uint8List? imageBytes,
+  _i5.Future<_i8.Uint8List> changeFormat({
+    required _i8.Uint8List? imageBytes,
     required String? originalFormat,
     required String? targetFormat,
   }) =>
@@ -140,90 +152,90 @@ class MockImageProcessor extends _i1.Mock implements _i6.ImageProcessor {
               #originalFormat: originalFormat,
               #targetFormat: targetFormat,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List?> crop({
-    required _i7.Uint8List? imageBytes,
-    required _i8.ThemeData? theme,
+  _i5.Future<_i8.Uint8List?> crop({
+    required _i8.Uint8List? imageBytes,
+    required _i9.ThemeData? theme,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#crop, [], {
               #imageBytes: imageBytes,
               #theme: theme,
             }),
-            returnValue: _i4.Future<_i7.Uint8List?>.value(),
+            returnValue: _i5.Future<_i8.Uint8List?>.value(),
           )
-          as _i4.Future<_i7.Uint8List?>);
+          as _i5.Future<_i8.Uint8List?>);
 
   @override
-  _i4.Future<_i7.Uint8List> applyGrayscale({
-    required _i7.Uint8List? imageBytes,
+  _i5.Future<_i8.Uint8List> applyGrayscale({
+    required _i8.Uint8List? imageBytes,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#applyGrayscale, [], {#imageBytes: imageBytes}),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 }
 
 /// A class which mocks [PdfProcessor].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPdfProcessor extends _i1.Mock implements _i9.PdfProcessor {
+class MockPdfProcessor extends _i1.Mock implements _i10.PdfProcessor {
   MockPdfProcessor() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<List<_i7.Uint8List>> convertPdfToImages({
-    required _i7.Uint8List? pdfBytes,
+  _i5.Future<List<_i8.Uint8List>> convertPdfToImages({
+    required _i8.Uint8List? pdfBytes,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#convertPdfToImages, [], {#pdfBytes: pdfBytes}),
-            returnValue: _i4.Future<List<_i7.Uint8List>>.value(
-              <_i7.Uint8List>[],
+            returnValue: _i5.Future<List<_i8.Uint8List>>.value(
+              <_i8.Uint8List>[],
             ),
           )
-          as _i4.Future<List<_i7.Uint8List>>);
+          as _i5.Future<List<_i8.Uint8List>>);
 
   @override
-  _i4.Future<_i7.Uint8List> convertImageToPdf({
-    required _i7.Uint8List? imageBytes,
+  _i5.Future<_i8.Uint8List> convertImageToPdf({
+    required _i8.Uint8List? imageBytes,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#convertImageToPdf, [], {
               #imageBytes: imageBytes,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> convertImagesToPdf({
-    required List<_i7.Uint8List>? imageBytesList,
+  _i5.Future<_i8.Uint8List> convertImagesToPdf({
+    required List<_i8.Uint8List>? imageBytesList,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#convertImagesToPdf, [], {
               #imageBytesList: imageBytesList,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<bool> isPdfEncrypted({required _i7.Uint8List? pdfBytes}) =>
+  _i5.Future<bool> isPdfEncrypted({required _i8.Uint8List? pdfBytes}) =>
       (super.noSuchMethod(
             Invocation.method(#isPdfEncrypted, [], {#pdfBytes: pdfBytes}),
-            returnValue: _i4.Future<bool>.value(false),
+            returnValue: _i5.Future<bool>.value(false),
           )
-          as _i4.Future<bool>);
+          as _i5.Future<bool>);
 
   @override
-  _i4.Future<_i7.Uint8List> lockPdf({
-    required _i7.Uint8List? pdfBytes,
+  _i5.Future<_i8.Uint8List> lockPdf({
+    required _i8.Uint8List? pdfBytes,
     required String? password,
   }) =>
       (super.noSuchMethod(
@@ -231,13 +243,13 @@ class MockPdfProcessor extends _i1.Mock implements _i9.PdfProcessor {
               #pdfBytes: pdfBytes,
               #password: password,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> unlockPdf({
-    required _i7.Uint8List? pdfBytes,
+  _i5.Future<_i8.Uint8List> unlockPdf({
+    required _i8.Uint8List? pdfBytes,
     required String? password,
   }) =>
       (super.noSuchMethod(
@@ -245,13 +257,13 @@ class MockPdfProcessor extends _i1.Mock implements _i9.PdfProcessor {
               #pdfBytes: pdfBytes,
               #password: password,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> changePdfPassword({
-    required _i7.Uint8List? pdfBytes,
+  _i5.Future<_i8.Uint8List> changePdfPassword({
+    required _i8.Uint8List? pdfBytes,
     required String? oldPassword,
     required String? newPassword,
   }) =>
@@ -261,16 +273,16 @@ class MockPdfProcessor extends _i1.Mock implements _i9.PdfProcessor {
               #oldPassword: oldPassword,
               #newPassword: newPassword,
             }),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 }
 
 /// A class which mocks [CloudStorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCloudStorageService extends _i1.Mock
-    implements _i10.CloudStorageService {
+    implements _i11.CloudStorageService {
   MockCloudStorageService() {
     _i1.throwOnMissingStub(this);
   }
@@ -279,7 +291,7 @@ class MockCloudStorageService extends _i1.Mock
   String get serverClientId =>
       (super.noSuchMethod(
             Invocation.getter(#serverClientId),
-            returnValue: _i11.dummyValue<String>(
+            returnValue: _i12.dummyValue<String>(
               this,
               Invocation.getter(#serverClientId),
             ),
@@ -287,62 +299,62 @@ class MockCloudStorageService extends _i1.Mock
           as String);
 
   @override
-  _i4.Future<bool?> deleteBackup(String? fileName) =>
+  _i5.Future<bool?> deleteBackup(String? fileName) =>
       (super.noSuchMethod(
             Invocation.method(#deleteBackup, [fileName]),
-            returnValue: _i4.Future<bool?>.value(),
+            returnValue: _i5.Future<bool?>.value(),
           )
-          as _i4.Future<bool?>);
+          as _i5.Future<bool?>);
 
   @override
-  _i4.Future<void> uploadBackup(_i2.File? backupFile, String? fileName) =>
+  _i5.Future<void> uploadBackup(_i2.File? backupFile, String? fileName) =>
       (super.noSuchMethod(
             Invocation.method(#uploadBackup, [backupFile, fileName]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<_i2.File?> downloadBackup(String? fileName) =>
+  _i5.Future<_i2.File?> downloadBackup(String? fileName) =>
       (super.noSuchMethod(
             Invocation.method(#downloadBackup, [fileName]),
-            returnValue: _i4.Future<_i2.File?>.value(),
+            returnValue: _i5.Future<_i2.File?>.value(),
           )
-          as _i4.Future<_i2.File?>);
+          as _i5.Future<_i2.File?>);
 }
 
 /// A class which mocks [EncryptionService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockEncryptionService extends _i1.Mock implements _i12.EncryptionService {
+class MockEncryptionService extends _i1.Mock implements _i13.EncryptionService {
   MockEncryptionService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<void> init() =>
+  _i5.Future<void> init() =>
       (super.noSuchMethod(
             Invocation.method(#init, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<Map<String, String>> getEncryptedDataKeyForBackup(
+  _i5.Future<Map<String, String>> getEncryptedDataKeyForBackup(
     String? masterPassword,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getEncryptedDataKeyForBackup, [masterPassword]),
-            returnValue: _i4.Future<Map<String, String>>.value(
+            returnValue: _i5.Future<Map<String, String>>.value(
               <String, String>{},
             ),
           )
-          as _i4.Future<Map<String, String>>);
+          as _i5.Future<Map<String, String>>);
 
   @override
-  _i4.Future<void> restoreDataKeyFromBackup(
+  _i5.Future<void> restoreDataKeyFromBackup(
     String? masterPassword,
     Map<String, dynamic>? backupData,
   ) =>
@@ -351,54 +363,54 @@ class MockEncryptionService extends _i1.Mock implements _i12.EncryptionService {
               masterPassword,
               backupData,
             ]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<_i7.Uint8List> encrypt(_i7.Uint8List? data) =>
+  _i5.Future<_i8.Uint8List> encrypt(_i8.Uint8List? data) =>
       (super.noSuchMethod(
             Invocation.method(#encrypt, [data]),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 
   @override
-  _i4.Future<_i7.Uint8List> decrypt(_i7.Uint8List? combinedData) =>
+  _i5.Future<_i8.Uint8List> decrypt(_i8.Uint8List? combinedData) =>
       (super.noSuchMethod(
             Invocation.method(#decrypt, [combinedData]),
-            returnValue: _i4.Future<_i7.Uint8List>.value(_i7.Uint8List(0)),
+            returnValue: _i5.Future<_i8.Uint8List>.value(_i8.Uint8List(0)),
           )
-          as _i4.Future<_i7.Uint8List>);
+          as _i5.Future<_i8.Uint8List>);
 }
 
 /// A class which mocks [FileStorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFileStorageService extends _i1.Mock
-    implements _i13.FileStorageService {
+    implements _i14.FileStorageService {
   MockFileStorageService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<_i2.Directory> getBaseWalletDirectory() =>
+  _i5.Future<_i2.Directory> getBaseWalletDirectory() =>
       (super.noSuchMethod(
             Invocation.method(#getBaseWalletDirectory, []),
-            returnValue: _i4.Future<_i2.Directory>.value(
+            returnValue: _i5.Future<_i2.Directory>.value(
               _FakeDirectory_0(
                 this,
                 Invocation.method(#getBaseWalletDirectory, []),
               ),
             ),
           )
-          as _i4.Future<_i2.Directory>);
+          as _i5.Future<_i2.Directory>);
 
   @override
-  _i4.Future<String> saveToPrivateDirectory({
+  _i5.Future<String> saveToPrivateDirectory({
     required String? fileName,
-    required _i7.Uint8List? data,
+    required _i8.Uint8List? data,
     String? folderPath,
   }) =>
       (super.noSuchMethod(
@@ -407,8 +419,8 @@ class MockFileStorageService extends _i1.Mock
               #data: data,
               #folderPath: folderPath,
             }),
-            returnValue: _i4.Future<String>.value(
-              _i11.dummyValue<String>(
+            returnValue: _i5.Future<String>.value(
+              _i12.dummyValue<String>(
                 this,
                 Invocation.method(#saveToPrivateDirectory, [], {
                   #fileName: fileName,
@@ -418,10 +430,10 @@ class MockFileStorageService extends _i1.Mock
               ),
             ),
           )
-          as _i4.Future<String>);
+          as _i5.Future<String>);
 
   @override
-  _i4.Future<_i7.Uint8List?> loadFromPrivateDirectory({
+  _i5.Future<_i8.Uint8List?> loadFromPrivateDirectory({
     required String? fileName,
     String? folderPath,
   }) =>
@@ -430,12 +442,12 @@ class MockFileStorageService extends _i1.Mock
               #fileName: fileName,
               #folderPath: folderPath,
             }),
-            returnValue: _i4.Future<_i7.Uint8List?>.value(),
+            returnValue: _i5.Future<_i8.Uint8List?>.value(),
           )
-          as _i4.Future<_i7.Uint8List?>);
+          as _i5.Future<_i8.Uint8List?>);
 
   @override
-  _i4.Future<void> deleteFromPrivateDirectory({
+  _i5.Future<void> deleteFromPrivateDirectory({
     required String? fileName,
     String? folderPath,
   }) =>
@@ -444,27 +456,27 @@ class MockFileStorageService extends _i1.Mock
               #fileName: fileName,
               #folderPath: folderPath,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<List<_i2.FileSystemEntity>> listDirectoryContents({
+  _i5.Future<List<_i2.FileSystemEntity>> listDirectoryContents({
     String? folderPath,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#listDirectoryContents, [], {
               #folderPath: folderPath,
             }),
-            returnValue: _i4.Future<List<_i2.FileSystemEntity>>.value(
+            returnValue: _i5.Future<List<_i2.FileSystemEntity>>.value(
               <_i2.FileSystemEntity>[],
             ),
           )
-          as _i4.Future<List<_i2.FileSystemEntity>>);
+          as _i5.Future<List<_i2.FileSystemEntity>>);
 
   @override
-  _i4.Future<void> renameFile({
+  _i5.Future<void> renameFile({
     required String? oldName,
     required String? newName,
     String? folderPath,
@@ -475,13 +487,13 @@ class MockFileStorageService extends _i1.Mock
               #newName: newName,
               #folderPath: folderPath,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> createFolder({
+  _i5.Future<void> createFolder({
     required String? folderName,
     String? parentFolderPath,
   }) =>
@@ -490,70 +502,70 @@ class MockFileStorageService extends _i1.Mock
               #folderName: folderName,
               #parentFolderPath: parentFolderPath,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> deleteFolder({required String? folderPath}) =>
+  _i5.Future<void> deleteFolder({required String? folderPath}) =>
       (super.noSuchMethod(
             Invocation.method(#deleteFolder, [], {#folderPath: folderPath}),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<String?> saveFile(_i7.Uint8List? bytes, String? fileName) =>
+  _i5.Future<String?> saveFile(_i8.Uint8List? bytes, String? fileName) =>
       (super.noSuchMethod(
             Invocation.method(#saveFile, [bytes, fileName]),
-            returnValue: _i4.Future<String?>.value(),
+            returnValue: _i5.Future<String?>.value(),
           )
-          as _i4.Future<String?>);
+          as _i5.Future<String?>);
 
   @override
-  _i4.Future<List<String>> listAllFoldersRecursively() =>
+  _i5.Future<List<String>> listAllFoldersRecursively() =>
       (super.noSuchMethod(
             Invocation.method(#listAllFoldersRecursively, []),
-            returnValue: _i4.Future<List<String>>.value(<String>[]),
+            returnValue: _i5.Future<List<String>>.value(<String>[]),
           )
-          as _i4.Future<List<String>>);
+          as _i5.Future<List<String>>);
 
   @override
-  _i4.Future<List<_i2.File>> listPrivateFiles() =>
+  _i5.Future<List<_i2.File>> listPrivateFiles() =>
       (super.noSuchMethod(
             Invocation.method(#listPrivateFiles, []),
-            returnValue: _i4.Future<List<_i2.File>>.value(<_i2.File>[]),
+            returnValue: _i5.Future<List<_i2.File>>.value(<_i2.File>[]),
           )
-          as _i4.Future<List<_i2.File>>);
+          as _i5.Future<List<_i2.File>>);
 
   @override
-  _i4.Future<String?> saveToPublicDirectory({
+  _i5.Future<String?> saveToPublicDirectory({
     required String? fileName,
-    required _i7.Uint8List? data,
+    required _i8.Uint8List? data,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#saveToPublicDirectory, [], {
               #fileName: fileName,
               #data: data,
             }),
-            returnValue: _i4.Future<String?>.value(),
+            returnValue: _i5.Future<String?>.value(),
           )
-          as _i4.Future<String?>);
+          as _i5.Future<String?>);
 
   @override
-  _i4.Future<String> saveToPublicDownloads({
+  _i5.Future<String> saveToPublicDownloads({
     required String? fileName,
-    required _i7.Uint8List? data,
+    required _i8.Uint8List? data,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#saveToPublicDownloads, [], {
               #fileName: fileName,
               #data: data,
             }),
-            returnValue: _i4.Future<String>.value(
-              _i11.dummyValue<String>(
+            returnValue: _i5.Future<String>.value(
+              _i12.dummyValue<String>(
                 this,
                 Invocation.method(#saveToPublicDownloads, [], {
                   #fileName: fileName,
@@ -562,10 +574,10 @@ class MockFileStorageService extends _i1.Mock
               ),
             ),
           )
-          as _i4.Future<String>);
+          as _i5.Future<String>);
 
   @override
-  _i4.Future<void> renameFolder({
+  _i5.Future<void> renameFolder({
     required String? oldPath,
     required String? newName,
   }) =>
@@ -574,31 +586,31 @@ class MockFileStorageService extends _i1.Mock
               #oldPath: oldPath,
               #newName: newName,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<_i2.Directory?> getPublicExportDirectory() =>
+  _i5.Future<_i2.Directory?> getPublicExportDirectory() =>
       (super.noSuchMethod(
             Invocation.method(#getPublicExportDirectory, []),
-            returnValue: _i4.Future<_i2.Directory?>.value(),
+            returnValue: _i5.Future<_i2.Directory?>.value(),
           )
-          as _i4.Future<_i2.Directory?>);
+          as _i5.Future<_i2.Directory?>);
 }
 
 /// A class which mocks [NativePdfCompressionService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockNativePdfCompressionService extends _i1.Mock
-    implements _i14.NativePdfCompressionService {
+    implements _i3.NativePdfCompressionService {
   MockNativePdfCompressionService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<String> compressPdf({
+  _i5.Future<_i3.NativeCompressionResult> compressPdf({
     required String? filePath,
     required int? sizeLimit,
     required bool? preserveText,
@@ -609,8 +621,8 @@ class MockNativePdfCompressionService extends _i1.Mock
               #sizeLimit: sizeLimit,
               #preserveText: preserveText,
             }),
-            returnValue: _i4.Future<String>.value(
-              _i11.dummyValue<String>(
+            returnValue: _i5.Future<_i3.NativeCompressionResult>.value(
+              _FakeNativeCompressionResult_1(
                 this,
                 Invocation.method(#compressPdf, [], {
                   #filePath: filePath,
@@ -620,5 +632,27 @@ class MockNativePdfCompressionService extends _i1.Mock
               ),
             ),
           )
-          as _i4.Future<String>);
+          as _i5.Future<_i3.NativeCompressionResult>);
+}
+
+/// A class which mocks [BackupZipper].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockBackupZipper extends _i1.Mock implements _i15.BackupZipper {
+  MockBackupZipper() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<_i2.File> create(String? walletPath, String? keyJson) =>
+      (super.noSuchMethod(
+            Invocation.method(#create, [walletPath, keyJson]),
+            returnValue: _i5.Future<_i2.File>.value(
+              _FakeFile_2(
+                this,
+                Invocation.method(#create, [walletPath, keyJson]),
+              ),
+            ),
+          )
+          as _i5.Future<_i2.File>);
 }

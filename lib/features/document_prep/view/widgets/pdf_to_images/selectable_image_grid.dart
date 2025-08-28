@@ -89,10 +89,7 @@ class SelectableImageGrid extends StatelessWidget {
                       child: Text(
                         'Page ${index + 1}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium,
                       ),
                     ),
                   ),

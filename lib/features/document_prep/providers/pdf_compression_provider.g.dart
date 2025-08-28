@@ -7,7 +7,7 @@ part of 'pdf_compression_provider.dart';
 // **************************************************************************
 
 String _$pdfCompressionViewModelHash() =>
-    r'f64e378d5e5d3fa6661bdc7ddaa09c9fe37cc4f3';
+    r'eb6efeb36a319cfbcd9575f38584c3380e6a5fd5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,33 +39,21 @@ abstract class _$PdfCompressionViewModel
 
 /// A ViewModel for the native PDF compression feature.
 ///
-/// Manages the state and business logic for compressing a PDF to a target
-/// size using a high-performance native implementation.
-///
 /// Copied from [PdfCompressionViewModel].
 @ProviderFor(PdfCompressionViewModel)
 const pdfCompressionViewModelProvider = PdfCompressionViewModelFamily();
 
 /// A ViewModel for the native PDF compression feature.
 ///
-/// Manages the state and business logic for compressing a PDF to a target
-/// size using a high-performance native implementation.
-///
 /// Copied from [PdfCompressionViewModel].
 class PdfCompressionViewModelFamily
     extends Family<AsyncValue<PdfCompressionState>> {
   /// A ViewModel for the native PDF compression feature.
   ///
-  /// Manages the state and business logic for compressing a PDF to a target
-  /// size using a high-performance native implementation.
-  ///
   /// Copied from [PdfCompressionViewModel].
   const PdfCompressionViewModelFamily();
 
   /// A ViewModel for the native PDF compression feature.
-  ///
-  /// Manages the state and business logic for compressing a PDF to a target
-  /// size using a high-performance native implementation.
   ///
   /// Copied from [PdfCompressionViewModel].
   PdfCompressionViewModelProvider call(PickedFileModel? initialFile) {
@@ -96,9 +84,6 @@ class PdfCompressionViewModelFamily
 
 /// A ViewModel for the native PDF compression feature.
 ///
-/// Manages the state and business logic for compressing a PDF to a target
-/// size using a high-performance native implementation.
-///
 /// Copied from [PdfCompressionViewModel].
 class PdfCompressionViewModelProvider
     extends
@@ -107,9 +92,6 @@ class PdfCompressionViewModelProvider
           PdfCompressionState
         > {
   /// A ViewModel for the native PDF compression feature.
-  ///
-  /// Manages the state and business logic for compressing a PDF to a target
-  /// size using a high-performance native implementation.
   ///
   /// Copied from [PdfCompressionViewModel].
   PdfCompressionViewModelProvider(PickedFileModel? initialFile)

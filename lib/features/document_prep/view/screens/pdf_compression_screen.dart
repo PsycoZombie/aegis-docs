@@ -1,4 +1,5 @@
 import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:aegis_docs/core/services/native_pdf_compression_service.dart';
 import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/features/document_prep/providers/pdf_compression_provider.dart';
 import 'package:aegis_docs/features/document_prep/view/widgets/pdf_compression/pdf_option_cards_widget.dart';
@@ -34,27 +35,11 @@ class PdfCompressionScreen extends ConsumerWidget {
         child: viewModel.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) {
-            // On error, show a Toast and display the last valid data.
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              showToast(
-                context,
-                'An error occurred: $err',
-                type: ToastType.error,
-              );
-            });
-            if (viewModel.value == null) {
-              return Center(child: Text('Failed to load PDF: $err'));
-            }
-            return _buildContent(
-              context,
-              viewModel.value!,
-              notifier,
-              viewModel,
-              ref,
-            );
+            // This error is for when the provider itself fails to build.
+            return Center(child: Text('Failed to load PDF: $err'));
           },
           data: (state) =>
-              _buildContent(context, state, notifier, viewModel, ref),
+              _buildContent(context, state, notifier, viewModel.isLoading, ref),
         ),
       ),
     );
@@ -65,14 +50,12 @@ class PdfCompressionScreen extends ConsumerWidget {
     BuildContext context,
     PdfCompressionState state,
     PdfCompressionViewModel notifier,
-    AsyncValue<PdfCompressionState> viewModel,
+    bool isProcessing,
     WidgetRef ref,
   ) {
     if (state.pickedPdf == null) {
       return const Center(child: Text('No PDF was selected. Please go back.'));
     }
-
-    final isProcessing = viewModel.isLoading;
 
     return Column(
       children: [
@@ -97,21 +80,65 @@ class PdfCompressionScreen extends ConsumerWidget {
             );
 
             if (saveResult != null && context.mounted) {
-              final success = await notifier.compressAndSavePdf(
+              final result = await notifier.compressAndSavePdf(
                 fileName: saveResult.fileName,
                 folderPath: saveResult.folderPath,
               );
+
               if (context.mounted) {
-                if (success) {
-                  showToast(context, 'Successfully compressed and saved!');
-                } else {
-                  showToast(
-                    context,
-                    'Compression failed. Please try again.',
-                    type: ToastType.error,
-                  );
+                // Use a switch statement to show the
+                // correct toast for each outcome.
+                switch (result.status) {
+                  case NativeCompressionStatus.success:
+                    showToast(context, 'Successfully compressed and saved!');
+                  case NativeCompressionStatus.successWithFallback:
+                    showToast(
+                      context,
+                      'Success! Text may not be selectable '
+                      'in the compressed file.',
+                      type: ToastType.info,
+                    );
+                  case NativeCompressionStatus.errorSizeLimit:
+                    showToast(
+                      context,
+                      result.message ??
+                          'Could not compress to the target size.',
+                      type: ToastType.warning,
+                    );
+                  case NativeCompressionStatus.errorOutOfMemory:
+                    showToast(
+                      context,
+                      'Compression failed: The PDF is '
+                      'too large for this device.',
+                      type: ToastType.error,
+                    );
+                  case NativeCompressionStatus.errorBadPassword:
+                    showToast(
+                      context,
+                      'Compression failed: The PDF is'
+                      ' password-protected or corrupted.',
+                      type: ToastType.error,
+                    );
+                  case NativeCompressionStatus.errorTextTooLarge:
+                    showToast(
+                      context,
+                      result.message ??
+                          'The text content alone is larger '
+                              'than the target size.',
+                      type: ToastType.warning,
+                    );
+                  case NativeCompressionStatus.errorUnknown:
+                    showToast(
+                      context,
+                      result.message ?? 'An unknown error occurred.',
+                      type: ToastType.error,
+                    );
                 }
-                if (success) {
+
+                // Only pop the screen on success.
+                if (result.status == NativeCompressionStatus.success ||
+                    result.status ==
+                        NativeCompressionStatus.successWithFallback) {
                   ref.invalidate(walletViewModelProvider);
                   context.pop();
                 }

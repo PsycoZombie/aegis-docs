@@ -1,3 +1,4 @@
+import 'package:aegis_docs/core/services/haptics_service.dart';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
 import 'package:aegis_docs/shared_widgets/toast_helper.dart';
@@ -7,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// A widget that listens to the [localAuthProvider] for state changes
 /// and shows a Toast when an error occurs.
 ///
-/// This separates side-effect logic (like showing dialogs or Toast)
+/// This separates side-effect logic (like showing dialogs, Toast, or Haptics)
 /// from the main UI layout.
 class AuthStateListener extends ConsumerWidget {
   /// Creates an [AuthStateListener].
@@ -23,11 +24,14 @@ class AuthStateListener extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen<AuthState>(localAuthProvider, (previous, next) {
       if (next == AuthState.error) {
+        // Show error toast
         showToast(
           context,
           'Authentication Failed. Please try again.',
           type: ToastType.error,
         );
+        // Haptic feedback for error
+        ref.read(hapticsProvider).heavyImpact();
       }
     });
     return child;
@@ -66,7 +70,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(localAuthProvider);
     final isLoading = authState == AuthState.loading;
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return AuthStateListener(
       child: AppScaffold(
@@ -77,10 +80,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(
-                Icons.lock_person_rounded,
-                size: 80,
-                color: colorScheme.primary,
+              Image.asset(
+                'assets/logo/icon.png',
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 24),
               Text(
@@ -100,6 +104,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: isLoading
                     ? null
                     : () {
+                        // Haptic for button press
+                        ref.read(hapticsProvider).lightImpact();
                         ref
                             .read(localAuthProvider.notifier)
                             .authenticateWithDeviceCredentials();
