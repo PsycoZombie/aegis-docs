@@ -43,7 +43,7 @@ class CleanupService {
       );
 
       debugPrint('Cleanup call to native code complete.');
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error during cleanup service: $e');
     }
   }

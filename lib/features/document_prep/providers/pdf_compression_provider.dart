@@ -155,7 +155,7 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
       // If compression failed for any reason, return the result directly.
       state = AsyncData(currentState); // Reset to non-loading state
       return PdfCompressionResult(status: result.status, message: result.data);
-    } on Exception catch (e) {
+    } on Object catch (e) {
       state = AsyncData(currentState); // Reset to non-loading state
       return PdfCompressionResult(
         status: NativeCompressionStatus.errorUnknown,

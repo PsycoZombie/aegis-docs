@@ -72,7 +72,7 @@ class FilePickerService {
         ),
         wasConverted,
       );
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint(
         'Failed to process or convert image format for ${file.name}: $e',
       );
@@ -93,7 +93,7 @@ class FilePickerService {
         name: finalFileName,
         path: file.path,
       );
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Failed to sanitize image for PDF: $e');
       return null;
     }
@@ -109,7 +109,7 @@ class FilePickerService {
       if (pickedFile != null) {
         return await _processPickedFile(pickedFile);
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error picking image: $e');
     }
     return (null, false);
@@ -122,7 +122,7 @@ class FilePickerService {
       if (pickedFiles.isNotEmpty) {
         return await Future.wait(pickedFiles.map(_processPickedFile));
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error picking multiple images: $e');
     }
     return [];
@@ -145,7 +145,7 @@ class FilePickerService {
           path: platformFile.path,
         );
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error picking PDF: $e');
     }
     return null;
@@ -161,7 +161,7 @@ class FilePickerService {
         );
         return results.whereType<PickedFileModel>().toList();
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error picking and sanitizing images for PDF: $e');
     }
     return [];

@@ -50,7 +50,7 @@ bool _isPdfEncryptedIsolate(Uint8List pdfBytes) {
     // Attempt to load the document without a password.
     doc = sync_pdf.PdfDocument(inputBytes: pdfBytes);
     return false; // Success means not encrypted.
-  } on Exception catch (_) {
+  } on Object catch (_) {
     return true; // Failure suggests it's password-protected.
   } finally {
     doc?.dispose();
@@ -118,7 +118,7 @@ Future<void> _pdfToImageIsolate(_PdfToImageRequest req) async {
     }
     await doc.close();
     req.sendPort.send(images); // Send the list of images back.
-  } on Exception catch (_) {
+  } on Object catch (_) {
     // In case of an error, send an empty list back.
     req.sendPort.send(<Uint8List>[]);
   }

@@ -43,7 +43,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
       if (_tempPdfFile != null && await _tempPdfFile!.exists()) {
         await _tempPdfFile!.delete();
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error deleting temporary PDF file: $e');
     }
   }

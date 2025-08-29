@@ -167,7 +167,7 @@ class _ExpandingActionButton extends StatelessWidget {
     return AnimatedBuilder(
       animation: progress,
       builder: (context, child) {
-        final offset = Offset(0, (index + 1) * -64.0);
+        final offset = Offset(0, -10 + (index + 1) * -50.0);
         return Positioned(
           right: 16,
           bottom: 16,
@@ -188,48 +188,58 @@ class _ExpandingActionButton extends StatelessWidget {
 /// A list of all the action buttons to be displayed in the expanding FAB.
 final List<_ActionButton> _actionButtons = [
   const _ActionButton(
-    icon: Icon(Icons.security),
+    color: Colors.red,
+    icon: Icon(
+      Icons.security,
+    ),
     label: 'PDF Security',
     route: AppConstants.routePdfSecurity,
     pickType: PickType.pdf,
   ),
   const _ActionButton(
+    color: Colors.red,
     icon: Icon(Icons.compress),
     label: 'Compress PDF',
     route: AppConstants.routePdfCompression,
     pickType: PickType.pdf,
   ),
   const _ActionButton(
+    color: Colors.red,
     icon: Icon(Icons.image_search),
     label: 'PDF to Images',
     route: AppConstants.routePdfToImages,
     pickType: PickType.pdf,
   ),
   const _ActionButton(
+    color: Colors.red,
     icon: Icon(Icons.picture_as_pdf_outlined),
     label: 'Images to PDF',
     route: AppConstants.routeImagesToPdf,
     pickType: PickType.multiImage,
   ),
   const _ActionButton(
+    color: Colors.blue,
     icon: Icon(Icons.swap_horiz),
     label: 'Change Format',
     route: AppConstants.routeImageFormat,
     pickType: PickType.singleImage,
   ),
   const _ActionButton(
+    color: Colors.blue,
     icon: Icon(Icons.crop),
     label: 'Crop & Edit',
     route: AppConstants.routeEdit,
     pickType: PickType.singleImage,
   ),
   const _ActionButton(
+    color: Colors.blue,
     icon: Icon(Icons.photo_size_select_small),
     label: 'Compress Image',
     route: AppConstants.routeCompress,
     pickType: PickType.singleImage,
   ),
   const _ActionButton(
+    color: Colors.blue,
     icon: Icon(Icons.aspect_ratio),
     label: 'Resize Image',
     route: AppConstants.routeResize,
@@ -244,6 +254,7 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.route,
     required this.pickType,
+    required this.color,
     this.onPressed,
   });
 
@@ -252,6 +263,7 @@ class _ActionButton extends StatelessWidget {
   final String route;
   final PickType pickType;
   final VoidCallback? onPressed;
+  final Color color;
 
   // A helper to create a new instance with a different onPressed callback.
   _ActionButton copyWith({VoidCallback? onPressed}) {
@@ -261,6 +273,7 @@ class _ActionButton extends StatelessWidget {
       route: route,
       pickType: pickType,
       onPressed: onPressed ?? this.onPressed,
+      color: color,
     );
   }
 
@@ -283,6 +296,7 @@ class _ActionButton extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         FloatingActionButton.small(
+          backgroundColor: color,
           heroTag: null,
           tooltip: label,
           onPressed: onPressed,

@@ -85,7 +85,7 @@ class CloudStorageService {
 
       final authClient = _GoogleAuthClient(authHeaders);
       return drive.DriveApi(authClient);
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting Drive API client: $e');
       await GoogleSignIn.instance.signOut();
       return null;
@@ -114,7 +114,7 @@ class CloudStorageService {
         }
       }
       return null;
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error deleting backup: $e');
       return false;
     }
@@ -164,7 +164,7 @@ class CloudStorageService {
         );
       }
       debugPrint('Backup upload complete.');
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error uploading backup: $e');
     }
   }
@@ -209,7 +209,7 @@ class CloudStorageService {
 
       debugPrint('Backup download complete.');
       return tempFile;
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error downloading backup: $e');
       return null;
     }
