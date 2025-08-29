@@ -1,46 +1,86 @@
-# Aegis Docs: Secure Document Wallet
+# Aegis Docs: Secure, Offline-First Document Wallet 🛡️
 
-Aegis Docs is a privacy-focused mobile application built with Flutter that provides a secure, encrypted wallet for storing and managing sensitive documents. The app offers a suite of powerful tools for processing images and PDFs, ensuring that all user data remains private and under their control.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Flutter Version](https://img.shields.io/badge/Flutter-3.19%2B-blue)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android-green.svg)]()
 
-## Features
+Aegis Docs is a high-performance, privacy-focused mobile application built with Flutter. It provides a secure, **on-device** digital safe for your sensitive documents, featuring a powerful suite of offline tools and an optional, end-to-end encrypted cloud sync.
 
-- **Secure, Encrypted Wallet:** All documents are encrypted on-device using AES-256 encryption.
-- **Local Authentication:** The wallet is protected by the user's device biometrics (fingerprint/face ID).
-- **Folder Organization:** Users can create a nested folder structure to organize their documents within the secure wallet.
-- **Document Processing Tools:**
-    - **Image Tools:** Resize, compress, crop, edit (grayscale filter), and change image formats (JPG, PNG, GIF, etc.).
-    - **PDF Tools:** Convert multiple images to a single PDF, extract pages from a PDF to images, and apply password protection (lock/unlock/change password).
-    - **Native PDF Compression:** High-performance PDF compression powered by a native MuPDF implementation.
-- **Secure Export & Share:** Decrypt and export documents to the device or share them with other apps through the native OS share sheet.
-- **Secure Cloud Sync:** End-to-end encrypted backup and restore functionality using the user's private Google Drive App Data Folder. The user's master password is required to decrypt the backup, ensuring data remains private even in the cloud.
+---
 
-## Architecture
+## 🧠 The Philosophy: Your Data, Your Device
 
-The application is built using a clean, feature-first architecture that follows the **MVVM (Model-View-ViewModel)** pattern.
+In an era where data privacy is paramount, Aegis Docs is built on one core principle: **you should have complete control over your sensitive information**.
 
-- **State Management:** **Riverpod** (with code generation) is used for state management, providing a clear separation between UI and business logic.
-- **Navigation:** **GoRouter** is used for declarative, type-safe routing.
-- **Dependency Injection:** Riverpod is used for injecting dependencies throughout the app.
-- **Asynchronous Operations:** Heavy tasks like image processing, encryption, and zipping are performed in background **isolates** to keep the UI smooth and responsive.
+* ✅ **100% Offline Processing:** All features—from image compression to PDF encryption—run directly on your device. Nothing is ever sent to a server.
+* 🔒 **Privacy by Design:** The app is fully functional without an internet connection. The cloud sync feature is strictly optional and end-to-end encrypted, meaning only you can access your data.
+* 🧹 **Automatic Cleanup:** To protect your privacy and save space, any temporary files exported to public folders are automatically cleaned up based on your preference (e.g., after 10 minutes, 1 day, or 1 week).
 
-## Project Structure
+---
 
-The project is organized by feature, with a clear separation between the UI (`view`), state management (`providers`), and the core business logic.
+## ✨ Key Features
 
-lib/
+A comprehensive toolkit for managing your digital documents securely and efficiently.
 
-app/          # App-level config (routing, theme)
+### Image Tools 🖼️
+- **Resize:** Reduce image dimensions while maintaining aspect ratio.
+- **Compress:** Significantly lower file size with minimal quality loss.
+- **Edit & Convert:** Crop, apply a grayscale filter, and change formats (JPG, PNG, GIF and more).
 
-core/         # Core business logic (services, processors)
+### PDF Tools 📄
+- **Images to PDF:** Combine multiple images into a single, organized PDF document.
+- **PDF to Images:** Extract specific pages from a PDF file as high-quality images.
+- **Lock PDF:** Secure your PDFs with password-based encryption.
+- **Native PDF Compression:** A high-performance compression engine that intelligently reduces file size, with or without preserving text clarity.
 
-data/         # Data models and repositories
+---
 
-features/     # Individual app features (home, auth, settings, etc.)
+## 🚀 The Technical Core: Native PDF Compression
 
-shared_widgets/ # Reusable UI components
-## Getting Started
+A standout feature of this project is its high-performance PDF compression, which was achieved by going beyond standard Dart libraries.
 
-1.  **Firebase Setup:** This project uses Firebase for Google Sign-In. Follow the `flutterfire configure` steps and add the `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) files.
-2.  **Google Cloud:** Enable the **Google Drive API** in your Google Cloud project and create an **OAuth 2.0 Web Client ID** and and then create lib/app/config/app_secrets.dart to include it.
-3.  **Dependencies:** Run `flutter pub get` to install all necessary packages.
-4.  **Code Generation:** Run `flutter pub run build_runner build` to generate the necessary files for Riverpod and GoRouter.
+There were no existing Flutter package could meet the performance and quality requirements for PDF compression, so a native integration approach was required:
+1.  **Compiled MuPDF:** Compiled the powerful, open-source C/C++ library **MuPDF** from source for Android and iOS.
+2.  **Platform Integration:** Built a bridge between the Dart front-end and the native code using Flutter's **Platform Channels**.
+3.  **Result:** This provides lightning-fast, efficient, and reliable PDF compression that runs entirely on-device, a capability not readily available in the Flutter ecosystem.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+Built with a focus on performance, scalability, and maintainability.
+
+| Component                 | Technology / Principle                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| **Architecture** | **MVVM (Model-View-ViewModel)** in a feature-first project structure.               |
+| **State Management** | **Riverpod** (with code generation) for robust and compile-time safe state.         |
+| **Navigation** | **GoRouter** for a declarative, URL-based routing strategy.                         |
+| **Asynchronous UI** | **Isolates** to offload heavy tasks (encryption, image processing) for a jank-free UI. |
+| **Native Integration** | **Platform Channels** to communicate with the natively compiled **MuPDF** library.    |
+| **Security** | **AES-256** encryption for all stored files.                                        |
+| **Optional Cloud Sync** | **Google Drive API** (App Data Folder) & **Firebase Authentication**.                 |
+
+---
+
+## 📸 snapshots
+
+| Home Screen (Wallet)                  | Image Processing Tools                   | PDF Security Options                  |
+| ------------------------------------- | ---------------------------------------- | --------------------------------------- |
+| `![Home Screen](snapshots/screen_home.png)` | `![Image Tools](showcase/screen_image.png)` | `![PDF Tools](showcase/screen_pdf.png)` |
+
+---
+
+## 🚀 Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+1.  **Firebase & Google Cloud Setup:** Configure Firebase for Google Sign-In (`flutterfire configure`) and enable the Google Drive API in your Google Cloud project.
+2.  **Install Dependencies:** `flutter pub get`
+3.  **Run Code Generation:** `flutter pub run build_runner build --delete-conflicting-outputs`
+4.  **Run the App:** `flutter run`
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the `LICENSE.md` file for details.

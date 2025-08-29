@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  file_saver
   file_selector_windows
   firebase_core
   flutter_secure_storage_windows
@@ -11,7 +10,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   pdfx
   permission_handler_windows
   share_plus
-  syncfusion_pdfviewer_windows
   url_launcher_windows
 )
 

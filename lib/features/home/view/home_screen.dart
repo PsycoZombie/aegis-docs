@@ -1,4 +1,5 @@
 import 'package:aegis_docs/app/config/app_constants.dart';
+import 'package:aegis_docs/app/config/theme_provider.dart';
 import 'package:aegis_docs/features/auth/providers/local_auth_provider.dart';
 import 'package:aegis_docs/features/home/providers/home_provider.dart';
 import 'package:aegis_docs/features/home/widgets/breadcrumb_navigation.dart';
@@ -135,10 +136,25 @@ class HomeScreen extends ConsumerWidget {
   }
 
   AppBar _buildDefaultAppBar(BuildContext context, WidgetRef ref) {
+    final themeMode =
+        ref.watch(themeNotifierProvider).valueOrNull ?? ThemeMode.system;
+
+    final themeToggleButton = IconButton(
+      tooltip: 'Toggle Theme',
+      onPressed: () {
+        ref.read(themeNotifierProvider.notifier).toggleTheme();
+      },
+      icon: Icon(
+        themeMode == ThemeMode.dark
+            ? Icons.light_mode_outlined
+            : Icons.dark_mode_outlined,
+      ),
+    );
     final homeNotifier = ref.read(homeViewModelProvider.notifier);
     return AppBar(
       title: const Text(AppConstants.titleSecureWallet),
       actions: [
+        themeToggleButton,
         IconButton(
           icon: const Icon(Icons.create_new_folder_outlined),
           tooltip: AppConstants.titleNewFolder,
@@ -197,6 +213,20 @@ class HomeScreen extends ConsumerWidget {
     final selectedCount = selectedItems.length;
     final canShare = selectedItems.any((path) => p.extension(path).isNotEmpty);
     final isSingleSelection = selectedCount == 1;
+    final themeMode =
+        ref.watch(themeNotifierProvider).valueOrNull ?? ThemeMode.system;
+
+    final themeToggleButton = IconButton(
+      tooltip: 'Toggle Theme',
+      onPressed: () {
+        ref.read(themeNotifierProvider.notifier).toggleTheme();
+      },
+      icon: Icon(
+        themeMode == ThemeMode.dark
+            ? Icons.light_mode_outlined
+            : Icons.dark_mode_outlined,
+      ),
+    );
 
     return AppBar(
       title: Text('$selectedCount selected'),
@@ -205,6 +235,7 @@ class HomeScreen extends ConsumerWidget {
         onPressed: homeNotifier.clearSelection,
       ),
       actions: [
+        themeToggleButton,
         if (isSingleSelection)
           IconButton(
             icon: const Icon(Icons.drive_file_rename_outline),

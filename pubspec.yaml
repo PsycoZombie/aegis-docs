@@ -10,12 +10,10 @@ environment:
 dependencies:
   archive: ^4.0.7
   crypto: ^3.0.6
-  cupertino_icons: ^1.0.8
   encrypt: ^5.0.3
   equatable: ^2.0.7
   file: ^7.0.1
   file_picker: ^10.2.0
-  file_saver: ^0.3.1
   firebase_core: ^4.0.0
   flutter:
     sdk: flutter
@@ -25,14 +23,11 @@ dependencies:
   go_router: ^16.0.0
   google_sign_in: ^7.1.1
   googleapis: ^14.0.0
-  googleapis_auth: ^2.0.0
   http: ^1.5.0
   image: ^4.5.4
   image_cropper: ^9.1.0
   image_picker: ^1.1.2
   local_auth: ^2.3.0
-  mime: ^2.0.0
-  open_file: ^3.5.10
   path: ^1.9.1
   path_provider: ^2.1.5
   pdfrx: ^2.1.5
@@ -44,14 +39,13 @@ dependencies:
   share_plus: ^11.1.0
   shared_preferences: ^2.5.3
   syncfusion_flutter_pdf: ^30.2.7
-  syncfusion_flutter_pdfviewer: ^30.2.7
   uuid: ^4.5.1
 
 dev_dependencies:
   build_runner: ^2.5.4
+  dependency_validator: ^5.0.2
   flutter_image_compress_platform_interface: ^1.0.5
   flutter_launcher_icons: ^0.14.4
-  flutter_lints: ^5.0.0
   flutter_native_splash: ^2.4.6
   flutter_test:
     sdk: flutter
@@ -64,7 +58,6 @@ dev_dependencies:
   permission_handler_platform_interface: ^4.3.0
   plugin_platform_interface: ^2.1.8
   riverpod_generator: ^2.6.5
-  riverpod_lint: ^2.6.5
   very_good_analysis: ^9.0.0
 
 flutter:
@@ -75,16 +68,16 @@ flutter:
 
 flutter_launcher_icons:
   android: true
-  image_path: "assets/logo/icon.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/logo/icon.png"
+  image_path: 'assets/logo/icon.png'
+  adaptive_icon_background: '#FFFFFF'
+  adaptive_icon_foreground: 'assets/logo/icon.png'
 
 flutter_native_splash:
-  color: "#ffffff"
+  color: '#ffffff'
   image: assets/splash/icon.png
   android: true
   ios: true
   web: false
   android_12:
     image: assets/splash/icon.png
-    icon_background_color: "#ffffff"
+    icon_background_color: '#ffffff'
