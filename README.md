@@ -41,6 +41,6 @@ shared_widgets/ # Reusable UI components
 ## Getting Started
 
 1.  **Firebase Setup:** This project uses Firebase for Google Sign-In. Follow the `flutterfire configure` steps and add the `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) files.
-2.  **Google Cloud:** Enable the **Google Drive API** in your Google Cloud project and create an **OAuth 2.0 Web Client ID**.
+2.  **Google Cloud:** Enable the **Google Drive API** in your Google Cloud project and create an **OAuth 2.0 Web Client ID** and and then create lib/app/config/app_secrets.dart to include it.
 3.  **Dependencies:** Run `flutter pub get` to install all necessary packages.
 4.  **Code Generation:** Run `flutter pub run build_runner build` to generate the necessary files for Riverpod and GoRouter.
