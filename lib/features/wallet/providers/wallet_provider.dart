@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'wallet_provider.g.dart';
@@ -60,6 +61,7 @@ class WalletViewModel extends _$WalletViewModel {
   }
 
   /// Creates a new folder in the current directory.
+  ///
   /// Returns `true` on success, `false` if a
   /// folder with the same name already exists.
   Future<bool> createFolder({
@@ -81,7 +83,7 @@ class WalletViewModel extends _$WalletViewModel {
     return true;
   }
 
-  /// Renames a folder.
+  /// Renames a folder located at [oldPath] to [newName].
   Future<void> renameFolder({
     required String oldPath,
     required String newName,
@@ -90,7 +92,7 @@ class WalletViewModel extends _$WalletViewModel {
     await repo.renameFolderInWallet(oldPath: oldPath, newName: newName);
   }
 
-  /// Renames a file.
+  /// Renames a file from [oldName] to [newName] within the [folderPath].
   Future<void> renameFile({
     required String oldName,
     required String newName,
@@ -104,13 +106,13 @@ class WalletViewModel extends _$WalletViewModel {
     );
   }
 
-  /// Deletes a folder.
+  /// Deletes a folder and all its contents recursively.
   Future<void> deleteFolder({required String folderPathToDelete}) async {
     final repo = await ref.read(documentRepositoryProvider.future);
     await repo.deleteFolderFromWallet(folderPath: folderPathToDelete);
   }
 
-  /// Deletes a document.
+  /// Deletes a single document.
   Future<void> deleteDocument({
     required String fileName,
     String? folderPath,
@@ -122,7 +124,7 @@ class WalletViewModel extends _$WalletViewModel {
     );
   }
 
-  /// Exports a decrypted document.
+  /// Exports a decrypted document as a byte list.
   Future<Uint8List?> exportDocument({
     required String fileName,
     String? folderPath,
@@ -132,7 +134,7 @@ class WalletViewModel extends _$WalletViewModel {
       fileName: fileName,
       folderPath: folderPath,
     );
-    return Uint8List.fromList(doc!);
+    return doc;
   }
 }
 
@@ -161,3 +163,39 @@ Future<Uint8List?> documentDetail(
     folderPath: folderPath,
   );
 }
+
+/// A provider that decrypts document data and saves it to a temporary file.
+///
+/// This provider is marked as `.autoDispose` to ensure its cache is cleared
+/// when the document screen is closed. This prevents errors from trying to
+/// access a temporary file that has already been deleted.
+final AutoDisposeFutureProviderFamily<
+  File,
+  ({String fileName, String? folderPath})
+>
+decryptedDocumentFileProvider =
+    // Add the `.autoDispose` modifier here.
+    FutureProvider.autoDispose.family<
+      File,
+      ({String fileName, String? folderPath})
+    >(
+      (ref, params) async {
+        final decryptedData = await ref.watch(
+          documentDetailProvider(
+            fileName: params.fileName,
+            folderPath: params.folderPath,
+          ).future,
+        );
+
+        if (decryptedData == null) {
+          throw Exception('Failed to load or decrypt document data.');
+        }
+
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File(
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}_${params.fileName}',
+        );
+
+        return tempFile.writeAsBytes(decryptedData);
+      },
+    );

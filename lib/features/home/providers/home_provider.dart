@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:aegis_docs/core/services/haptics_service.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:equatable/equatable.dart';
@@ -16,22 +17,42 @@ part 'home_provider.g.dart';
 @immutable
 class HomeState extends Equatable {
   /// Creates an instance of the home state.
-  const HomeState({this.currentFolderPath});
+  const HomeState({
+    this.currentFolderPath,
+    this.isSelectionMode = false,
+    this.selectedItems = const {},
+  });
 
   /// The relative path of the folder the user is currently viewing.
   /// A `null` value represents the root of the wallet.
   final String? currentFolderPath;
 
+  /// Whether currently long pressed or not.
+  final bool isSelectionMode;
+
+  /// Set of selected items.
+  final Set<String> selectedItems;
+
   /// Creates a copy of the state with updated values.
-  HomeState copyWith({String? currentFolderPath}) {
+  HomeState copyWith({
+    String? currentFolderPath,
+    bool? isSelectionMode,
+    Set<String>? selectedItems,
+  }) {
     // This allows setting the path back to null.
     return HomeState(
       currentFolderPath: currentFolderPath,
+      isSelectionMode: isSelectionMode ?? this.isSelectionMode,
+      selectedItems: selectedItems ?? this.selectedItems,
     );
   }
 
   @override
-  List<Object?> get props => [currentFolderPath];
+  List<Object?> get props => [
+    currentFolderPath,
+    isSelectionMode,
+    selectedItems,
+  ];
 }
 
 /// A ViewModel for the home screen.
@@ -51,22 +72,31 @@ class HomeViewModel extends _$HomeViewModel {
     final newPath = state.currentFolderPath == null
         ? folderName
         : p.join(state.currentFolderPath!, folderName);
-    state = state.copyWith(currentFolderPath: newPath);
+    // When navigating, always exit selection mode.
+    state = state.copyWith(
+      currentFolderPath: newPath,
+      isSelectionMode: false,
+      selectedItems: {},
+    );
   }
 
   /// Navigates to a specific, absolute path within the wallet.
   void navigateToPath(String? path) {
-    state = state.copyWith(currentFolderPath: path);
+    state = state.copyWith(
+      currentFolderPath: path,
+      isSelectionMode: false,
+      selectedItems: {},
+    );
   }
 
   /// Navigates one level up in the folder hierarchy.
   void navigateUp() {
     if (state.currentFolderPath != null) {
       final parent = p.dirname(state.currentFolderPath!);
-      // p.dirname of a root folder returns '.', so we
-      // check for that to navigate to null (root).
       state = state.copyWith(
         currentFolderPath: (parent == '.') ? null : parent,
+        isSelectionMode: false,
+        selectedItems: {},
       );
     }
   }
@@ -141,7 +171,7 @@ class HomeViewModel extends _$HomeViewModel {
         throw Exception('Failed to export the document.');
       }
       return null; // Success
-    } on Exception catch (e) {
+    } on Object catch (e) {
       return 'Export failed: $e'; // Failure
     }
   }
@@ -174,8 +204,113 @@ class HomeViewModel extends _$HomeViewModel {
       // Clean up the temporary file.
       await tempFile.delete();
       return null; // Success
-    } on Exception catch (e) {
+    } on Object catch (e) {
       return 'Share failed: $e'; // Failure
+    }
+  }
+
+  /// Enables selection mode, starting with the first long-pressed item.
+  void enableSelectionMode(String path) {
+    ref.read(hapticsProvider).mediumImpact(); // Haptic feedback
+    state = state.copyWith(
+      isSelectionMode: true,
+      currentFolderPath: state.currentFolderPath,
+      selectedItems: {path},
+    );
+  }
+
+  /// Toggles the selection status of an item.
+  void toggleItemSelection(String path) {
+    ref.read(hapticsProvider).lightImpact();
+    final newSelection = Set<String>.from(state.selectedItems);
+    if (newSelection.contains(path)) {
+      newSelection.remove(path);
+    } else {
+      newSelection.add(path);
+    }
+    state = state.copyWith(
+      selectedItems: newSelection,
+      currentFolderPath: state.currentFolderPath,
+      isSelectionMode: newSelection.isNotEmpty,
+    );
+  }
+
+  /// Clears the entire selection and exits selection mode.
+  void clearSelection() {
+    state = state.copyWith(
+      isSelectionMode: false,
+      currentFolderPath: state.currentFolderPath,
+      selectedItems: {},
+    );
+  }
+
+  /// Deletes all currently selected items.
+  Future<void> deleteSelectedItems() async {
+    final parentPath = state.currentFolderPath;
+    final notifier = ref.read(walletViewModelProvider(parentPath).notifier);
+    final itemsToDelete = List<String>.from(state.selectedItems);
+
+    for (final path in itemsToDelete) {
+      final isFolder = p.extension(path).isEmpty;
+      if (isFolder) {
+        await notifier.deleteFolder(folderPathToDelete: path);
+      } else {
+        await notifier.deleteDocument(
+          fileName: p.basename(path),
+          folderPath: parentPath,
+        );
+      }
+    }
+    clearSelection();
+    ref.invalidate(walletViewModelProvider(parentPath));
+  }
+
+  /// Shares all currently selected files.
+  Future<String?> shareSelectedItems() async {
+    final filesToShare = state.selectedItems
+        .where((path) => p.extension(path).isNotEmpty)
+        .toList();
+
+    if (filesToShare.isEmpty) {
+      clearSelection();
+      return 'No files selected to share.';
+    }
+
+    try {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final tempDir = await getTemporaryDirectory();
+      final tempFiles = <XFile>[];
+
+      for (final filePath in filesToShare) {
+        final fileName = p.basename(filePath);
+        final folderPath = state.currentFolderPath;
+        final decryptedBytes = await repo.loadDecryptedDocument(
+          fileName: fileName,
+          folderPath: folderPath,
+        );
+        if (decryptedBytes == null) continue;
+
+        final tempFile = await File(
+          '${tempDir.path}/$fileName',
+        ).writeAsBytes(decryptedBytes);
+        tempFiles.add(XFile(tempFile.path));
+      }
+
+      if (tempFiles.isEmpty) throw Exception('Failed to load documents.');
+
+      final params = ShareParams(
+        files: tempFiles,
+      );
+
+      await SharePlus.instance.share(params);
+
+      for (final xfile in tempFiles) {
+        await File(xfile.path).delete();
+      }
+      clearSelection();
+      return null;
+    } on Object catch (e) {
+      return 'Share failed: $e';
     }
   }
 }

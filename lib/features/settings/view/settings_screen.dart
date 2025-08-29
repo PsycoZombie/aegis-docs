@@ -112,11 +112,43 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             Center(
               child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
+                style: ButtonStyle(
+                  // This property gives us full control over
+                  // the TextStyle in different states
+                  textStyle: WidgetStateProperty.resolveWith<TextStyle?>((
+                    states,
+                  ) {
+                    final baseStyle = Theme.of(context).textTheme.labelLarge;
+                    // Check if the button is in the 'disabled' state
+                    if (states.contains(WidgetState.disabled)) {
+                      // Return a style for the disabled state
+                      return baseStyle?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(80),
+                      );
+                    }
+                    // Return a style for all other states
+                    // (enabled, pressed, etc.)
+                    return baseStyle?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    );
+                  }),
+                  // We also need to define the icon color for different states
+                  iconColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.disabled)) {
+                      return Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(80);
+                    }
+                    return Theme.of(context).colorScheme.error;
+                  }),
                 ),
                 icon: const Icon(Icons.delete_forever_outlined),
-                label: const Text('Delete Cloud Backup'),
+                label: Text(
+                  'Delete Cloud Backup',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
                 onPressed: isProcessing
                     ? null
                     : () => _showDeleteConfirmationDialog(

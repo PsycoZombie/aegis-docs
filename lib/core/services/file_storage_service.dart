@@ -73,7 +73,7 @@ class FileStorageService {
       if (await file.exists()) {
         return await file.readAsBytes();
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error loading from private storage: $e');
     }
     return null;
@@ -92,7 +92,7 @@ class FileStorageService {
         await file.delete();
         debugPrint('Deleted from private wallet: $filePath');
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error deleting from private storage: $e');
     }
   }
@@ -147,7 +147,7 @@ class FileStorageService {
         await directory.delete(recursive: true);
         debugPrint('Deleted folder and all contents: ${directory.path}');
       }
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error deleting folder: $e');
     }
   }
@@ -175,7 +175,7 @@ class FileStorageService {
         final file = File(filePath);
         await file.writeAsBytes(bytes);
         return filePath;
-      } on Exception catch (e) {
+      } on Object catch (e) {
         debugPrint('Error saving public file: $e');
         return null;
       }
@@ -200,7 +200,7 @@ class FileStorageService {
             dirQueue.add(entity);
           }
         }
-      } on Exception catch (e) {
+      } on Object catch (e) {
         debugPrint('Could not list directory ${currentDir.path}: $e');
       }
     }
@@ -232,7 +232,7 @@ class FileStorageService {
       await file.writeAsBytes(data);
       debugPrint('File exported to public directory: $filePath');
       return filePath;
-    } on Exception catch (e) {
+    } on Object catch (e) {
       debugPrint('Error saving to public directory: $e');
       return null;
     }

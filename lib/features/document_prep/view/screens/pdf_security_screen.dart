@@ -54,8 +54,13 @@ class PdfSecurityScreen extends ConsumerWidget {
               ref,
             );
           },
-          data: (state) =>
-              _buildContent(context, state, notifier, viewModel, ref),
+          data: (state) {
+            if (state.isEncrypted == null) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              return _buildContent(context, state, notifier, viewModel, ref);
+            }
+          },
         ),
       ),
     );

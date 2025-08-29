@@ -55,7 +55,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       // Reset to a non-loading, non-error state after completion.
       state = const AsyncData(SettingsState());
       return backupFile;
-    } on Exception catch (e, st) {
+    } on Object catch (e, st) {
       state = AsyncError(e, st);
       return null;
     }
@@ -100,7 +100,7 @@ class SettingsViewModel extends _$SettingsViewModel {
         default:
           return DeleteBackupResult.error;
       }
-    } on Exception catch (e, st) {
+    } on Object catch (e, st) {
       state = AsyncError(e, st);
       return DeleteBackupResult.error;
     }
