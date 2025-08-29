@@ -4,6 +4,8 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:pdfrx/pdfrx.dart' as pdfrx;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'pdf_to_images_provider.g.dart';
@@ -66,21 +68,45 @@ class PdfToImagesViewModel extends _$PdfToImagesViewModel {
 
   /// Converts the loaded PDF into a list of images, one for each page.
   /// After conversion, all images are selected by default.
-  Future<void> convertToImages() async {
-    if (state.value?.originalPdf?.bytes == null) return;
+  /// [password] is optional for unlocking protected PDFs.
+  Future<void> convertToImages({String? password}) async {
+    final pdfBytes = state.value?.originalPdf?.bytes;
+    if (pdfBytes == null) return;
 
     state = const AsyncLoading<PdfToImagesState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
-      final images = await repo.convertPdfToImages(
-        state.value!.originalPdf!.bytes!,
-      );
-      // Pre-select all generated images.
-      final selection = Set<int>.from(List.generate(images.length, (i) => i));
-      return state.value!.copyWith(
-        generatedImages: images,
-        selectedImageIndices: selection,
-      );
+      final isEncrypted = await repo.isPdfEncrypted(pdfBytes);
+
+      if (isEncrypted && password == null) {
+        throw const pdfrx.PdfPasswordException('PASSWORD ERROR');
+      }
+
+      try {
+        final images = await repo.convertPdfToImages(
+          pdfBytes,
+          password: password,
+        );
+
+        if (images.isEmpty && isEncrypted) {
+          throw Exception('Incorrect password or failed to process PDF.');
+        }
+
+        final selection = Set<int>.from(List.generate(images.length, (i) => i));
+        return state.value!.copyWith(
+          generatedImages: images,
+          selectedImageIndices: selection,
+        );
+      } on PlatformException catch (e) {
+        final message = e.message?.toLowerCase() ?? '';
+        if (message.contains('password') || message.contains('unknown error')) {
+          throw Exception('Incorrect password.');
+        }
+        throw Exception('Failed to process PDF: ${e.message}');
+      } on pdfrx.PdfException catch (e) {
+        // ADDED: Catch errors from pdfrx during rendering
+        throw Exception('Failed to render PDF page: ${e.message}');
+      }
     });
   }
 

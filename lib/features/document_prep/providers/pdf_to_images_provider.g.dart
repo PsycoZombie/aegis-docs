@@ -7,7 +7,7 @@ part of 'pdf_to_images_provider.dart';
 // **************************************************************************
 
 String _$pdfToImagesViewModelHash() =>
-    r'5b8777698fb725f86e889a82d250fcc8ce4b9b6d';
+    r'2f7681ef6e1d2b9141d8af8ce035811c8826fecb';
 
 /// Copied from Dart SDK
 class _SystemHash {

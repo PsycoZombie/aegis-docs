@@ -7,7 +7,7 @@ part of 'pdf_compression_provider.dart';
 // **************************************************************************
 
 String _$pdfCompressionViewModelHash() =>
-    r'eb6efeb36a319cfbcd9575f38584c3380e6a5fd5';
+    r'a53b91a63ca3659a0c1ed285cee75151b51f38b0';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:aegis_docs/features/wallet/providers/wallet_provider.dart';
 import 'package:aegis_docs/shared_widgets/app_scaffold.dart';
+import 'package:aegis_docs/shared_widgets/password_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -63,39 +64,6 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
     );
   }
 
-  Future<String?> _showPasswordDialog() {
-    final passwordController = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Password Required'),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Enter Password',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context, passwordController.text);
-              },
-              child: const Text('Unlock'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildPdfViewer() {
     final pdfFileAsyncValue = ref.watch(
       decryptedDocumentFileProvider(
@@ -116,7 +84,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
           ),
           child: PdfViewer.file(
             pdfFile.path,
-            passwordProvider: _showPasswordDialog,
+            passwordProvider: () => showPasswordDialog(context),
             // Using the correct parameters from the signature you provided.
             params: PdfViewerParams(
               verticalCacheExtent: 3,

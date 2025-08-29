@@ -278,8 +278,13 @@ class DocumentRepository {
       _pdfProcessor.convertImagesToPdf(imageBytesList: imageBytesList);
 
   /// Converts all pages of a PDF into a list of images.
-  Future<List<Uint8List>> convertPdfToImages(Uint8List pdfBytes) =>
-      _pdfProcessor.convertPdfToImages(pdfBytes: pdfBytes);
+  Future<List<Uint8List>> convertPdfToImages(
+    Uint8List pdfBytes, {
+    String? password,
+  }) => _pdfProcessor.convertPdfToImages(
+    pdfBytes: pdfBytes,
+    password: password,
+  );
 
   /// Checks if a PDF document is password-protected.
   Future<bool> isPdfEncrypted(Uint8List pdfBytes) =>

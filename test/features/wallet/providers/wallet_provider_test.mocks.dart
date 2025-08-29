@@ -319,9 +319,16 @@ class MockDocumentRepository extends _i1.Mock
           as _i4.Future<_i6.Uint8List>);
 
   @override
-  _i4.Future<List<_i6.Uint8List>> convertPdfToImages(_i6.Uint8List? pdfBytes) =>
+  _i4.Future<List<_i6.Uint8List>> convertPdfToImages(
+    _i6.Uint8List? pdfBytes, {
+    String? password,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#convertPdfToImages, [pdfBytes]),
+            Invocation.method(
+              #convertPdfToImages,
+              [pdfBytes],
+              {#password: password},
+            ),
             returnValue: _i4.Future<List<_i6.Uint8List>>.value(
               <_i6.Uint8List>[],
             ),

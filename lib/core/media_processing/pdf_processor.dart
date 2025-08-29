@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
+import 'package:pdfrx/pdfrx.dart' as pdfrx;
 import 'package:syncfusion_flutter_pdf/pdf.dart' as sync_pdf;
 
 /// Provides an instance of [PdfProcessor] for dependency injection.
@@ -13,7 +16,13 @@ final pdfProcessorProvider = Provider<PdfProcessor>((ref) {
 
 /// A payload object for the [_pdfToImageIsolate].
 class _PdfToImageRequest {
-  _PdfToImageRequest(this.pdfBytes, this.sendPort, this.rootIsolateToken);
+  _PdfToImageRequest(
+    this.pdfBytes,
+    this.sendPort,
+    this.rootIsolateToken,
+    this.password,
+    this.tempPath,
+  );
 
   /// The byte data of the PDF file.
   final Uint8List pdfBytes;
@@ -23,6 +32,10 @@ class _PdfToImageRequest {
 
   /// The token required to initialize background services in the new isolate.
   final RootIsolateToken rootIsolateToken;
+
+  final String? password;
+
+  final String tempPath;
 }
 
 /// A payload object for PDF security operations in isolates.
@@ -97,30 +110,47 @@ Uint8List _changePasswordIsolate(_PdfSecurityPayload payload) {
 /// platform channel communication. Therefore, it needs a [RootIsolateToken] and
 /// manual `Isolate.spawn` management instead of the
 /// simpler `compute()` function.
-Future<void> _pdfToImageIsolate(_PdfToImageRequest req) async {
-  // Initialize communication channels for the background isolate.
-  BackgroundIsolateBinaryMessenger.ensureInitialized(req.rootIsolateToken);
 
-  final images = <Uint8List>[];
+Future<void> _pdfToImageIsolate(_PdfToImageRequest req) async {
+  pdfrx.Pdfrx.getCacheDirectory = () => req.tempPath;
+  BackgroundIsolateBinaryMessenger.ensureInitialized(req.rootIsolateToken);
   try {
-    final doc = await PdfDocument.openData(req.pdfBytes);
-    for (var i = 1; i <= doc.pagesCount; i++) {
-      final page = await doc.getPage(i);
+    FutureOr<String?> providePassword() => req.password;
+
+    final doc = await pdfrx.PdfDocument.openData(
+      req.pdfBytes,
+      passwordProvider: providePassword,
+    );
+
+    final images = <Uint8List>[];
+    for (final page in doc.pages) {
       final pageImage = await page.render(
-        width: page.width * 2, // Render at 2x resolution for better quality.
-        height: page.height * 2,
-        format: PdfPageImageFormat.png,
+        width: page.width.toInt(),
+        height: page.height.toInt(),
       );
-      if (pageImage?.bytes != null) {
-        images.add(pageImage!.bytes);
+
+      if (pageImage?.pixels != null) {
+        final rgba = pageImage!.pixels;
+
+        // Convert RGBA raw bytes to image
+        final image = img.Image.fromBytes(
+          width: pageImage.width,
+          height: pageImage.height,
+          bytes: rgba.buffer,
+          order: img.ChannelOrder.rgba,
+        );
+
+        // Encode to PNG
+        final pngBytes = Uint8List.fromList(img.encodePng(image));
+
+        images.add(pngBytes);
       }
-      await page.close();
     }
-    await doc.close();
-    req.sendPort.send(images); // Send the list of images back.
-  } on Object catch (_) {
-    // In case of an error, send an empty list back.
-    req.sendPort.send(<Uint8List>[]);
+
+    await doc.dispose();
+    req.sendPort.send(images);
+  } on Object catch (e) {
+    req.sendPort.send(e);
   }
 }
 
@@ -198,25 +228,34 @@ class PdfProcessor {
   /// This operation runs in a separate isolate to prevent UI jank.
   Future<List<Uint8List>> convertPdfToImages({
     required Uint8List pdfBytes,
+    String? password,
   }) async {
     final receivePort = ReceivePort();
     final token = RootIsolateToken.instance;
-
     if (token == null) {
       throw Exception('RootIsolateToken is null. Cannot spawn isolate.');
     }
 
-    // Manually spawn an isolate because the target function is async.
+    // ADDED: Get the temp path here in the main isolate
+    final tempDir = await getTemporaryDirectory();
+
     await Isolate.spawn(
       _pdfToImageIsolate,
-      _PdfToImageRequest(pdfBytes, receivePort.sendPort, token),
+      _PdfToImageRequest(
+        pdfBytes,
+        receivePort.sendPort,
+        token,
+        password,
+        tempDir.path, // ADDED: Pass the path to the isolate
+      ),
     );
 
     final result = await receivePort.first;
-    if (result is List<Uint8List>) {
-      return result;
-    }
-    return [];
+
+    if (result is List<Uint8List>) return result;
+    if (result is Error) throw result;
+    if (result is Exception) throw result;
+    throw Exception('Unknown error from PDF isolate: $result');
   }
 
   /// Converts a single image into a single-page PDF.

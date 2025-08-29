@@ -192,9 +192,13 @@ class MockPdfProcessor extends _i1.Mock implements _i10.PdfProcessor {
   @override
   _i5.Future<List<_i8.Uint8List>> convertPdfToImages({
     required _i8.Uint8List? pdfBytes,
+    String? password,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#convertPdfToImages, [], {#pdfBytes: pdfBytes}),
+            Invocation.method(#convertPdfToImages, [], {
+              #pdfBytes: pdfBytes,
+              #password: password,
+            }),
             returnValue: _i5.Future<List<_i8.Uint8List>>.value(
               <_i8.Uint8List>[],
             ),
