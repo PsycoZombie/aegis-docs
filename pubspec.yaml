@@ -50,6 +50,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   image_cropper_platform_interface: ^7.1.0
+  image_picker_platform_interface: ^2.11.0
   local_auth_android: any
   local_auth_darwin: any
   local_auth_windows: any
@@ -69,7 +70,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   image_path: 'assets/logo/icon.png'
-  adaptive_icon_background: '#FFFFFF'
+  adaptive_icon_background: '#ffffff'
   adaptive_icon_foreground: 'assets/logo/icon.png'
 
 flutter_native_splash:

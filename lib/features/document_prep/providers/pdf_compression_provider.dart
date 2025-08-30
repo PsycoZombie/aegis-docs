@@ -5,7 +5,9 @@ import 'package:aegis_docs/data/models/picked_file_model.dart';
 import 'package:aegis_docs/data/repositories/document_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'pdf_compression_provider.g.dart';
 
@@ -108,27 +110,48 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
   Future<PdfCompressionResult> compressAndSavePdf({
     required String fileName,
     String? folderPath,
+    String? password,
   }) async {
-    if (state.value?.pickedPdf?.path == null) {
+    final originalPdf = state.value?.pickedPdf;
+    if (originalPdf?.bytes == null || originalPdf?.path == null) {
       return const PdfCompressionResult(
         status: NativeCompressionStatus.errorUnknown,
         message: 'No PDF file was selected.',
       );
     }
 
-    state = const AsyncLoading<PdfCompressionState>().copyWithPrevious(state);
     final currentState = state.value!;
+    final repo = await ref.read(documentRepositoryProvider.future);
 
+    // This check runs first. If it throws, the UI will catch it.
+    final isEncrypted = await repo.isPdfEncrypted(originalPdf!.bytes!);
+    if (isEncrypted && password == null) {
+      throw const PdfPasswordException('PASSWORD ERROR');
+    }
+
+    state = const AsyncLoading<PdfCompressionState>().copyWithPrevious(state);
+    File? tempDecryptedFile;
     try {
-      final repo = await ref.read(documentRepositoryProvider.future);
+      var filePathForCompression = originalPdf.path!;
+      if (password != null) {
+        final decryptedBytes = await repo.unlockPdf(
+          originalPdf.bytes!,
+          password: password,
+        );
+        final tempDir = Directory.systemTemp;
+        tempDecryptedFile = File(
+          '${tempDir.path}/temp_unlocked_${const Uuid().v4()}.pdf',
+        );
+        await tempDecryptedFile.writeAsBytes(decryptedBytes);
+        filePathForCompression = tempDecryptedFile.path;
+      }
 
       final result = await repo.compressPdfWithNative(
-        filePath: currentState.pickedPdf!.path!,
+        filePath: filePathForCompression,
         sizeLimit: currentState.sizeLimitKB,
         preserveText: currentState.preserveText,
       );
 
-      // If the compression was successful, read the file and save it.
       if (result.status == NativeCompressionStatus.success ||
           result.status == NativeCompressionStatus.successWithFallback) {
         final compressedFile = File(result.data!);
@@ -140,11 +163,8 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
               data: bytes,
               folderPath: folderPath,
             );
-            // Update the UI state to show the compressed preview.
             state = AsyncData(
-              currentState.copyWith(
-                compressedPdfBytes: () => bytes,
-              ),
+              currentState.copyWith(compressedPdfBytes: () => bytes),
             );
             return PdfCompressionResult(status: result.status);
           } finally {
@@ -152,15 +172,19 @@ class PdfCompressionViewModel extends _$PdfCompressionViewModel {
           }
         }
       }
-      // If compression failed for any reason, return the result directly.
-      state = AsyncData(currentState); // Reset to non-loading state
+      state = AsyncData(currentState);
       return PdfCompressionResult(status: result.status, message: result.data);
-    } on Object catch (e) {
-      state = AsyncData(currentState); // Reset to non-loading state
-      return PdfCompressionResult(
-        status: NativeCompressionStatus.errorUnknown,
-        message: e.toString(),
+    } on Exception {
+      // Catch the specific error for wrong passwords.
+      state = AsyncData(currentState);
+      return const PdfCompressionResult(
+        status: NativeCompressionStatus.errorBadPassword,
+        message: 'Incorrect password.',
       );
+    } finally {
+      if (tempDecryptedFile != null && await tempDecryptedFile.exists()) {
+        await tempDecryptedFile.delete();
+      }
     }
   }
 }

@@ -64,9 +64,12 @@ Built with a focus on performance, scalability, and maintainability.
 
 ## 📸 snapshots
 
-| Home Screen (Wallet)                  | Image Processing Tools                   | PDF Security Options                  |
-| ------------------------------------- | ---------------------------------------- | --------------------------------------- |
-| `![Home Screen](snapshots/screen_home.png)` | `![Image Tools](showcase/screen_image.png)` | `![PDF Tools](showcase/screen_pdf.png)` |
+| Home Screen (Wallet) | Image Processing Tools | PDF Security Options | Backup Tools |
+| --------------------- | ---------------------- | -------------------- | ------------- |
+| ![Home Screen](snapshots/fab.png) | ![Image Tools](snapshots/crop.png) | ![PDF Tools](snapshots/pdf_to_image.png) | ![Backup Tools](snapshots/restore.png) |
+
+
+check out more on the snapshots folder
 
 ---
 
@@ -78,6 +81,7 @@ To get a local copy up and running, follow these simple steps.
 2.  **Install Dependencies:** `flutter pub get`
 3.  **Run Code Generation:** `flutter pub run build_runner build --delete-conflicting-outputs`
 4.  **Run the App:** `flutter run`
+5.  **Get OAuth client id** get the client id from google cloud console and add it to lib/app/config/app_secrets.dart
 
 ---
 

@@ -41,15 +41,12 @@ class _PdfToImagesScreenState extends ConsumerState<PdfToImagesScreen> {
       viewModelProvider,
       // The listener gives us the previous and next states.
       (previous, next) {
-        // --- THIS IS THE FIX ---
         // Only show the dialog if the state TRANSITIONS to an error state.
         // This prevents it from re-triggering on a loading state that still
         // contains a reference to the old error.
         if (previous is! AsyncError &&
             next is AsyncError &&
             !_isPasswordDialogShowing) {
-          // --- END OF FIX ---
-
           final error = next.error;
           if (error is pdfrx.PdfPasswordException) {
             // Use the prefix here
@@ -79,7 +76,8 @@ class _PdfToImagesScreenState extends ConsumerState<PdfToImagesScreen> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) {
             debugPrint('An error occurred: $err');
-            // Gracefully handle password error UI to avoid showing a generic error text
+            // Gracefully handle password error UI
+            // to avoid showing a generic error text
             if (err is PdfPasswordException) {
               return _buildContent(
                 context,
