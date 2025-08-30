@@ -89,3 +89,13 @@ To get a local copy up and running, follow these simple steps.
 ## 📄 License
 
 This project is licensed under the MIT License - see the `LICENSE.md` file for details.
+
+## 🗺️ Future Roadmap
+
+Here are some of the features and improvements planned for Aegis Docs:
+
+* **🤖 AI-Powered Workflows:** Integrating a natural language processing model to allow users to create multi-step commands, such as *"resize my passport photo, compress it, and save as a PDF."*
+* **📅 Document Expiration Alerts:** Adding a feature to set renewal dates for documents (like passports, licenses) and receive timely notifications before they expire.
+* **🏷️ Enhanced Organization:** Implementing tags and custom folders for better document categorization and search.
+
+Contributions are welcome! If you're interested in tackling one of these, please feel free to open an issue to discuss it.
