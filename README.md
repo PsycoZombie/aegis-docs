@@ -26,7 +26,7 @@ A comprehensive toolkit for managing your digital documents securely and efficie
 - **Resize:** Reduce image dimensions while maintaining aspect ratio.
 - **Compress:** Significantly lower file size with minimal quality loss.
 - **Edit & Convert:** Crop, apply a grayscale filter.
-- ***convert:** , Change formats (JPG, PNG, GIF and more).
+- **convert:** , Change formats (JPG, PNG, GIF and more).
 
 ### PDF Tools 📄
 - **Images to PDF:** Combine multiple images into a single, organized PDF document.
