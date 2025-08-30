@@ -31,7 +31,6 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.5
   pdfrx: ^2.1.5
-  pdfx: ^2.9.2
   permission_handler: ^12.0.1
   pointycastle: ^3.9.1
   reorderable_grid_view: ^2.2.8

@@ -653,7 +653,7 @@ void main() {
     });
 
     // NOTE: The `convertPdfToImages` method is not tested here because it uses
-    // `Isolate.spawn` and the `pdfx` platform channel. This functionality
+    // `Isolate.spawn` and the `pdfrx` platform channel. This functionality
     // cannot be executed in a pure Dart unit test environment and would require
     // a more complex integration test.
   });

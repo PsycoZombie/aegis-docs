@@ -106,7 +106,7 @@ Uint8List _changePasswordIsolate(_PdfSecurityPayload payload) {
 
 /// Isolate entry point for converting all pages of a PDF to PNG images.
 ///
-/// This function is asynchronous and uses the `pdfx` package, which requires
+/// This function is asynchronous and uses the `pdfrx` package, which requires
 /// platform channel communication. Therefore, it needs a [RootIsolateToken] and
 /// manual `Isolate.spawn` management instead of the
 /// simpler `compute()` function.
