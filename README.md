@@ -41,7 +41,7 @@ A comprehensive toolkit for managing your digital documents securely and efficie
 A standout feature of this project is its high-performance PDF compression, which was achieved by going beyond standard Dart libraries.
 
 There were no existing Flutter package could meet the performance and quality requirements for PDF compression, so a native integration approach was required:
-1.  **Compiled MuPDF:** Compiled the powerful, open-source C/C++ library **MuPDF** from source for Android and iOS.
+1.  **Compiled MuPDF:** Compiled the powerful, open-source C/C++ library **MuPDF** from source for Android.
 2.  **Platform Integration:** Built a bridge between the Dart front-end and the native code using Flutter's **Platform Channels**.
 3.  **Result:** This provides lightning-fast, efficient, and reliable PDF compression that runs entirely on-device, a capability not readily available in the Flutter ecosystem.
 
@@ -88,7 +88,7 @@ To get a local copy up and running, follow these simple steps.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the `LICENSE.md` file for details.
+This project is licensed under the MIT License - see the `LICENSE` file for details.
 
 ## 🗺️ Future Roadmap
 
